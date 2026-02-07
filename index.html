@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
@@ -10,12 +10,11 @@
         body { background-color: var(--primary-bg); font-family: 'Inter', sans-serif; }
         .sidebar { height: 100vh; background: var(--admin-sidebar); color: #9ea0a5; padding: 25px; position: fixed; width: 280px; }
         .main-content { margin-left: 300px; padding: 40px; }
-        .sidebar .nav-link { color: #9ea0a5; margin-bottom: 10px; border-radius: 8px; transition: 0.3s; }
+        .sidebar .nav-link { color: #9ea0a5; margin-bottom: 10px; border-radius: 8px; transition: 0.3s; cursor: pointer; }
         .sidebar .nav-link.active { background: #3f51b5; color: white; }
-        .sidebar .nav-link:hover:not(.active) { background: #2d2f39; color: white; }
         .partner-card { background: white; border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-        .search-box { border-radius: 25px; padding-left: 20px; border: 1px solid #ddd; }
-        .img-doc { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; margin-right: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .img-doc { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
+        .status-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 20px; }
     </style>
 </head>
 <body>
@@ -31,9 +30,8 @@
         <div class="sidebar shadow">
             <h4 class="text-white fw-bold mb-5">SEWAASTRA Control</h4>
             <ul class="nav nav-pills flex-column">
-                <li class="nav-item"><a href="#" class="nav-link active"><i class="fas fa-id-badge me-2"></i> पार्टनर मैनेजमेंट</a></li>
-                <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-tools me-2"></i> सभी सर्विस</a></li>
-                <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-wallet me-2"></i> पेमेंट और वॉलेट</a></li>
+                <li class="nav-item"><a onclick="showSection('partnerSection')" id="navPartner" class="nav-link active"><i class="fas fa-id-badge me-2"></i> पार्टनर मैनेजमेंट</a></li>
+                <li class="nav-item"><a onclick="showSection('bookingSection')" id="navBooking" class="nav-link"><i class="fas fa-shopping-cart me-2"></i> लाइव बुकिंग्स (Orders)</a></li>
                 <li class="nav-item mt-5"><a href="#" id="btnLogout" class="nav-link text-danger fw-bold"><i class="fas fa-power-off me-2"></i> लॉग आउट</a></li>
             </ul>
         </div>
@@ -47,32 +45,51 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card p-3 border-0 shadow-sm text-center" style="border-bottom: 3px solid #ffc107;">
-                        <small class="text-muted d-block mb-1 text-uppercase">पेंडिंग वेरिफिकेशन</small>
-                        <h2 id="statPending" class="fw-bold text-warning m-0">0</h2>
+                    <div class="card p-3 border-0 shadow-sm text-center">
+                        <small class="text-muted d-block mb-1 text-uppercase">नई बुकिंग्स</small>
+                        <h2 id="statBookings" class="fw-bold text-primary m-0">0</h2>
                     </div>
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold">पार्टनर डायरेक्टरी</h3>
-                <input type="text" id="searchInput" class="form-control search-box w-25" placeholder="नाम या काम से सर्च करें...">
+            <div id="partnerSection">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold">पार्टनर डायरेक्टरी</h3>
+                    <input type="text" id="searchInput" class="form-control w-25 rounded-pill" placeholder="सर्च करें...">
+                </div>
+                <div class="card partner-card">
+                    <table class="table table-hover align-middle m-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>नाम/ID</th>
+                                <th>संपर्क</th>
+                                <th>वर्क/कमाई</th>
+                                <th>स्टेटस</th>
+                                <th class="text-end">कार्रवाई</th>
+                            </tr>
+                        </thead>
+                        <tbody id="partnerTableBody"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="card partner-card p-0">
-                <table class="table table-hover align-middle m-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">पार्टनर विवरण</th>
-                            <th>संपर्क</th>
-                            <th>वर्क / अर्निंग</th>
-                            <th>दस्तावेज़</th>
-                            <th>ड्यूटी / स्टेटस</th>
-                            <th class="text-end pe-4">कार्रवाई</th>
-                        </tr>
-                    </thead>
-                    <tbody id="partnerTableBody"></tbody>
-                </table>
+            <div id="bookingSection" style="display: none;">
+                <h3 class="fw-bold mb-4">लाइव कस्टमर ऑर्डर्स</h3>
+                <div class="card partner-card">
+                    <table class="table table-hover align-middle m-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ऑर्डर ID</th>
+                                <th>कस्टमर</th>
+                                <th>सर्विस</th>
+                                <th>कुल (₹)</th>
+                                <th>स्टेटस</th>
+                                <th class="text-end">एक्शन</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -80,23 +97,32 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
             authDomain: "sewaastra.firebaseapp.com",
+            databaseURL: "https://sewaastra-default-rtdb.firebaseio.com",
             projectId: "sewaastra",
             storageBucket: "sewaastra.firebasestorage.app",
-            messagingSenderId: "211091351218",
             appId: "1:211091351218:web:47fe25d6db3e8dd0464bab"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
         const adminEmail = "soorshyamvishwakarma37@gmail.com";
 
+        // Navigation Logic
+        window.showSection = (sectionId) => {
+            document.getElementById('partnerSection').style.display = sectionId === 'partnerSection' ? 'block' : 'none';
+            document.getElementById('bookingSection').style.display = sectionId === 'bookingSection' ? 'block' : 'none';
+            document.getElementById('navPartner').classList.toggle('active', sectionId === 'partnerSection');
+            document.getElementById('navBooking').classList.toggle('active', sectionId === 'bookingSection');
+        };
+
+        // Auth Logic
         document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
@@ -104,80 +130,77 @@
             if (user && user.email === adminEmail) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminDashboard').style.display = 'block';
-                loadPartners();
+                loadAllData();
             } else if (user) {
-                alert("Unauthorized Access!");
-                signOut(auth);
+                alert("Unauthorized!"); signOut(auth);
             } else {
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('adminDashboard').style.display = 'none';
             }
         });
 
-        function loadPartners() {
-            onSnapshot(collection(db, "partners"), (snapshot) => {
-                const tableBody = document.getElementById('partnerTableBody');
-                const searchVal = document.getElementById('searchInput').value.toLowerCase();
-                let pendingCount = 0;
-                tableBody.innerHTML = "";
-
-                snapshot.forEach((docSnap) => {
-                    const d = docSnap.data();
-                    const id = docSnap.id;
-                    if (!d.isApproved) pendingCount++;
-
-                    // Search Filter Logic
-                    if(d.name?.toLowerCase().includes(searchVal) || d.work?.toLowerCase().includes(searchVal)) {
-                        tableBody.innerHTML += `
-                        <tr class="${!d.isApproved ? 'table-warning' : ''}">
-                            <td class="ps-4">
-                                <div class="fw-bold">${d.name || 'No Name'}</div>
-                                <div class="text-muted small">UID: ${id.substring(0,6)}</div>
-                            </td>
-                            <td>
-                                <a href="tel:${d.mobile}" class="text-decoration-none me-2"><i class="fas fa-phone-alt text-primary"></i></a>
-                                <a href="https://wa.me/91${d.mobile}" target="_blank" class="text-decoration-none"><i class="fab fa-whatsapp text-success"></i></a>
-                            </td>
-                            <td>
-                                <span class="badge bg-light text-dark mb-1">${d.work || 'N/A'}</span><br>
-                                <span class="text-success small fw-bold">₹${d.earnings || 0}</span>
-                            </td>
-                            <td>
-                                ${d.docs?.aFront ? `<img src="${d.docs.aFront}" class="img-doc" onclick="window.open('${d.docs.aFront}')">` : ''}
-                                ${d.docs?.selfie ? `<img src="${d.docs.selfie}" class="img-doc" onclick="window.open('${d.docs.selfie}')">` : ''}
-                            </td>
-                            <td>
-                                <span class="${d.onDuty ? 'text-success' : 'text-danger'} fw-bold">● ${d.onDuty ? 'Online' : 'Offline'}</span><br>
-                                <small class="text-muted">${d.isApproved ? 'Verified' : 'Unverified'}</small>
-                            </td>
-                            <td class="text-end pe-4">
-                                <button class="btn btn-sm ${d.isApproved ? 'btn-outline-secondary' : 'btn-success'}" onclick="toggleApprove('${id}', ${!d.isApproved})">
-                                    ${d.isApproved ? 'Revoke' : 'Verify'}
-                                </button>
-                                <button class="btn btn-sm btn-link text-danger ms-2" onclick="deleteP('${id}')"><i class="fas fa-trash"></i></button>
+        function loadAllData() {
+            // Load Partners from Realtime DB
+            onValue(ref(db, 'partners'), (snapshot) => {
+                const table = document.getElementById('partnerTableBody');
+                table.innerHTML = "";
+                let count = 0;
+                snapshot.forEach((child) => {
+                    const d = child.val();
+                    const id = child.key;
+                    count++;
+                    table.innerHTML += `
+                        <tr>
+                            <td><div class="fw-bold">${d.name || 'N/A'}</div><small class="text-muted">${id.substring(0,6)}</small></td>
+                            <td><a href="tel:${d.phone}" class="btn btn-sm btn-light"><i class="fas fa-phone"></i></a></td>
+                            <td><span class="badge bg-light text-dark">${d.email || ''}</span><br><b class="text-success">₹${d.earnings || 0}</b></td>
+                            <td><span class="status-badge ${d.kycStatus === 'verified' ? 'bg-success text-white' : 'bg-warning'}">${d.kycStatus || 'pending'}</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-primary" onclick="verifyPartner('${id}')">Verify</button>
+                                <button class="btn btn-sm btn-link text-danger" onclick="deleteItem('partners/${id}')"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>`;
-                    }
                 });
-                document.getElementById('statTotal').innerText = snapshot.size;
-                document.getElementById('statPending').innerText = pendingCount;
+                document.getElementById('statTotal').innerText = count;
+            });
+
+            // Load Bookings from Realtime DB
+            onValue(ref(db, 'live_bookings'), (snapshot) => {
+                const table = document.getElementById('bookingTableBody');
+                table.innerHTML = "";
+                let bCount = 0;
+                snapshot.forEach((child) => {
+                    const d = child.val();
+                    const id = child.key;
+                    bCount++;
+                    table.innerHTML += `
+                        <tr>
+                            <td>#${id.substring(id.length-4)}</td>
+                            <td><b>${d.customer || 'Guest'}</b><br><small>${d.phone}</small></td>
+                            <td>${d.items || 'Service'}</td>
+                            <td>₹${d.total}</td>
+                            <td><span class="badge bg-info">${d.status}</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-success" onclick="updateBooking('${id}', 'Completed')">Done</button>
+                            </td>
+                        </tr>`;
+                });
+                document.getElementById('statBookings').innerText = bCount;
             });
         }
 
-        // Search Input Listener
-        document.getElementById('searchInput').oninput = () => loadPartners();
-
-        window.toggleApprove = async (id, status) => {
-            await updateDoc(doc(db, "partners", id), { 
-                isApproved: status,
-                verifiedAt: new Date().toISOString() 
-            });
+        // Action Functions
+        window.verifyPartner = (id) => {
+            update(ref(db, 'partners/' + id), { kycStatus: 'verified' });
+            alert("Partner Verified!");
         };
 
-        window.deleteP = async (id) => {
-            if(confirm("सावधान! इस पार्टनर का डेटा हमेशा के लिए हट जाएगा। क्या आप सहमत हैं?")) {
-                await deleteDoc(doc(db, "partners", id));
-            }
+        window.updateBooking = (id, status) => {
+            update(ref(db, 'live_bookings/' + id), { status: status });
+        };
+
+        window.deleteItem = (path) => {
+            if(confirm("Delete this?")) remove(ref(db, path));
         };
     </script>
 </body>
