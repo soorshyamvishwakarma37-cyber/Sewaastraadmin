@@ -1,94 +1,255 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>SewaAstra - Ultimate Admin Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SewaAstra Infinite - All-In-One Enterprise</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
-        :root { --primary-bg: #f8f9fa; --admin-sidebar: #1a1c23; }
-        body { background-color: var(--primary-bg); font-family: 'Inter', sans-serif; }
-        .sidebar { height: 100vh; background: var(--admin-sidebar); color: #9ea0a5; padding: 25px; position: fixed; width: 280px; }
-        .main-content { margin-left: 300px; padding: 40px; }
-        .sidebar .nav-link { color: #9ea0a5; margin-bottom: 10px; border-radius: 8px; transition: 0.3s; cursor: pointer; }
-        .sidebar .nav-link.active { background: #3f51b5; color: white; }
-        .partner-card { background: white; border-radius: 12px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-        .img-doc { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
-        .status-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 20px; }
+        :root {
+            --primary: #ff6b00;
+            --secondary: #1e293b;
+            --accent: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--secondary); overflow-x: hidden; }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed; inset: 0; background: white; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px);
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: var(--card-shadow); transition: 0.3s ease;
+        }
+        .glass-card:hover { transform: translateY(-5px); }
+
+        .btn-sewa {
+            background: var(--primary); color: white; border: none; border-radius: 16px;
+            padding: 14px 28px; font-weight: 700; transition: 0.3s;
+            box-shadow: 0 10px 15px -3px rgba(255, 107, 0, 0.4);
+        }
+        .btn-sewa:active { transform: scale(0.95); }
+
+        .badge-status {
+            font-size: 10px; padding: 6px 12px; border-radius: 50px; 
+            text-transform: uppercase; font-weight: 800; letter-spacing: 1px;
+        }
+
+        /* --- PAGES --- */
+        .page { display: none; padding-bottom: 100px; min-height: 100vh; animation: fadeUp 0.5s ease forwards; }
+        .page-active { display: block; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- NAVIGATION --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; 
+            transform: translateX(-50%); background: white; display: flex; 
+            justify-content: space-around; padding: 15px; border-radius: 25px 25px 0 0;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.05); z-index: 1000;
+        }
+        .nav-item { color: #94a3b8; text-decoration: none; text-align: center; font-size: 11px; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
+
+        /* --- SPECIAL STYLES --- */
+        .wallet-banner {
+            background: linear-gradient(135deg, var(--secondary) 0%, #000 100%);
+            color: white; border-radius: 30px; padding: 30px; margin-bottom: 30px;
+            position: relative; overflow: hidden;
+        }
+        .wallet-banner::after {
+            content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px;
+            background: var(--primary); filter: blur(80px); opacity: 0.3;
+        }
+
+        .job-card { border-left: 8px solid var(--primary); }
+        .admin-sidebar { background: #0f172a; min-height: 100vh; color: white; }
     </style>
 </head>
 <body>
 
-    <div id="loginScreen" style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #000;">
-        <div class="card p-5 shadow-lg text-center" style="width: 400px; border-radius: 20px;">
-            <h2 class="fw-bold mb-4">SewaAstra <span class="text-primary">Admin</span></h2>
-            <button id="btnLogin" class="btn btn-primary btn-lg w-100 rounded-pill"><i class="fab fa-google me-2"></i> Admin Login</button>
+    <div id="preloader">
+        <h1 class="fw-800">Sewa<span style="color:var(--primary)">Astra</span></h1>
+        <div class="spinner-grow text-warning mt-3" role="status"></div>
+    </div>
+
+    <div id="page-login" class="page page-active">
+        <div class="container py-5 text-center">
+            <div class="mt-5 pt-5">
+                <h1 class="display-3 fw-bold">Sewa<span style="color:var(--primary)">Astra</span></h1>
+                <p class="text-muted lead">Professional Home Services Re-imagined</p>
+                <div class="glass-card p-5 mt-5 mx-auto" style="max-width: 450px;">
+                    <h5 class="fw-bold mb-4">लॉगिन या साइन-अप करें</h5>
+                    <button class="btn btn-outline-dark w-100 py-3 rounded-4 mb-3" onclick="handleAuth()">
+                        <img src="https://img.icons8.com/color/24/google-logo.png" class="me-2"> Continue with Google
+                    </button>
+                    <p class="small text-muted">लॉगिन करके आप हमारे नियमों और शर्तों से सहमत होते हैं।</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="adminDashboard" style="display: none;">
-        <div class="sidebar shadow">
-            <h4 class="text-white fw-bold mb-5">SEWAASTRA Control</h4>
-            <ul class="nav nav-pills flex-column">
-                <li class="nav-item"><a onclick="showSection('partnerSection')" id="navPartner" class="nav-link active"><i class="fas fa-id-badge me-2"></i> पार्टनर मैनेजमेंट</a></li>
-                <li class="nav-item"><a onclick="showSection('bookingSection')" id="navBooking" class="nav-link"><i class="fas fa-shopping-cart me-2"></i> लाइव बुकिंग्स (Orders)</a></li>
-                <li class="nav-item mt-5"><a href="#" id="btnLogout" class="nav-link text-danger fw-bold"><i class="fas fa-power-off me-2"></i> लॉग आउट</a></li>
-            </ul>
+    <div id="page-partner" class="page">
+        <div class="container py-4">
+            <div class="wallet-banner glass-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="text-uppercase opacity-75 fw-bold">आपका बैलेंस</small>
+                        <h1 id="p-wallet-val" class="display-5 fw-bold mt-1">₹0.00</h1>
+                    </div>
+                    <button class="btn btn-sm btn-warning rounded-pill px-3" onclick="requestWithdrawal()">निकासी</button>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-6">
+                    <div class="glass-card p-3 text-center">
+                        <i class="fa fa-check-circle text-success mb-2"></i>
+                        <h6 class="m-0 fw-bold" id="p-jobs-count">0</h6>
+                        <small class="text-muted">जॉब्स पूरे</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="glass-card p-3 text-center">
+                        <i class="fa fa-star text-warning mb-2"></i>
+                        <h6 class="m-0 fw-bold">4.9</h6>
+                        <small class="text-muted">रेटिंग</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0">उपलब्ध बुकिंग्स</h5>
+                <span class="badge bg-danger rounded-pill px-3 py-2">LIVE</span>
+            </div>
+
+            <div id="job-feed">
+                </div>
         </div>
 
-        <div class="main-content">
-            <div class="row mb-5">
-                <div class="col-md-3">
-                    <div class="card p-3 border-0 shadow-sm text-center">
-                        <small class="text-muted d-block mb-1 text-uppercase">कुल पार्टनर्स</small>
-                        <h2 id="statTotal" class="fw-bold m-0">0</h2>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card p-3 border-0 shadow-sm text-center">
-                        <small class="text-muted d-block mb-1 text-uppercase">नई बुकिंग्स</small>
-                        <h2 id="statBookings" class="fw-bold text-primary m-0">0</h2>
-                    </div>
-                </div>
-            </div>
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="navigate('page-partner')"><i class="fa fa-home"></i>Home</div>
+            <div class="nav-item" onclick="navigate('page-history')"><i class="fa fa-list-check"></i>History</div>
+            <div class="nav-item" onclick="navigate('page-profile')"><i class="fa fa-user-circle"></i>Profile</div>
+            <div class="nav-item text-danger" onclick="logout()"><i class="fa fa-power-off"></i>Exit</div>
+        </div>
+    </div>
 
-            <div id="partnerSection">
+    <div id="page-admin" class="page bg-white p-0">
+        <div class="row g-0">
+            <div class="col-md-3 admin-sidebar d-none d-md-block p-4">
+                <h3 class="fw-bold mb-5">SewaAstra <span class="text-primary">Admin</span></h3>
+                <nav class="nav flex-column">
+                    <a class="nav-link text-white mb-3 active" href="#"><i class="fa fa-chart-line me-2"></i> Dashboard</a>
+                    <a class="nav-link text-white mb-3" href="#"><i class="fa fa-users me-2"></i> Partners</a>
+                    <a class="nav-link text-white mb-3" href="#"><i class="fa fa-shopping-cart me-2"></i> Live Orders</a>
+                    <a class="nav-link text-danger mt-5" href="#" onclick="logout()"><i class="fa fa-sign-out-alt me-2"></i> Logout</a>
+                </nav>
+            </div>
+            <div class="col-md-9 p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="fw-bold">पार्टनर डायरेक्टरी</h3>
-                    <input type="text" id="searchInput" class="form-control w-25 rounded-pill" placeholder="सर्च करें...">
+                    <h3 class="fw-bold">कंट्रोल सेंटर</h3>
+                    <button class="btn btn-primary" onclick="openBookingModal()"><i class="fa fa-plus me-2"></i>New Job</button>
                 </div>
-                <div class="card partner-card">
-                    <table class="table table-hover align-middle m-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>नाम/ID</th>
-                                <th>संपर्क</th>
-                                <th>वर्क/कमाई</th>
-                                <th>स्टेटस</th>
-                                <th class="text-end">कार्रवाई</th>
-                            </tr>
-                        </thead>
-                        <tbody id="partnerTableBody"></tbody>
-                    </table>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                        <div class="glass-card p-4 border-start border-primary border-5">
+                            <small class="text-muted fw-bold">Total Commission</small>
+                            <h2 class="fw-bold text-primary" id="adm-total-comm">₹0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="glass-card p-4 border-start border-success border-5">
+                            <small class="text-muted fw-bold">Active Partners</small>
+                            <h2 class="fw-bold text-success" id="adm-p-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-4">पार्टनर वेरिफिकेशन लिस्ट</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Partner Name</th>
+                                    <th>Expertise</th>
+                                    <th>Joined</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adm-partner-table"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div id="bookingSection" style="display: none;">
-                <h3 class="fw-bold mb-4">लाइव कस्टमर ऑर्डर्स</h3>
-                <div class="card partner-card">
-                    <table class="table table-hover align-middle m-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ऑर्डर ID</th>
-                                <th>कस्टमर</th>
-                                <th>सर्विस</th>
-                                <th>कुल (₹)</th>
-                                <th>स्टेटस</th>
-                                <th class="text-end">एक्शन</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bookingTableBody"></tbody>
-                    </table>
+    <div class="modal fade" id="newJobModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-5 shadow-lg">
+                <div class="modal-body p-5">
+                    <h3 class="fw-bold mb-4">Deploy New Job</h3>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Service Type</label>
+                        <select id="j-type" class="form-select p-3 rounded-4">
+                            <option>AC Repair & Service</option>
+                            <option>Home Cleaning</option>
+                            <option>Electrician Work</option>
+                            <option>Full Home Painting</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Customer Address</label>
+                        <input type="text" id="j-addr" class="form-control p-3 rounded-4" placeholder="Street, City, Zip">
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Estimated Price (₹)</label>
+                            <input type="number" id="j-price" class="form-control p-3 rounded-4" placeholder="1000">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Customer Phone</label>
+                            <input type="tel" id="j-phone" class="form-control p-3 rounded-4" placeholder="91234xxx">
+                        </div>
+                    </div>
+                    <button class="btn-sewa w-100 py-3" onclick="submitNewJob()">Deploy Live Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="otpModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-5 shadow-lg">
+                <div class="modal-body p-5 text-center">
+                    <div class="mb-4"><i class="fa fa-shield-halved text-success fa-4x"></i></div>
+                    <h3 class="fw-bold">Security Verification</h3>
+                    <p class="text-muted mb-4">कस्टमर से प्राप्त 4-अंकों का पूर्णता कोड दर्ज करें</p>
+                    <input type="number" id="otp-val" class="form-control form-control-lg text-center mb-4 border-0 bg-light py-3 rounded-4 fw-bold fs-2" placeholder="0000" style="letter-spacing: 12px;">
+                    <button class="btn-sewa w-100 py-3" id="btn-final-close">Verify & Transfer Money</button>
                 </div>
             </div>
         </div>
@@ -97,152 +258,232 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, getDoc, setDoc, query, where, increment, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
             authDomain: "sewaastra.firebaseapp.com",
-            databaseURL: "https://sewaastra-default-rtdb.firebaseio.com",
             projectId: "sewaastra",
             storageBucket: "sewaastra.firebasestorage.app",
+            messagingSenderId: "211091351218",
             appId: "1:211091351218:web:47fe25d6db3e8dd0464bab"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getDatabase(app);
+        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-        const adminEmail = "soorshyamvishwakarma37@gmail.com";
 
-        // Navigation Logic
-        window.showSection = (sectionId) => {
-            document.getElementById('partnerSection').style.display = sectionId === 'partnerSection' ? 'block' : 'none';
-            document.getElementById('bookingSection').style.display = sectionId === 'bookingSection' ? 'block' : 'none';
-            document.getElementById('navPartner').classList.toggle('active', sectionId === 'partnerSection');
-            document.getElementById('navBooking').classList.toggle('active', sectionId === 'bookingSection');
+        const ADMIN_EMAIL = "soorshyamvishwakarma37@gmail.com";
+        let activeUser = null;
+        let selectedJobId = null;
+
+        // --- PAGE ROUTING ---
+        window.navigate = (pageId) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
+            document.getElementById(pageId).classList.add('page-active');
+            window.scrollTo(0, 0);
         };
 
-        // Auth Logic
-        document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
-        document.getElementById('btnLogout').onclick = () => signOut(auth);
+        // --- AUTH LOGIC ---
+        window.handleAuth = () => {
+            signInWithPopup(auth, provider).catch(err => Swal.fire('Error', err.message, 'error'));
+        };
 
-        onAuthStateChanged(auth, (user) => {
-            if (user && user.email === adminEmail) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminDashboard').style.display = 'block';
-                loadAllData();
-            } else if (user) {
-                alert("Unauthorized!"); signOut(auth);
+        onAuthStateChanged(auth, async (user) => {
+            document.getElementById('preloader').style.display = 'none';
+            if (user) {
+                activeUser = user;
+                if (user.email === ADMIN_EMAIL) {
+                    navigate('page-admin');
+                    initAdminPanel();
+                } else {
+                    await syncPartnerData(user);
+                    navigate('page-partner');
+                    initPartnerDashboard(user.uid);
+                }
             } else {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('adminDashboard').style.display = 'none';
+                navigate('page-login');
             }
         });
 
-        function loadAllData() {
-            // Load Partners from Realtime DB
-            onValue(ref(db, 'partners'), (snapshot) => {
-                const table = document.getElementById('partnerTableBody');
-                table.innerHTML = "";
-                let count = 0;
-                snapshot.forEach((child) => {
-                    const d = child.val();
-                    const id = child.key;
-                    count++;
-                    table.innerHTML += `
-                        <tr>
-                            <td><div class="fw-bold">${d.name || 'N/A'}</div><small class="text-muted">${id.substring(0,6)}</small></td>
-                            <td><a href="tel:${d.phone}" class="btn btn-sm btn-light"><i class="fas fa-phone"></i></a></td>
-                            <td><span class="badge bg-light text-dark">${d.email || ''}</span><br><b class="text-success">₹${d.earnings || 0}</b></td>
-                            <td><span class="status-badge ${d.kycStatus === 'verified' ? 'bg-success text-white' : 'bg-warning'}">${d.kycStatus || 'pending'}</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-primary" onclick="verifyPartner('${id}')">Verify</button>
-                                <button class="btn btn-sm btn-link text-danger" onclick="deleteItem('partners/${id}')"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>`;
+        window.logout = () => signOut(auth).then(() => location.reload());
+
+        // --- PARTNER SYNC ---
+        async function syncPartnerData(user) {
+            const pRef = doc(db, "partners", user.uid);
+            const snap = await getDoc(pRef);
+            if (!snap.exists()) {
+                await setDoc(pRef, {
+                    uid: user.uid,
+                    name: user.displayName,
+                    email: user.email,
+                    wallet: 0,
+                    totalJobs: 0,
+                    status: 'verified',
+                    joinedAt: new Date().toISOString()
                 });
-                document.getElementById('statTotal').innerText = count;
+            }
+        }
+
+        // --- PARTNER DASHBOARD ---
+        function initPartnerDashboard(uid) {
+            // Live Wallet Updates
+            onSnapshot(doc(db, "partners", uid), (d) => {
+                const data = d.data();
+                document.getElementById('p-wallet-val').innerText = `₹${data.wallet.toFixed(2)}`;
+                document.getElementById('p-jobs-count').innerText = data.totalJobs || 0;
             });
 
-            // Load Bookings from Realtime DB
-            onValue(ref(db, 'live_bookings'), (snapshot) => {
-                const table = document.getElementById('bookingTableBody');
-                table.innerHTML = "";
-                let bCount = 0;
-                snapshot.forEach((child) => {
-                    const d = child.val();
-                    const id = child.key;
-                    bCount++;
-                    table.innerHTML += `
-                        <tr>
-                            <td>#${id.substring(id.length-4)}</td>
-                            <td><b>${d.customer || 'Guest'}</b><br><small>${d.phone}</small></td>
-                            <td>${d.items || 'Service'}</td>
-                            <td>₹${d.total}</td>
-                            <td><span class="badge bg-info">${d.status}</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-success" onclick="updateBooking('${id}', 'Completed')">Done</button>
-                            </td>
-                        </tr>`;
+            // Live Job Feed
+            onSnapshot(query(collection(db, "bookings"), orderBy("createdAt", "desc")), (snap) => {
+                const feed = document.getElementById('job-feed');
+                feed.innerHTML = "";
+                snap.forEach(res => {
+                    const job = res.data();
+                    const id = res.id;
+
+                    if (job.status === 'open' || (job.status === 'active' && job.partnerId === uid)) {
+                        const isActive = job.status === 'active';
+                        feed.innerHTML += `
+                            <div class="glass-card p-4 mb-4 job-card">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <span class="badge-status ${isActive ? 'bg-success' : 'bg-warning text-dark'} mb-2 d-inline-block">
+                                            ${job.status}
+                                        </span>
+                                        <h5 class="fw-bold m-0">${job.type}</h5>
+                                    </div>
+                                    <h4 class="fw-bold text-success m-0">₹${job.price}</h4>
+                                </div>
+                                <p class="text-muted small"><i class="fa fa-map-marker-alt me-2 text-primary"></i>${job.address}</p>
+                                <hr class="opacity-10">
+                                <div class="d-flex gap-2">
+                                    ${isActive ? `
+                                        <button onclick="navigateGoogleMap('${job.address}')" class="btn btn-light rounded-3 flex-fill fw-bold"><i class="fa fa-location-arrow me-2"></i>Route</button>
+                                        <button onclick="showOTPBox('${id}')" class="btn btn-dark rounded-3 flex-fill fw-bold">Finish Job</button>
+                                    ` : `
+                                        <button onclick="acceptBooking('${id}')" class="btn-sewa w-100 shadow-none py-2">Accept Booking</button>
+                                    `}
+                                </div>
+                            </div>`;
+                    }
                 });
-                document.getElementById('statBookings').innerText = bCount;
             });
         }
 
-        // Action Functions
-        window.verifyPartner = (id) => {
-            update(ref(db, 'partners/' + id), { kycStatus: 'verified' });
-            alert("Partner Verified!");
+        window.navigateGoogleMap = (addr) => {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`);
         };
 
-        window.updateBooking = (id, status) => {
-            update(ref(db, 'live_bookings/' + id), { status: status });
+        window.acceptBooking = async (id) => {
+            const otp = Math.floor(1000 + Math.random() * 9000);
+            await updateDoc(doc(db, "bookings", id), {
+                status: 'active',
+                partnerId: activeUser.uid,
+                partnerName: activeUser.displayName,
+                otp: otp
+            });
+            Swal.fire('Job Accepted!', `कस्टमर तक पहुँचें। काम खत्म करने का कोड ${otp} है।`, 'success');
         };
 
-        window.deleteItem = (path) => {
-            if(confirm("Delete this?")) remove(ref(db, path));
+        window.showOTPBox = (id) => {
+            selectedJobId = id;
+            new bootstrap.Modal(document.getElementById('otpModal')).show();
         };
+
+        document.getElementById('btn-final-close').onclick = async () => {
+            const enteredOtp = document.getElementById('otp-val').value;
+            const jRef = doc(db, "bookings", selectedJobId);
+            const jSnap = await getDoc(jRef);
+            const jobData = jSnap.data();
+
+            if (enteredOtp == jobData.otp) {
+                const total = parseFloat(jobData.price);
+                const comm = total * 0.20; // 20% Admin
+                const pay = total - comm;
+
+                // Transaction Atomic Update
+                await updateDoc(doc(db, "partners", activeUser.uid), { 
+                    wallet: increment(pay),
+                    totalJobs: increment(1)
+                });
+                await updateDoc(jRef, { 
+                    status: 'completed', 
+                    commission: comm, 
+                    finalPayout: pay,
+                    finishedAt: new Date().toISOString()
+                });
+
+                Swal.fire('Well Done!', `₹${pay.toFixed(2)} आपके वॉलेट में क्रेडिट हो गए हैं।`, 'success').then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire('Invalid OTP', 'कस्टमर से सही कोड मांगें।', 'error');
+            }
+        };
+
+        // --- ADMIN PANEL LOGIC ---
+        function initAdminPanel() {
+            // Stats Sync
+            onSnapshot(collection(db, "bookings"), s => {
+                let totalComm = 0;
+                s.forEach(d => totalComm += (d.data().commission || 0));
+                document.getElementById('adm-total-comm').innerText = `₹${totalComm.toFixed(0)}`;
+            });
+
+            // Partner Directory Sync
+            onSnapshot(collection(db, "partners"), s => {
+                const table = document.getElementById('adm-partner-table');
+                document.getElementById('adm-p-count').innerText = s.size;
+                table.innerHTML = "";
+                s.forEach(p => {
+                    const data = p.data();
+                    table.innerHTML += `
+                        <tr>
+                            <td><div class="fw-bold">${data.name}</div><small class="text-muted">${data.email}</small></td>
+                            <td>AC Expert</td>
+                            <td>${new Date(data.joinedAt).toLocaleDateString()}</td>
+                            <td><span class="badge bg-success">Verified</span></td>
+                            <td><button class="btn btn-sm btn-outline-dark">Details</button></td>
+                        </tr>`;
+                });
+            });
+        }
+
+        window.openBookingModal = () => new bootstrap.Modal(document.getElementById('newJobModal')).show();
+
+        window.submitNewJob = async () => {
+            const jobData = {
+                type: document.getElementById('j-type').value,
+                address: document.getElementById('j-addr').value,
+                price: document.getElementById('j-price').value,
+                phone: document.getElementById('j-phone').value,
+                status: 'open',
+                createdAt: new Date().toISOString()
+            };
+
+            if (jobData.address && jobData.price) {
+                await addDoc(collection(db, "bookings"), jobData);
+                bootstrap.Modal.getInstance(document.getElementById('newJobModal')).hide();
+                Swal.fire('Job Deployed!', 'सभी पार्टनर्स को अलर्ट भेज दिया गया है।', 'success');
+            } else {
+                Swal.fire('Missing Info', 'कृपया सभी जानकारी भरें।', 'warning');
+            }
+        };
+
+        window.requestWithdrawal = () => {
+            Swal.fire({
+                title: 'Withdraw Money',
+                text: "निकासी के लिए न्यूनतम ₹500 होना अनिवार्य है।",
+                icon: 'info',
+                confirmButtonText: 'Contact Support'
+            });
+        };
+
     </script>
- <script type="module">
-    // 1. फायरबेस मॉड्यूल्स इम्पोर्ट करें
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 2. आपकी कॉन्फ़िगरेशन (तीनों फाइल्स में एक ही रहेगी)
-    const firebaseConfig = {
-        apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
-        authDomain: "sewaastra.firebaseapp.com",
-        projectId: "sewaastra",
-        storageBucket: "sewaastra.firebasestorage.app",
-        messagingSenderId: "211091351218",
-        appId: "1:211091351218:web:47fe25d6db3e8dd0464bab"
-    };
-
-    // 3. फायरबेस शुरू करें
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app); // अब डेटा Firestore में जाएगा
-
-    // --- अब तीनों फाइल्स के लिए अलग-अलग फंक्शन्स ---
-
-    // A. पार्टनर ऐप के लिए (डेटा भेजना)
-    window.registerPartner = async (partnerData) => {
-        await addDoc(collection(db, "partners"), partnerData);
-    };
-
-    // B. कस्टमर ऐप के लिए (बुकिंग करना)
-    window.makeBooking = async (bookingData) => {
-        await addDoc(collection(db, "bookings"), bookingData);
-    };
-
-    // C. एडमिन ऐप के लिए (डेटा देखना)
-    window.loadAdminData = () => {
-        onSnapshot(collection(db, "partners"), (snap) => { /* टेबल अपडेट करें */ });
-        onSnapshot(collection(db, "bookings"), (snap) => { /* टेबल अपडेट करें */ });
-    };
-
-</script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
