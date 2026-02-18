@@ -130,7 +130,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
-const ADMIN = "soorshyamvishwakarama37@gmail.com";
+const ADMIN = "soorshyamvishwakarma37@gmail.com";
 
 function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 function logout() { auth.signOut().then(() => location.reload()); }
