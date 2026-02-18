@@ -3,84 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SewaAstra Admin - Smart Billing</title>
+    <title>SewaAstra Admin - Elite Control</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>// यह फंक्शन बुकिंग आते ही ट्रिगर होगा
-async function autoAssignJob(bookingId, serviceType) {
-    console.log("Searching for best partner for:", serviceType);
-
-    // 1. ऐसे पार्टनर्स ढूंढें जो Online हैं, Verified हैं और उस सर्विस के एक्सपर्ट हैं
-    const pool = await db.collection("partners")
-        .where("isOnline", "==", true)
-        .where("isVerified", "==", true)
-        .where("service", "==", serviceType)
-        .limit(5)
-        .get();
-
-    if (pool.empty) {
-        console.log("No online partners found. Waiting for manual assignment.");
-        return;
-    }
-
-    // 2. ऑटो-सिलेक्शन (अभी हम सबसे पहले मिलने वाले पार्टनर को दे रहे हैं)
-    // भविष्य में आप यहाँ 'Distance' या 'Rating' का गणित भी लगा सकते हैं
-    let bestPartner = pool.docs[0];
-    let pData = bestPartner.data();
-
-    // 3. बुकिंग अपडेट करें
-    await db.collection("bookings").doc(bookingId).update({
-        assignedPartnerId: bestPartner.id,
-        partnerName: pData.name,
-        partnerPhone: pData.phone,
-        status: "Auto-Assigned",
-        assignedAt: new Date().toISOString()
-    });
-
-    console.log("Job Auto-Assigned to:", pData.name);
-}
-</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
     <style>
-        :root { --p: #ff6b00; --s: #0f172a; --bg: #f8fafc; }
+        :root { --p: #ff6b00; --s: #0f172a; --bg: #f8fafc; --success: #22c55e; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; overflow-x: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 280px; background: var(--s); height: 100vh; color: white; position: fixed; display: flex; flex-direction: column; }
         .sb-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1e293b; }
         .nav-link { padding: 15px 25px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; color: #94a3b8; }
         .nav-link:hover, .nav-link.active { background: var(--p); color: white; }
 
-        /* Content */
-        .main { margin-left: 280px; width: 100%; padding: 40px; }
+        .main { margin-left: 280px; width: calc(100% - 280px); padding: 40px; }
         .card { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         
-        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .stat-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-left: 5px solid var(--p); }
+        .stat-box { background: white; padding: 20px; border-radius: 12px; border-left: 5px solid var(--p); }
 
-        /* Table */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 12px; }
         td { padding: 15px 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
 
-        /* Buttons */
         .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .btn-bill { background: #0ea5e9; color: white; }
-        .btn-wa { background: #22c55e; color: white; text-decoration: none; padding: 8px 12px; display: inline-flex; align-items: center; border-radius: 6px; }
+        .btn-pay { background: var(--success); color: white; }
+        .btn-wa { background: #22c55e; color: white; text-decoration: none; padding: 8px 12px; border-radius: 6px; }
         
         #auth-lock { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        #kyc-viewer { display:none; position:fixed; inset:20px; background:white; z-index:10000; overflow-y:auto; padding:30px; border-radius:20px; box-shadow:0 0 50px rgba(0,0,0,0.5); }
+        
+        .badge-pending { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-paid { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <div id="auth-lock">
-    <div style="text-align:center; padding:50px; border-radius:20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+    <div style="text-align:center;">
         <h1 style="color:var(--p)">SewaAstra Admin</h1>
-        <p>Login to soorshyamvishwakarama37@gmail.com</p>
         <button onclick="login()" style="background:var(--p); color:white; border:none; padding:12px 30px; border-radius:8px; cursor:pointer;">Google Login</button>
     </div>
 </div>
@@ -89,247 +54,71 @@ async function autoAssignJob(bookingId, serviceType) {
     <nav class="sidebar">
         <div class="sb-header"><h3>SEWAASTRA ADMIN</h3></div>
         <div class="nav-link active" onclick="show('dash')"><i class="fa fa-chart-line"></i> Dashboard</div>
-        <div class="nav-link" onclick="show('orders')"><i class="fa fa-receipt"></i> Orders & Billing</div>
+        <div class="nav-link" onclick="show('orders')"><i class="fa fa-receipt"></i> Orders</div>
+        <div class="nav-link" onclick="show('partners')"><i class="fa fa-user-shield"></i> Partners</div>
+        <div class="nav-link" onclick="show('payouts')"><i class="fa fa-wallet"></i> Payout Requests</div>
         <div class="nav-link" onclick="show('customers')"><i class="fa fa-users"></i> Customers</div>
         <div class="nav-link" onclick="logout()" style="margin-top:auto; color:red;"><i class="fa fa-power-off"></i> Logout</div>
     </nav>
 
     <main class="main">
-        <div id="dash">
-            <h2>Dashboard</h2>
+        <div id="dash" class="page">
+            <h2>Dashboard Overview</h2>
             <div class="stats-grid">
                 <div class="stat-box">Total Orders<h2 id="s-orders">0</h2></div>
-                <div class="stat-box">Total Users<h2 id="s-cust">0</h2></div>
                 <div class="stat-box">Revenue<h2 id="s-rev">₹0</h2></div>
                 <div class="stat-box">Active Partners<h2 id="s-part">0</h2></div>
+                <div class="stat-box">Pending Payouts<h2 id="s-pay">₹0</h2></div>
             </div>
         </div>
 
-        <div id="orders" style="display:none;">
+        <div id="orders" class="page" style="display:none;">
             <div class="card">
-                <h3>Recent Orders & Smart Billing</h3>
+                <h3>Recent Orders</h3>
                 <table>
-                    <thead>
-                        <tr><th>Customer</th><th>Service</th><th>Partner</th><th>Bill</th><th>Contact</th></tr>
-                    </thead>
+                    <thead><tr><th>Customer</th><th>Service</th><th>Partner</th><th>Bill</th><th>WA</th></tr></thead>
                     <tbody id="list-orders"></tbody>
                 </table>
             </div>
         </div>
 
-        <div id="customers" style="display:none;">
+        <div id="payouts" class="page" style="display:none;">
             <div class="card">
-                <h3>Customer Loyalty Database</h3>
+                <h3>Withdrawal Requests</h3>
                 <table>
-                    <thead>
-                        <tr><th>Name</th><th>Phone</th><th>Orders</th><th>LTV (Total ₹)</th></tr>
-                    </thead>
-                    <tbody id="list-cust"></tbody>
+                    <thead><tr><th>Partner</th><th>Amount</th><th>UPI/Bank</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="list-payouts"></tbody>
                 </table>
             </div>
         </div>
+
+        <div id="partners" class="page" style="display:none;">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Partner Management</h3>
+                    <button onclick="addPartner()" style="background:var(--p); color:white; border:none; padding:10px 20px; border-radius:8px;">+ New Partner</button>
+                </div>
+                <tbody id="list-partners"></tbody>
+                <table id="partner-table">
+                    <thead><tr><th>Name</th><th>Service</th><th>Phone</th><th>Status</th><th>KYC</th></tr></thead>
+                    <tbody id="list-partners"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="customers" class="page" style="display:none;">
+            <div class="card"><h3>Customer Database</h3><table id="list-cust"></table></div>
+        </div>
     </main>
 </div>
-<div style="background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee;">
-    <span>ड्यूटी स्टेटस (Duty Status)</span>
-    <label class="switch">
-        <input type="checkbox" id="dutyStatus" onchange="toggleDuty()">
-        <span class="slider"></span>
-    </label>
-</div>
 
-<style>
-/* Toggle Switch UI */
-.switch { position: relative; display: inline-block; width: 60px; height: 30px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-input:checked + .slider { background-color: var(--success); }
-.slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider:before { transform: translateX(30px); }
-</style>
-
-<script>
-function toggleDuty() {
-    let isOnline = document.getElementById('dutyStatus').checked;
-    db.collection("partners").doc(currentID).update({
-        isOnline: isOnline,
-        lastActive: new Date().toISOString()
-    });
-    if(isOnline) alert("अब आप ऑनलाइन हैं, बुकिंग्स अपने आप मिलेंगी!");
-}
-</script>
-<div style="background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee;">
-    <span>ड्यूटी स्टेटस (Duty Status)</span>
-    <label class="switch">
-        <input type="checkbox" id="dutyStatus" onchange="toggleDuty()">
-        <span class="slider"></span>
-    </label>
-</div>
-
-<style>
-/* Toggle Switch UI */
-.switch { position: relative; display: inline-block; width: 60px; height: 30px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-input:checked + .slider { background-color: var(--success); }
-.slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider:before { transform: translateX(30px); }
-</style>
-
-<script>
-function toggleDuty() {
-    let isOnline = document.getElementById('dutyStatus').checked;
-    db.collection("partners").doc(currentID).update({
-        isOnline: isOnline,
-        lastActive: new Date().toISOString()
-    });
-    if(isOnline) alert("अब आप ऑनलाइन हैं, बुकिंग्स अपने आप मिलेंगी!");
-}
-</script>
-
-<div id="partners" class="page" style="display:none;">
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3>Partner Verification & Management</h3>
-            <button onclick="addPartner()" style="background:var(--p); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">+ नया पार्टनर जोड़ें</button>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>नाम</th>
-                    <th>सर्विस/काम</th>
-                    <th>मोबाइल</th>
-                    <th>स्टेटस (Verification)</th>
-                    <th>एक्शन</th>
-                </tr>
-            </thead>
-            <tbody id="list-partners"></tbody>
-        </table>
-    </div>
+<div id="kyc-viewer">
+    <div style="display:flex; justify-content:space-between;"><h3>KYC Docs</h3><button onclick="document.getElementById('kyc-viewer').style.display='none'">X</button></div>
+    <div id="kyc-content" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>
+    <button id="approve-btn" class="btn btn-pay" style="width:100%; margin-top:20px;">Approve Now</button>
 </div>
 
 <script>
-// --- PARTNER VERIFICATION LOGIC ---
-
-function syncPartners() {
-    db.collection("partners").onSnapshot(s => {
-        let h = "";
-        s.forEach(doc => {
-            let p = doc.data();
-            let id = doc.id;
-            
-            // वेरिफिकेशन स्टेटस के आधार पर बैज
-            let statusBadge = p.isVerified 
-                ? '<span style="background:#dcfce7; color:#166534; padding:5px 10px; border-radius:15px; font-size:12px;">Verified</span>' 
-                : '<span style="background:#fee2e2; color:#991b1b; padding:5px 10px; border-radius:15px; font-size:12px;">Pending</span>';
-
-            // वेरिफिकेशन बटन (Toggle)
-            let verifyBtn = p.isVerified
-                ? `<button onclick="toggleVerify('${id}', false)" style="background:#f1f5f9; border:1px solid #ccc; padding:5px; border-radius:5px; cursor:pointer;">Unverify</button>`
-                : `<button onclick="toggleVerify('${id}', true)" style="background:#22c55e; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Verify Now</button>`;
-
-            h += `<tr>
-                <td><b>${p.name}</b></td>
-                <td>${p.service}</td>
-                <td>${p.phone}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    ${verifyBtn}
-                    <button class="btn-del" onclick="deleteDoc('partners','${id}')" style="margin-left:10px;"><i class="fa fa-trash"></i></button>
-                </td>
-            </tr>`;
-        });
-        document.getElementById('list-partners').innerHTML = h;
-    });
-}
-
-// वेरिफिकेशन स्टेटस बदलने का फंक्शन
-function toggleVerify(partnerId, status) {
-    db.collection("partners").doc(partnerId).update({
-        isVerified: status
-    }).then(() => {
-        let msg = status ? "पार्टनर अब वेरिफाइड है और लॉगिन कर सकता है!" : "पार्टनर का एक्सेस हटा दिया गया है।";
-        alert(msg);
-    });
-}
-
-// नया पार्टनर जोड़ते समय 'isVerified: false' डिफ़ॉल्ट रखें
-function addPartner() {
-    let n = prompt("पार्टनर का नाम:");
-    let p = prompt("WhatsApp मोबाइल नंबर:");
-    let s = prompt("सर्विस (AC, Electrician, etc):");
-    
-    if(n && p) {
-        db.collection("partners").add({
-            name: n,
-            phone: p,
-            service: s,
-            isVerified: false, // शुरुआत में अनवेरिफाइड
-            joinedAt: new Date().toISOString()
-        });
-    }
-}
-</script>
-<div id="kyc-viewer" class="section-card" style="display:none; position:fixed; inset:20px; background:white; z-index:10000; overflow-y:auto; padding:30px; border-radius:20px; box-shadow:0 0 50px rgba(0,0,0,0.5);">
-    <div style="display:flex; justify-content:space-between;">
-        <h3>Partner KYC Documents</h3>
-        <button onclick="document.getElementById('kyc-viewer').style.display='none'" class="btn btn-del">Close</button>
-    </div>
-    <hr>
-    <div id="kyc-content" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-        </div>
-    <div id="kyc-actions" style="margin-top:30px; text-align:center; padding:20px; background:#f8fafc;">
-        <button id="approve-btn" class="btn" style="background:var(--success); color:white; padding:15px 40px; font-size:16px;">सब सही है - Approve Partner</button>
-    </div>
-</div>
-
-<script>
-// एडमिन पैनल के पार्टनर लिस्ट में 'View Documents' बटन जोड़ें
-function showPartnerKyc(partnerId) {
-    db.collection("partners").doc(partnerId).get().then(doc => {
-        const p = doc.data();
-        if(!p.kycData) return alert("इस पार्टनर ने अभी डॉक्यूमेंट्स अपलोड नहीं किए हैं।");
-
-        const container = document.getElementById('kyc-content');
-        container.innerHTML = `
-            <div>
-                <label>Aadhar Front</label>
-                <img src="${p.kycData.aadhaarFront}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
-            </div>
-            <div>
-                <label>Aadhar Back</label>
-                <img src="${p.kycData.aadhaarBack}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
-            </div>
-            <div>
-                <label>PAN Card</label>
-                <img src="${p.kycData.pan}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
-            </div>
-            <div>
-                <label>Police Verification</label>
-                <img src="${p.kycData.police}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
-            </div>
-        `;
-
-        document.getElementById('kyc-viewer').style.display = 'block';
-
-        // Approve Button Logic
-        document.getElementById('approve-btn').onclick = function() {
-            if(confirm("क्या आप इस पार्टनर को काम करने की अनुमति देते हैं?")) {
-                db.collection("partners").doc(partnerId).update({
-                    isVerified: true,
-                    verifiedAt: new Date().toISOString()
-                }).then(() => {
-                    alert("Partner Verified Successfully!");
-                    document.getElementById('kyc-viewer').style.display = 'none';
-                });
-            }
-        };
-    });
-}
-</script>
-
-<script>
-// Firebase Setup
 const firebaseConfig = {
     apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
     authDomain: "sewaastra.firebaseapp.com",
@@ -343,109 +132,68 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 const ADMIN = "soorshyamvishwakarama37@gmail.com";
 
-function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(r => { if(r.user.email !== ADMIN) auth.signOut(); }); }
+function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 function logout() { auth.signOut().then(() => location.reload()); }
 
 auth.onAuthStateChanged(user => {
     if(user && user.email === ADMIN) {
         document.getElementById('auth-lock').style.display='none';
         document.getElementById('app').style.display='flex';
-        init();
+        syncAll();
     }
 });
 
-function init() {
-    db.collection("bookings").orderBy("bDate", "desc").onSnapshot(s => {
-        let hO = ""; let cM = {}; let rev = 0;
-        s.forEach(doc => {
-            let b = doc.data(); b.id = doc.id;
-            rev += parseInt(b.total || 0);
-            
-            // Stats & Customer Data
-            if(!cM[b.userPhone]) cM[b.userPhone] = { name: b.userName, p: b.userPhone, count: 0, val: 0 };
-            cM[b.userPhone].count++; cM[b.userPhone].val += parseInt(b.total || 0);
+function syncAll() {
+    // Orders Sync
+    db.collection("bookings").onSnapshot(s => {
+        let h = ""; s.forEach(doc => {
+            let b = doc.data();
+            h += `<tr><td>${b.userName}</td><td>${b.items}</td><td>${b.partnerName || 'N/A'}</td><td><button onclick="generateBill('${doc.id}')">Bill</button></td><td><a href="https://wa.me/${b.userPhone}">WA</a></td></tr>`;
+        });
+        document.getElementById('list-orders').innerHTML = h;
+    });
 
-            hO += `<tr>
-                <td><b>${b.userName}</b><br>${b.userPhone}</td>
-                <td>${b.items}<br>₹${b.total}</td>
-                <td>${b.partnerName || 'Pending'}</td>
-                <td><button class="btn btn-bill" onclick="generateBill('${b.id}')"><i class="fa fa-file-invoice"></i> Bill</button></td>
-                <td><a href="https://wa.me/91${b.userPhone}" class="btn-wa"><i class="fab fa-whatsapp"></i></a></td>
+    // Payouts Sync
+    db.collection("withdrawals").orderBy("requestedAt", "desc").onSnapshot(s => {
+        let h = ""; let pendingAmt = 0;
+        s.forEach(doc => {
+            let w = doc.data();
+            let isPaid = w.status === "Paid";
+            if(!isPaid) pendingAmt += w.amount;
+            
+            h += `<tr>
+                <td>${w.partnerName}</td>
+                <td>₹${w.amount}</td>
+                <td><small>${w.paymentDetails}</small></td>
+                <td><span class="${isPaid ? 'badge-paid' : 'badge-pending'}">${w.status}</span></td>
+                <td>${!isPaid ? `<button class="btn btn-pay" onclick="payPartner('${doc.id}')">Mark Paid</button>` : '✔'}</td>
             </tr>`;
         });
-        document.getElementById('list-orders').innerHTML = hO;
-        document.getElementById('s-orders').innerText = s.size;
-        document.getElementById('s-rev').innerText = "₹" + rev;
-        renderCust(cM);
+        document.getElementById('list-payouts').innerHTML = h;
+        document.getElementById('s-pay').innerText = "₹" + pendingAmt;
     });
-}
 
-function renderCust(map) {
-    let h = "";
-    Object.values(map).forEach(c => {
-        h += `<tr><td>${c.name}</td><td>${c.p}</td><td>${c.count}</td><td>₹${c.val}</td></tr>`;
-    });
-    document.getElementById('list-cust').innerHTML = h;
-    document.getElementById('s-cust').innerText = Object.keys(map).length;
-}
-
-// --- ADVANCED PDF GENERATOR ---
-function generateBill(id) {
-    db.collection("bookings").doc(id).get().then(doc => {
-        const b = doc.data();
-        const { jsPDF } = window.jspdf;
-        const docPDF = new jsPDF();
-
-        // Header
-        docPDF.setFontSize(22);
-        docPDF.setTextColor(255, 107, 0);
-        docPDF.text("SewaAstra Service Invoice", 20, 20);
-        
-        docPDF.setFontSize(10);
-        docPDF.setTextColor(100);
-        docPDF.text(`Invoice ID: #INV-${id.substring(0,6).toUpperCase()}`, 20, 30);
-        docPDF.text(`Date: ${b.bDate}`, 20, 35);
-
-        // Customer Info
-        docPDF.setFontSize(12);
-        docPDF.setTextColor(0);
-        docPDF.text("Bill To:", 20, 50);
-        docPDF.text(`Name: ${b.userName}`, 20, 56);
-        docPDF.text(`Phone: ${b.userPhone}`, 20, 62);
-
-        // Table
-        const columns = ["Service Details", "Price"];
-        const rows = [[b.items, `INR ${b.total}`]];
-
-        docPDF.autoTable({
-            startY: 70,
-            head: [columns],
-            body: rows,
-            theme: 'grid',
-            headStyles: { fillColor: [255, 107, 0] }
+    // Partners Sync
+    db.collection("partners").onSnapshot(s => {
+        let h = ""; s.forEach(doc => {
+            let p = doc.data();
+            h += `<tr><td>${p.name}</td><td>${p.service}</td><td>${p.phone}</td><td>${p.isVerified ? '✅' : '❌'}</td><td><button onclick="showPartnerKyc('${doc.id}')">View</button></td></tr>`;
         });
-
-        // Total
-        let finalY = docPDF.lastAutoTable.finalY + 10;
-        docPDF.setFontSize(14);
-        docPDF.text(`Total Amount: INR ${b.total}`, 20, finalY);
-
-        // Footer
-        docPDF.setFontSize(10);
-        docPDF.text("Thank you for choosing SewaAstra!", 20, finalY + 20);
-        docPDF.text("Contact us: +91 8827254394", 20, finalY + 26);
-
-        // Download
-        docPDF.save(`Bill_${b.userName}.pdf`);
-        alert("Bill जेनरेट हो गया है! अब आप इसे कस्टमर को भेज सकते हैं।");
+        document.getElementById('list-partners').innerHTML = h;
     });
+}
+
+function payPartner(id) {
+    if(confirm("Confirm Payment?")) {
+        db.collection("withdrawals").doc(id).update({ status: "Paid", paidAt: new Date().toISOString() });
+    }
 }
 
 function show(id) {
-    document.querySelectorAll('.main > div').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
     document.getElementById(id).style.display = 'block';
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 }
 </script>
-
 </body>
 </html>
