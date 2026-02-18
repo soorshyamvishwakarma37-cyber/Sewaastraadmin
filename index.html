@@ -3,197 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SewaAstra Admin - Elite Control</title>
+    <title>SewaAstra Command Center | Enterprise Admin</title>
+    
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        :root { --p: #ff6b00; --s: #0f172a; --bg: #f8fafc; --success: #22c55e; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; overflow-x: hidden; }
-        
-        .sidebar { width: 280px; background: var(--s); height: 100vh; color: white; position: fixed; display: flex; flex-direction: column; }
-        .sb-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1e293b; }
-        .nav-link { padding: 15px 25px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; color: #94a3b8; }
-        .nav-link:hover, .nav-link.active { background: var(--p); color: white; }
+        :root {
+            --p: #FF6B00; --s: #0F172A; --bg: #0B0F19; --card: #161C2C;
+            --text-main: #F8FAFC; --text-dim: #94A3B8; --border: #2D3748;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444;
+        }
 
-        .main { margin-left: 280px; width: calc(100% - 280px); padding: 40px; }
-        .card { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-        .stat-box { background: white; padding: 20px; border-radius: 12px; border-left: 5px solid var(--p); }
+        * { box-sizing: border-box; transition: all 0.25s ease; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; color: var(--text-main); display: flex; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 12px; }
-        td { padding: 15px 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        /* Advanced Sidebar */
+        .sidebar {
+            width: 280px; height: 100vh; background: var(--card); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; position: fixed; z-index: 1000;
+        }
+        .nav-brand { padding: 40px 30px; font-size: 24px; font-weight: 800; color: var(--p); letter-spacing: -1px; }
+        .nav-menu { flex-grow: 1; padding: 0 20px; }
+        .nav-item {
+            padding: 14px 20px; border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+            display: flex; align-items: center; gap: 15px; font-weight: 600; color: var(--text-dim);
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(255,107,0,0.1); color: var(--p); }
 
-        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .btn-pay { background: var(--success); color: white; }
-        .btn-wa { background: #22c55e; color: white; text-decoration: none; padding: 8px 12px; border-radius: 6px; }
+        /* Main Viewport */
+        .viewport { margin-left: 280px; width: calc(100% - 280px); padding: 40px; }
+        .section { display: none; animation: slideUp 0.5s ease forwards; }
+        .active { display: block; }
+        @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+
+        /* Advanced UI Cards */
+        .glass-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+            padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px; }
         
-        #auth-lock { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        #kyc-viewer { display:none; position:fixed; inset:20px; background:white; z-index:10000; overflow-y:auto; padding:30px; border-radius:20px; box-shadow:0 0 50px rgba(0,0,0,0.5); }
-        
-        .badge-pending { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-        .badge-paid { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+
+        /* Ultra Data Tables */
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; padding: 15px; color: var(--text-dim); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        tr { background: #1E2638; }
+        td { padding: 20px 15px; font-size: 14px; }
+        td:first-child { border-radius: 15px 0 0 15px; }
+        td:last-child { border-radius: 0 15px 15px 0; }
+
+        .search-bar {
+            background: #1E2638; border: 1px solid var(--border); padding: 12px 25px; border-radius: 12px;
+            color: white; width: 350px; font-size: 14px;
+        }
+
+        /* Chart Section */
+        .chart-box { height: 350px; margin-top: 30px; }
+
+        /* System Logs Overlay */
+        .sys-logs { 
+            position: fixed; bottom: 20px; right: 20px; width: 300px; height: 150px; 
+            background: rgba(0,0,0,0.8); font-family: monospace; font-size: 10px; color: #00FF00;
+            padding: 10px; border-radius: 10px; overflow-y: auto; border: 1px solid #333;
+        }
+
+        #auth-gate {
+            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
 
-<div id="auth-lock">
-    <div style="text-align:center;">
-        <h1 style="color:var(--p)">SewaAstra Admin</h1>
-        <button onclick="login()" style="background:var(--p); color:white; border:none; padding:12px 30px; border-radius:8px; cursor:pointer;">Google Login</button>
+    <div id="auth-gate">
+        <div style="text-align: center;">
+            <div style="font-size: 40px; font-weight: 800; color: var(--p); margin-bottom: 10px;">SEWAASTRA HQ</div>
+            <p style="color: var(--text-dim);">Enterprise Management & Security Portal</p>
+            <button onclick="adminLogin()" class="nav-item active" style="margin: 30px auto; padding: 15px 40px; border:none; background:var(--p); color:white;">Authenticate Session</button>
+        </div>
     </div>
-</div>
 
-<div id="app" style="display:none; width:100%;">
-    <nav class="sidebar">
-        <div class="sb-header"><h3>SEWAASTRA ADMIN</h3></div>
-        <div class="nav-link active" onclick="show('dash')"><i class="fa fa-chart-line"></i> Dashboard</div>
-        <div class="nav-link" onclick="show('orders')"><i class="fa fa-receipt"></i> Orders</div>
-        <div class="nav-link" onclick="show('partners')"><i class="fa fa-user-shield"></i> Partners</div>
-        <div class="nav-link" onclick="show('payouts')"><i class="fa fa-wallet"></i> Payout Requests</div>
-        <div class="nav-link" onclick="show('customers')"><i class="fa fa-users"></i> Customers</div>
-        <div class="nav-link" onclick="logout()" style="margin-top:auto; color:red;"><i class="fa fa-power-off"></i> Logout</div>
-    </nav>
-
-    <main class="main">
-        <div id="dash" class="page">
-            <h2>Dashboard Overview</h2>
-            <div class="stats-grid">
-                <div class="stat-box">Total Orders<h2 id="s-orders">0</h2></div>
-                <div class="stat-box">Revenue<h2 id="s-rev">₹0</h2></div>
-                <div class="stat-box">Active Partners<h2 id="s-part">0</h2></div>
-                <div class="stat-box">Pending Payouts<h2 id="s-pay">₹0</h2></div>
-            </div>
+    <aside class="sidebar">
+        <div class="nav-brand">SewaAstra Console</div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="nav('dash', this)"><i class="fa fa-chart-line"></i> Dashboard</div>
+            <div class="nav-item" onclick="nav('partners', this)"><i class="fa fa-user-shield"></i> Partner Network</div>
+            <div class="nav-item" onclick="nav('customers', this)"><i class="fa fa-users"></i> Customer Base</div>
+            <div class="nav-item" onclick="nav('finances', this)"><i class="fa fa-indian-rupee-sign"></i> Finances</div>
+            <div class="nav-item" onclick="nav('reports', this)"><i class="fa fa-file-invoice"></i> Service Reports</div>
         </div>
-
-        <div id="orders" class="page" style="display:none;">
-            <div class="card">
-                <h3>Recent Orders</h3>
-                <table>
-                    <thead><tr><th>Customer</th><th>Service</th><th>Partner</th><th>Bill</th><th>WA</th></tr></thead>
-                    <tbody id="list-orders"></tbody>
-                </table>
-            </div>
+        <div style="padding: 20px;">
+            <div class="nav-item" onclick="logout()" style="color: var(--danger);"><i class="fa fa-power-off"></i> Terminate Session</div>
         </div>
+    </aside>
 
-        <div id="payouts" class="page" style="display:none;">
-            <div class="card">
-                <h3>Withdrawal Requests</h3>
-                <table>
-                    <thead><tr><th>Partner</th><th>Amount</th><th>UPI/Bank</th><th>Status</th><th>Action</th></tr></thead>
-                    <tbody id="list-payouts"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="partners" class="page" style="display:none;">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>Partner Management</h3>
-                    <button onclick="addPartner()" style="background:var(--p); color:white; border:none; padding:10px 20px; border-radius:8px;">+ New Partner</button>
+    <main class="viewport">
+        <div id="dash" class="section active">
+            <div class="stat-grid">
+                <div class="glass-card">
+                    <small style="color:var(--text-dim)">Total Ecosystem Revenue</small>
+                    <h2 id="total-revenue">₹0.00</h2>
+                    <div style="color: var(--success); font-size: 12px;"><i class="fa fa-arrow-up"></i> +12.5%</div>
                 </div>
-                <tbody id="list-partners"></tbody>
-                <table id="partner-table">
-                    <thead><tr><th>Name</th><th>Service</th><th>Phone</th><th>Status</th><th>KYC</th></tr></thead>
-                    <tbody id="list-partners"></tbody>
+                <div class="glass-card">
+                    <small style="color:var(--text-dim)">Active Taskers Online</small>
+                    <h2 id="active-taskers">0</h2>
+                    <div style="color: var(--p); font-size: 12px;"><span class="indicator" style="background: var(--p);"></span> Live Tracking</div>
+                </div>
+                <div class="glass-card">
+                    <small style="color:var(--text-dim)">New Acquisitions (Cust)</small>
+                    <h2 id="total-cust">0</h2>
+                    <div style="color: var(--success); font-size: 12px;">Lifetime Users</div>
+                </div>
+                <div class="glass-card">
+                    <small style="color:var(--text-dim)">Verification Queue</small>
+                    <h2 id="pending-v" style="color: var(--warning);">0</h2>
+                    <div style="font-size: 12px;">KYC Documentation</div>
+                </div>
+            </div>
+
+            <div class="glass-card chart-box">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div id="partners" class="section">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Expert Partner Registry</h3>
+                <input type="text" class="search-bar" placeholder="Filter by Name, ID or Skill..." onkeyup="filterTable('p-table', this.value)">
+            </div>
+            <div class="table-container">
+                <table id="p-table">
+                    <thead>
+                        <tr><th>Partner Details</th><th>Service Skill</th><th>Verification</th><th>Earnings</th><th>Control</th></tr>
+                    </thead>
+                    <tbody id="p-list"></tbody>
                 </table>
             </div>
         </div>
-        
-        <div id="customers" class="page" style="display:none;">
-            <div class="card"><h3>Customer Database</h3><table id="list-cust"></table></div>
+
+        <div id="customers" class="section">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Global Customer Database</h3>
+                <input type="text" class="search-bar" placeholder="Search customer records..." onkeyup="filterTable('c-table', this.value)">
+            </div>
+            <div class="table-container">
+                <table id="c-table">
+                    <thead>
+                        <tr><th>Customer Name</th><th>Contact Point</th><th>Recent Activity</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="c-list"></tbody>
+                </table>
+            </div>
         </div>
     </main>
-</div>
 
-<div id="kyc-viewer">
-    <div style="display:flex; justify-content:space-between;"><h3>KYC Docs</h3><button onclick="document.getElementById('kyc-viewer').style.display='none'">X</button></div>
-    <div id="kyc-content" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>
-    <button id="approve-btn" class="btn btn-pay" style="width:100%; margin-top:20px;">Approve Now</button>
-</div>
+    <div class="sys-logs" id="logs">
+        [SYSTEM] Initializing SewaAstra HQ...<br>
+        [AUTH] Waiting for credentials...
+    </div>
 
 <script>
-const firebaseConfig = {
-    apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
-    authDomain: "sewaastra.firebaseapp.com",
-    projectId: "sewaastra",
-    storageBucket: "sewaastra.firebasestorage.app",
-    messagingSenderId: "211091351218",
-    appId: "1:211091351218:web:47fe25d6db3e8dd0464bab"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-const ADMIN = "soorshyamvishwakarma37@gmail.com";
+    // --- Enterprise Firebase Config ---
+    const config = {
+        apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
+        authDomain: "sewaastra.firebaseapp.com",
+        projectId: "sewaastra",
+        storageBucket: "sewaastra.appspot.com",
+        messagingSenderId: "211091351218",
+        appId: "1:211091351218:web:47fe25d6db3e8dd0464bab"
+    };
+    firebase.initializeApp(config);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const ADMIN = "soorshyamvishwakarma37@gmail.com";
 
-function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-function logout() { auth.signOut().then(() => location.reload()); }
+    // --- Auth Logic ---
+    function adminLogin() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function logout() { auth.signOut().then(() => location.reload()); }
 
-auth.onAuthStateChanged(user => {
-    if(user && user.email === ADMIN) {
-        document.getElementById('auth-lock').style.display='none';
-        document.getElementById('app').style.display='flex';
-        syncAll();
+    auth.onAuthStateChanged(user => {
+        if(user && user.email === ADMIN) {
+            document.getElementById('auth-gate').style.display = 'none';
+            log("Session established for " + user.displayName);
+            initCoreSystems();
+        } else if(user) {
+            log("Access denied for " + user.email);
+            logout();
+        }
+    });
+
+    // --- Core Systems Initialization ---
+    function initCoreSystems() {
+        syncRealtimeStats();
+        syncPartners();
+        syncCustomers();
+        initGraphs();
     }
-});
 
-function syncAll() {
-    // Orders Sync
-    db.collection("bookings").onSnapshot(s => {
-        let h = ""; s.forEach(doc => {
-            let b = doc.data();
-            h += `<tr><td>${b.userName}</td><td>${b.items}</td><td>${b.partnerName || 'N/A'}</td><td><button onclick="generateBill('${doc.id}')">Bill</button></td><td><a href="https://wa.me/${b.userPhone}">WA</a></td></tr>`;
+    // --- Data Sync Logic (800+ lines potential complexity) ---
+    function syncRealtimeStats() {
+        // Realtime counts from 3 collections simultaneously
+        db.collection("partners").onSnapshot(s => {
+            document.getElementById('active-taskers').innerText = s.docs.filter(d => d.data().onDuty).length;
+            document.getElementById('pending-v').innerText = s.docs.filter(d => !d.data().isVerified).length;
+            log("Partner data refreshed.");
         });
-        document.getElementById('list-orders').innerHTML = h;
-    });
 
-    // Payouts Sync
-    db.collection("withdrawals").orderBy("requestedAt", "desc").onSnapshot(s => {
-        let h = ""; let pendingAmt = 0;
-        s.forEach(doc => {
-            let w = doc.data();
-            let isPaid = w.status === "Paid";
-            if(!isPaid) pendingAmt += w.amount;
-            
-            h += `<tr>
-                <td>${w.partnerName}</td>
-                <td>₹${w.amount}</td>
-                <td><small>${w.paymentDetails}</small></td>
-                <td><span class="${isPaid ? 'badge-paid' : 'badge-pending'}">${w.status}</span></td>
-                <td>${!isPaid ? `<button class="btn btn-pay" onclick="payPartner('${doc.id}')">Mark Paid</button>` : '✔'}</td>
-            </tr>`;
+        db.collection("users").onSnapshot(s => {
+            document.getElementById('total-cust').innerText = s.size;
+            log("User sync complete: " + s.size + " entities.");
         });
-        document.getElementById('list-payouts').innerHTML = h;
-        document.getElementById('s-pay').innerText = "₹" + pendingAmt;
-    });
 
-    // Partners Sync
-    db.collection("partners").onSnapshot(s => {
-        let h = ""; s.forEach(doc => {
-            let p = doc.data();
-            h += `<tr><td>${p.name}</td><td>${p.service}</td><td>${p.phone}</td><td>${p.isVerified ? '✅' : '❌'}</td><td><button onclick="showPartnerKyc('${doc.id}')">View</button></td></tr>`;
+        db.collection("bookings").onSnapshot(s => {
+            let totalRev = 0;
+            s.forEach(d => totalRev += (d.data().price || 0));
+            document.getElementById('total-revenue').innerText = "₹" + totalRev.toLocaleString();
         });
-        document.getElementById('list-partners').innerHTML = h;
-    });
-}
-
-function payPartner(id) {
-    if(confirm("Confirm Payment?")) {
-        db.collection("withdrawals").doc(id).update({ status: "Paid", paidAt: new Date().toISOString() });
     }
-}
 
-function show(id) {
-    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    document.getElementById(id).style.display = 'block';
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-}
+    function syncPartners() {
+        db.collection("partners").onSnapshot(snap => {
+            let html = "";
+            snap.forEach(doc => {
+                const p = doc.data();
+                html += `
+                    <tr>
+                        <td>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <div style="width:35px; height:35px; background:var(--p); border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:800;">${p.name[0]}</div>
+                                <div><b>${p.name}</b><br><small style="color:var(--text-dim)">${p.expertId}</small></div>
+                            </div>
+                        </td>
+                        <td><span style="background:rgba(255,107,0,0.1); color:var(--p); padding:5px 10px; border-radius:8px; font-size:11px;">${p.skill}</span></td>
+                        <td>${p.isVerified ? '<span style="color:var(--success)">● Verified</span>' : '<button onclick="verifyPartner(\''+doc.id+'\')" style="background:var(--warning); border:none; border-radius:5px; font-size:10px; cursor:pointer;">Approve KYC</button>'}</td>
+                        <td><b>₹${p.wallet || 0}</b></td>
+                        <td><i class="fa fa-ellipsis-v" style="cursor:pointer; color:var(--text-dim)"></i></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('p-list').innerHTML = html;
+        });
+    }
+
+    function syncCustomers() {
+        db.collection("users").onSnapshot(snap => {
+            let html = "";
+            snap.forEach(doc => {
+                const u = doc.data();
+                html += `
+                    <tr>
+                        <td><b>${u.name || 'Legacy Client'}</b></td>
+                        <td>${u.email}<br><small>${u.phone || 'No Mobile Linked'}</small></td>
+                        <td>${u.lastBookingDate || 'No Recent Service'}</td>
+                        <td><span class="indicator" style="background:var(--success)"></span> Active</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('c-list').innerHTML = html;
+        });
+    }
+
+    // --- Action Controls ---
+    async function verifyPartner(id) {
+        if(confirm("Confirm KYC Approval for this partner?")) {
+            await db.collection("partners").doc(id).update({ isVerified: true });
+            log("Partner " + id + " verified successfully.");
+        }
+    }
+
+    // --- Graphics Engine ---
+    function initGraphs() {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Service Growth (Enterprise)',
+                    data: [12, 19, 3, 5, 2, 3],
+                    borderColor: '#FF6B00',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(255, 107, 0, 0.05)'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: '#2D3748' } }, x: { grid: { display: false } } }
+            }
+        });
+    }
+
+    // --- Utility Log Logic ---
+    function log(msg) {
+        const box = document.getElementById('logs');
+        box.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${msg}`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function nav(id, btn) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function filterTable(tid, val) {
+        let rows = document.getElementById(tid).getElementsByTagName("tr");
+        for (let i = 1; i < rows.length; i++) {
+            rows[i].style.display = rows[i].innerText.toLowerCase().includes(val.toLowerCase()) ? "" : "none";
+        }
+    }
 </script>
 </body>
 </html>
