@@ -1,291 +1,451 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SewaAstra - Admin & Partner Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SewaAstra Admin - Smart Billing</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>// यह फंक्शन बुकिंग आते ही ट्रिगर होगा
+async function autoAssignJob(bookingId, serviceType) {
+    console.log("Searching for best partner for:", serviceType);
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    // 1. ऐसे पार्टनर्स ढूंढें जो Online हैं, Verified हैं और उस सर्विस के एक्सपर्ट हैं
+    const pool = await db.collection("partners")
+        .where("isOnline", "==", true)
+        .where("isVerified", "==", true)
+        .where("service", "==", serviceType)
+        .limit(5)
+        .get();
 
+    if (pool.empty) {
+        console.log("No online partners found. Waiting for manual assignment.");
+        return;
+    }
+
+    // 2. ऑटो-सिलेक्शन (अभी हम सबसे पहले मिलने वाले पार्टनर को दे रहे हैं)
+    // भविष्य में आप यहाँ 'Distance' या 'Rating' का गणित भी लगा सकते हैं
+    let bestPartner = pool.docs[0];
+    let pData = bestPartner.data();
+
+    // 3. बुकिंग अपडेट करें
+    await db.collection("bookings").doc(bookingId).update({
+        assignedPartnerId: bestPartner.id,
+        partnerName: pData.name,
+        partnerPhone: pData.phone,
+        status: "Auto-Assigned",
+        assignedAt: new Date().toISOString()
+    });
+
+    console.log("Job Auto-Assigned to:", pData.name);
+}
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        :root { --primary: #ff6b00; --dark: #0f172a; --bg: #f8fafc; }
-        * { font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--dark); overflow-x: hidden; }
+        :root { --p: #ff6b00; --s: #0f172a; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; overflow-x: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 280px; background: var(--s); height: 100vh; color: white; position: fixed; display: flex; flex-direction: column; }
+        .sb-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1e293b; }
+        .nav-link { padding: 15px 25px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; color: #94a3b8; }
+        .nav-link:hover, .nav-link.active { background: var(--p); color: white; }
 
-        .glass-card {
-            background: white; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); margin-bottom: 20px;
-        }
+        /* Content */
+        .main { margin-left: 280px; width: 100%; padding: 40px; }
+        .card { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .stat-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-left: 5px solid var(--p); }
 
-        .btn-sewa {
-            background: var(--primary); color: white; border: none; border-radius: 12px;
-            padding: 12px 24px; font-weight: 700; transition: 0.3s; width: 100%;
-        }
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 12px; }
+        td { padding: 15px 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
 
-        .page { display: none; min-height: 100vh; animation: fadeIn 0.3s ease; }
-        .page-active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Admin Sidebar */
-        .admin-sidebar { background: var(--dark); min-height: 100vh; color: white; padding: 25px; }
-        .adm-nav-link { color: #94a3b8; text-decoration: none; padding: 12px; display: block; border-radius: 10px; margin-bottom: 8px; }
-        .adm-nav-link.active { background: var(--primary); color: white; }
-
-        /* Partner Nav */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%; max-width: 500px; left: 50%; 
-            transform: translateX(-50%); background: white; display: flex; 
-            padding: 15px; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-        }
-        .nav-item { flex: 1; text-align: center; color: #94a3b8; cursor: pointer; font-size: 12px; }
-        .nav-item.active { color: var(--primary); }
-
-        #preloader { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        /* Buttons */
+        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-bill { background: #0ea5e9; color: white; }
+        .btn-wa { background: #22c55e; color: white; text-decoration: none; padding: 8px 12px; display: inline-flex; align-items: center; border-radius: 6px; }
+        
+        #auth-lock { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <div id="preloader">
-        <h2 class="fw-800">Sewa<span style="color:var(--primary)">Astra</span></h2>
-        <div class="spinner-border text-warning mt-3"></div>
+<div id="auth-lock">
+    <div style="text-align:center; padding:50px; border-radius:20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+        <h1 style="color:var(--p)">SewaAstra Admin</h1>
+        <p>Login to soorshyamvishwakarama37@gmail.com</p>
+        <button onclick="login()" style="background:var(--p); color:white; border:none; padding:12px 30px; border-radius:8px; cursor:pointer;">Google Login</button>
     </div>
+</div>
 
-    <div id="page-login" class="page">
-        <div class="container py-5 text-center mt-5">
-            <h1 class="display-4 fw-800">Sewa<span style="color:var(--primary)">Astra</span></h1>
-            <p class="text-muted mb-5">Professional Home Services Platform</p>
-            <div class="glass-card p-5 mx-auto" style="max-width: 400px;">
-                <h5 class="fw-bold mb-4">लॉगिन करें</h5>
-                <button class="btn btn-outline-dark w-100 py-3 rounded-4" onclick="handleAuth()">
-                    <img src="https://img.icons8.com/color/24/google-logo.png" class="me-2"> Google के साथ जुड़ें
-                </button>
+<div id="app" style="display:none; width:100%;">
+    <nav class="sidebar">
+        <div class="sb-header"><h3>SEWAASTRA ADMIN</h3></div>
+        <div class="nav-link active" onclick="show('dash')"><i class="fa fa-chart-line"></i> Dashboard</div>
+        <div class="nav-link" onclick="show('orders')"><i class="fa fa-receipt"></i> Orders & Billing</div>
+        <div class="nav-link" onclick="show('customers')"><i class="fa fa-users"></i> Customers</div>
+        <div class="nav-link" onclick="logout()" style="margin-top:auto; color:red;"><i class="fa fa-power-off"></i> Logout</div>
+    </nav>
+
+    <main class="main">
+        <div id="dash">
+            <h2>Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-box">Total Orders<h2 id="s-orders">0</h2></div>
+                <div class="stat-box">Total Users<h2 id="s-cust">0</h2></div>
+                <div class="stat-box">Revenue<h2 id="s-rev">₹0</h2></div>
+                <div class="stat-box">Active Partners<h2 id="s-part">0</h2></div>
             </div>
         </div>
-    </div>
 
-    <div id="page-partner" class="page">
-        <div class="container py-4" style="max-width: 500px; margin: auto;">
-            <div class="glass-card p-4 bg-dark text-white mb-4">
-                <small class="opacity-75">आपका वॉलेट बैलेंस</small>
-                <h1 id="p-wallet" class="display-6 fw-bold">₹0.00</h1>
-                <button onclick="Swal.fire('Coming Soon','Withdrawal process starting soon','info')" class="btn btn-sm btn-warning mt-2 rounded-pill px-3">निकासी</button>
-            </div>
-            <h5 class="fw-bold mb-3">उपलब्ध काम (Live)</h5>
-            <div id="job-feed"></div>
-        </div>
-        <div class="bottom-nav">
-            <div class="nav-item active"><i class="fa fa-home fs-4 d-block"></i>Home</div>
-            <div class="nav-item" onclick="logout()"><i class="fa fa-power-off fs-4 d-block"></i>Logout</div>
-        </div>
-    </div>
-
-    <div id="page-admin" class="page">
-        <div class="row g-0">
-            <div class="col-md-3 admin-sidebar">
-                <h3 class="fw-800 text-white mb-5">Sewa<span class="text-primary">Astra</span></h3>
-                <a href="#" class="adm-nav-link active"><i class="fa fa-chart-pie me-2"></i>Dashboard</a>
-                <a href="#" class="adm-nav-link"><i class="fa fa-users me-2"></i>Partners</a>
-                <button onclick="logout()" class="btn btn-link text-danger mt-5 text-decoration-none p-0"><i class="fa fa-sign-out-alt me-2"></i>Logout Admin</button>
-            </div>
-            <div class="col-md-9 p-4">
-                <div class="d-flex justify-content-between mb-4 align-items-center">
-                    <h2 class="fw-bold m-0">Owner Dashboard</h2>
-                    <button class="btn btn-dark px-4 rounded-pill" onclick="new bootstrap.Modal('#jobModal').show()">+ Deploy New Job</button>
-                </div>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="glass-card p-4 border-start border-primary border-5">
-                            <small class="fw-bold text-muted">TOTAL EARNING (20%)</small>
-                            <h2 id="adm-earn" class="fw-bold text-primary">₹0</h2>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="glass-card p-4 border-start border-success border-5">
-                            <small class="fw-bold text-muted">ACTIVE PARTNERS</small>
-                            <h2 id="adm-p-count" class="fw-bold text-success">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-card p-4">
-                    <h5 class="fw-bold mb-4">Live Activity</h5>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Service</th><th>Partner</th><th>Status</th><th>Commission</th></tr></thead>
-                            <tbody id="adm-jobs-table"></tbody>
-                        </table>
-                    </div>
-                </div>
+        <div id="orders" style="display:none;">
+            <div class="card">
+                <h3>Recent Orders & Smart Billing</h3>
+                <table>
+                    <thead>
+                        <tr><th>Customer</th><th>Service</th><th>Partner</th><th>Bill</th><th>Contact</th></tr>
+                    </thead>
+                    <tbody id="list-orders"></tbody>
+                </table>
             </div>
         </div>
-    </div>
 
-    <div class="modal fade" id="jobModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content rounded-5 border-0">
-                <div class="modal-body p-5">
-                    <h4 class="fw-bold mb-4">Add New Service</h4>
-                    <input type="text" id="j-name" class="form-control mb-3 p-3 rounded-3" placeholder="Service Name">
-                    <input type="text" id="j-loc" class="form-control mb-3 p-3 rounded-3" placeholder="Address">
-                    <input type="number" id="j-price" class="form-control mb-4 p-3 rounded-3" placeholder="Full Price (₹)">
-                    <button class="btn-sewa py-3" onclick="createJob()">Publish to All Partners</button>
-                </div>
+        <div id="customers" style="display:none;">
+            <div class="card">
+                <h3>Customer Loyalty Database</h3>
+                <table>
+                    <thead>
+                        <tr><th>Name</th><th>Phone</th><th>Orders</th><th>LTV (Total ₹)</th></tr>
+                    </thead>
+                    <tbody id="list-cust"></tbody>
+                </table>
             </div>
         </div>
-    </div>
+    </main>
+</div>
+<div style="background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee;">
+    <span>ड्यूटी स्टेटस (Duty Status)</span>
+    <label class="switch">
+        <input type="checkbox" id="dutyStatus" onchange="toggleDuty()">
+        <span class="slider"></span>
+    </label>
+</div>
 
-    <div class="modal fade" id="otpModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content rounded-5 border-0">
-                <div class="modal-body text-center p-5">
-                    <h5 class="fw-bold">Job Completion</h5>
-                    <p class="text-muted small">Enter 4-digit customer OTP</p>
-                    <input type="number" id="otp-in" class="form-control form-control-lg text-center mb-4 fw-bold border-0 bg-light" placeholder="0000">
-                    <button class="btn-sewa" onclick="confirmOTP()">Verify & Pay</button>
-                </div>
-            </div>
+<style>
+/* Toggle Switch UI */
+.switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+input:checked + .slider { background-color: var(--success); }
+.slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider:before { transform: translateX(30px); }
+</style>
+
+<script>
+function toggleDuty() {
+    let isOnline = document.getElementById('dutyStatus').checked;
+    db.collection("partners").doc(currentID).update({
+        isOnline: isOnline,
+        lastActive: new Date().toISOString()
+    });
+    if(isOnline) alert("अब आप ऑनलाइन हैं, बुकिंग्स अपने आप मिलेंगी!");
+}
+</script>
+<div style="background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee;">
+    <span>ड्यूटी स्टेटस (Duty Status)</span>
+    <label class="switch">
+        <input type="checkbox" id="dutyStatus" onchange="toggleDuty()">
+        <span class="slider"></span>
+    </label>
+</div>
+
+<style>
+/* Toggle Switch UI */
+.switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+input:checked + .slider { background-color: var(--success); }
+.slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider:before { transform: translateX(30px); }
+</style>
+
+<script>
+function toggleDuty() {
+    let isOnline = document.getElementById('dutyStatus').checked;
+    db.collection("partners").doc(currentID).update({
+        isOnline: isOnline,
+        lastActive: new Date().toISOString()
+    });
+    if(isOnline) alert("अब आप ऑनलाइन हैं, बुकिंग्स अपने आप मिलेंगी!");
+}
+</script>
+
+<div id="partners" class="page" style="display:none;">
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3>Partner Verification & Management</h3>
+            <button onclick="addPartner()" style="background:var(--p); color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">+ नया पार्टनर जोड़ें</button>
         </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>नाम</th>
+                    <th>सर्विस/काम</th>
+                    <th>मोबाइल</th>
+                    <th>स्टेटस (Verification)</th>
+                    <th>एक्शन</th>
+                </tr>
+            </thead>
+            <tbody id="list-partners"></tbody>
+        </table>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, getDoc, setDoc, query, orderBy, increment, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script>
+// --- PARTNER VERIFICATION LOGIC ---
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
-            authDomain: "sewaastra.firebaseapp.com",
-            projectId: "sewaastra",
-            storageBucket: "sewaastra.firebasestorage.app",
-            messagingSenderId: "211091351218",
-            appId: "1:211091351218:web:47fe25d6db3e8dd0464bab"
-        };
+function syncPartners() {
+    db.collection("partners").onSnapshot(s => {
+        let h = "";
+        s.forEach(doc => {
+            let p = doc.data();
+            let id = doc.id;
+            
+            // वेरिफिकेशन स्टेटस के आधार पर बैज
+            let statusBadge = p.isVerified 
+                ? '<span style="background:#dcfce7; color:#166534; padding:5px 10px; border-radius:15px; font-size:12px;">Verified</span>' 
+                : '<span style="background:#fee2e2; color:#991b1b; padding:5px 10px; border-radius:15px; font-size:12px;">Pending</span>';
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+            // वेरिफिकेशन बटन (Toggle)
+            let verifyBtn = p.isVerified
+                ? `<button onclick="toggleVerify('${id}', false)" style="background:#f1f5f9; border:1px solid #ccc; padding:5px; border-radius:5px; cursor:pointer;">Unverify</button>`
+                : `<button onclick="toggleVerify('${id}', true)" style="background:#22c55e; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Verify Now</button>`;
 
-        const MASTER_ADMIN = "soorshyamvishwakarma37@gmail.com";
-        let user = null;
-        let selectedJob = null;
+            h += `<tr>
+                <td><b>${p.name}</b></td>
+                <td>${p.service}</td>
+                <td>${p.phone}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    ${verifyBtn}
+                    <button class="btn-del" onclick="deleteDoc('partners','${id}')" style="margin-left:10px;"><i class="fa fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('list-partners').innerHTML = h;
+    });
+}
 
-        // --- AUTH CONTROL ---
-        window.handleAuth = () => signInWithPopup(auth, provider);
-        window.logout = () => signOut(auth).then(() => location.reload());
+// वेरिफिकेशन स्टेटस बदलने का फंक्शन
+function toggleVerify(partnerId, status) {
+    db.collection("partners").doc(partnerId).update({
+        isVerified: status
+    }).then(() => {
+        let msg = status ? "पार्टनर अब वेरिफाइड है और लॉगिन कर सकता है!" : "पार्टनर का एक्सेस हटा दिया गया है।";
+        alert(msg);
+    });
+}
 
-        onAuthStateChanged(auth, async (u) => {
-            document.getElementById('preloader').style.display = 'none';
-            if (u) {
-                user = u;
-                if (u.email === MASTER_ADMIN) {
-                    nav('page-admin');
-                    initAdmin();
-                } else {
-                    await syncPartner(u);
-                    nav('page-partner');
-                    initPartner(u.uid);
-                }
-            } else {
-                nav('page-login');
+// नया पार्टनर जोड़ते समय 'isVerified: false' डिफ़ॉल्ट रखें
+function addPartner() {
+    let n = prompt("पार्टनर का नाम:");
+    let p = prompt("WhatsApp मोबाइल नंबर:");
+    let s = prompt("सर्विस (AC, Electrician, etc):");
+    
+    if(n && p) {
+        db.collection("partners").add({
+            name: n,
+            phone: p,
+            service: s,
+            isVerified: false, // शुरुआत में अनवेरिफाइड
+            joinedAt: new Date().toISOString()
+        });
+    }
+}
+</script>
+<div id="kyc-viewer" class="section-card" style="display:none; position:fixed; inset:20px; background:white; z-index:10000; overflow-y:auto; padding:30px; border-radius:20px; box-shadow:0 0 50px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between;">
+        <h3>Partner KYC Documents</h3>
+        <button onclick="document.getElementById('kyc-viewer').style.display='none'" class="btn btn-del">Close</button>
+    </div>
+    <hr>
+    <div id="kyc-content" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        </div>
+    <div id="kyc-actions" style="margin-top:30px; text-align:center; padding:20px; background:#f8fafc;">
+        <button id="approve-btn" class="btn" style="background:var(--success); color:white; padding:15px 40px; font-size:16px;">सब सही है - Approve Partner</button>
+    </div>
+</div>
+
+<script>
+// एडमिन पैनल के पार्टनर लिस्ट में 'View Documents' बटन जोड़ें
+function showPartnerKyc(partnerId) {
+    db.collection("partners").doc(partnerId).get().then(doc => {
+        const p = doc.data();
+        if(!p.kycData) return alert("इस पार्टनर ने अभी डॉक्यूमेंट्स अपलोड नहीं किए हैं।");
+
+        const container = document.getElementById('kyc-content');
+        container.innerHTML = `
+            <div>
+                <label>Aadhar Front</label>
+                <img src="${p.kycData.aadhaarFront}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
+            </div>
+            <div>
+                <label>Aadhar Back</label>
+                <img src="${p.kycData.aadhaarBack}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
+            </div>
+            <div>
+                <label>PAN Card</label>
+                <img src="${p.kycData.pan}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
+            </div>
+            <div>
+                <label>Police Verification</label>
+                <img src="${p.kycData.police}" style="width:100%; border-radius:10px; border:1px solid #ddd;">
+            </div>
+        `;
+
+        document.getElementById('kyc-viewer').style.display = 'block';
+
+        // Approve Button Logic
+        document.getElementById('approve-btn').onclick = function() {
+            if(confirm("क्या आप इस पार्टनर को काम करने की अनुमति देते हैं?")) {
+                db.collection("partners").doc(partnerId).update({
+                    isVerified: true,
+                    verifiedAt: new Date().toISOString()
+                }).then(() => {
+                    alert("Partner Verified Successfully!");
+                    document.getElementById('kyc-viewer').style.display = 'none';
+                });
             }
+        };
+    });
+}
+</script>
+
+<script>
+// Firebase Setup
+const firebaseConfig = {
+    apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
+    authDomain: "sewaastra.firebaseapp.com",
+    projectId: "sewaastra",
+    storageBucket: "sewaastra.firebasestorage.app",
+    messagingSenderId: "211091351218",
+    appId: "1:211091351218:web:47fe25d6db3e8dd0464bab"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+const ADMIN = "soorshyamvishwakarama37@gmail.com";
+
+function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(r => { if(r.user.email !== ADMIN) auth.signOut(); }); }
+function logout() { auth.signOut().then(() => location.reload()); }
+
+auth.onAuthStateChanged(user => {
+    if(user && user.email === ADMIN) {
+        document.getElementById('auth-lock').style.display='none';
+        document.getElementById('app').style.display='flex';
+        init();
+    }
+});
+
+function init() {
+    db.collection("bookings").orderBy("bDate", "desc").onSnapshot(s => {
+        let hO = ""; let cM = {}; let rev = 0;
+        s.forEach(doc => {
+            let b = doc.data(); b.id = doc.id;
+            rev += parseInt(b.total || 0);
+            
+            // Stats & Customer Data
+            if(!cM[b.userPhone]) cM[b.userPhone] = { name: b.userName, p: b.userPhone, count: 0, val: 0 };
+            cM[b.userPhone].count++; cM[b.userPhone].val += parseInt(b.total || 0);
+
+            hO += `<tr>
+                <td><b>${b.userName}</b><br>${b.userPhone}</td>
+                <td>${b.items}<br>₹${b.total}</td>
+                <td>${b.partnerName || 'Pending'}</td>
+                <td><button class="btn btn-bill" onclick="generateBill('${b.id}')"><i class="fa fa-file-invoice"></i> Bill</button></td>
+                <td><a href="https://wa.me/91${b.userPhone}" class="btn-wa"><i class="fab fa-whatsapp"></i></a></td>
+            </tr>`;
+        });
+        document.getElementById('list-orders').innerHTML = hO;
+        document.getElementById('s-orders').innerText = s.size;
+        document.getElementById('s-rev').innerText = "₹" + rev;
+        renderCust(cM);
+    });
+}
+
+function renderCust(map) {
+    let h = "";
+    Object.values(map).forEach(c => {
+        h += `<tr><td>${c.name}</td><td>${c.p}</td><td>${c.count}</td><td>₹${c.val}</td></tr>`;
+    });
+    document.getElementById('list-cust').innerHTML = h;
+    document.getElementById('s-cust').innerText = Object.keys(map).length;
+}
+
+// --- ADVANCED PDF GENERATOR ---
+function generateBill(id) {
+    db.collection("bookings").doc(id).get().then(doc => {
+        const b = doc.data();
+        const { jsPDF } = window.jspdf;
+        const docPDF = new jsPDF();
+
+        // Header
+        docPDF.setFontSize(22);
+        docPDF.setTextColor(255, 107, 0);
+        docPDF.text("SewaAstra Service Invoice", 20, 20);
+        
+        docPDF.setFontSize(10);
+        docPDF.setTextColor(100);
+        docPDF.text(`Invoice ID: #INV-${id.substring(0,6).toUpperCase()}`, 20, 30);
+        docPDF.text(`Date: ${b.bDate}`, 20, 35);
+
+        // Customer Info
+        docPDF.setFontSize(12);
+        docPDF.setTextColor(0);
+        docPDF.text("Bill To:", 20, 50);
+        docPDF.text(`Name: ${b.userName}`, 20, 56);
+        docPDF.text(`Phone: ${b.userPhone}`, 20, 62);
+
+        // Table
+        const columns = ["Service Details", "Price"];
+        const rows = [[b.items, `INR ${b.total}`]];
+
+        docPDF.autoTable({
+            startY: 70,
+            head: [columns],
+            body: rows,
+            theme: 'grid',
+            headStyles: { fillColor: [255, 107, 0] }
         });
 
-        function nav(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
-            document.getElementById(id).classList.add('page-active');
-        }
+        // Total
+        let finalY = docPDF.lastAutoTable.finalY + 10;
+        docPDF.setFontSize(14);
+        docPDF.text(`Total Amount: INR ${b.total}`, 20, finalY);
 
-        // --- PARTNER LOGIC ---
-        async function syncPartner(u) {
-            const r = doc(db, "partners", u.uid);
-            const s = await getDoc(r);
-            if (!s.exists()) await setDoc(r, { name: u.displayName, wallet: 0, status: 'active', email: u.email });
-        }
+        // Footer
+        docPDF.setFontSize(10);
+        docPDF.text("Thank you for choosing SewaAstra!", 20, finalY + 20);
+        docPDF.text("Contact us: +91 8827254394", 20, finalY + 26);
 
-        function initPartner(uid) {
-            onSnapshot(doc(db, "partners", uid), d => {
-                document.getElementById('p-wallet').innerText = `₹${d.data().wallet.toFixed(2)}`;
-            });
+        // Download
+        docPDF.save(`Bill_${b.userName}.pdf`);
+        alert("Bill जेनरेट हो गया है! अब आप इसे कस्टमर को भेज सकते हैं।");
+    });
+}
 
-            onSnapshot(query(collection(db, "bookings"), orderBy("createdAt", "desc")), s => {
-                const feed = document.getElementById('job-feed');
-                feed.innerHTML = "";
-                s.forEach(docSnap => {
-                    const j = docSnap.data();
-                    const id = docSnap.id;
-                    if (j.status === 'open' || (j.status === 'active' && j.partnerId === uid)) {
-                        feed.innerHTML += `
-                        <div class="glass-card p-4 border-start border-primary border-5">
-                            <div class="d-flex justify-content-between">
-                                <h6 class="fw-bold">${j.type}</h6>
-                                <h6 class="text-success fw-bold">₹${j.price}</h6>
-                            </div>
-                            <p class="small text-muted"><i class="fa fa-map-marker-alt me-1"></i>${j.address}</p>
-                            ${j.status === 'open' ? 
-                            `<button onclick="takeJob('${id}')" class="btn btn-dark w-100 rounded-3 py-2">Accept Work</button>` :
-                            `<button onclick="openOTP('${id}')" class="btn btn-outline-primary w-100 rounded-3 py-2">Finish & Verify OTP</button>`}
-                        </div>`;
-                    }
-                });
-            });
-        }
+function show(id) {
+    document.querySelectorAll('.main > div').forEach(p => p.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+}
+</script>
 
-        window.takeJob = async (id) => {
-            const otp = Math.floor(1000 + Math.random() * 9000);
-            await updateDoc(doc(db, "bookings", id), { status: 'active', partnerId: user.uid, partnerName: user.displayName, otp: otp });
-            Swal.fire('Job Accepted', `Customer OTP: ${otp}`, 'success');
-        };
-
-        window.openOTP = (id) => { selectedJob = id; new bootstrap.Modal('#otpModal').show(); };
-
-        window.confirmOTP = async () => {
-            const val = document.getElementById('otp-in').value;
-            const ref = doc(db, "bookings", selectedJob);
-            const snap = await getDoc(ref);
-            if (snap.data().otp == val) {
-                const total = snap.data().price;
-                const payout = total * 0.8;
-                const comm = total * 0.2;
-                await updateDoc(ref, { status: 'completed', commission: comm });
-                await updateDoc(doc(db, "partners", user.uid), { wallet: increment(payout) });
-                Swal.fire('Completed!', `₹${payout} added to wallet`, 'success').then(() => location.reload());
-            } else {
-                Swal.fire('Error', 'Wrong OTP', 'error');
-            }
-        };
-
-        // --- ADMIN LOGIC (FOR YOU) ---
-        function initAdmin() {
-            onSnapshot(collection(db, "bookings"), s => {
-                let earn = 0;
-                const list = document.getElementById('adm-jobs-table');
-                list.innerHTML = "";
-                s.forEach(d => {
-                    const j = d.data();
-                    earn += (j.commission || 0);
-                    list.innerHTML += `<tr><td>${j.type}</td><td>${j.partnerName || '-'}</td><td>${j.status}</td><td>₹${(j.commission || 0).toFixed(0)}</td></tr>`;
-                });
-                document.getElementById('adm-earn').innerText = `₹${earn.toFixed(0)}`;
-            });
-            onSnapshot(collection(db, "partners"), s => { document.getElementById('adm-p-count').innerText = s.size; });
-        }
-
-        window.createJob = async () => {
-            const d = {
-                type: document.getElementById('j-name').value,
-                address: document.getElementById('j-loc').value,
-                price: document.getElementById('j-price').value,
-                status: 'open', createdAt: new Date().toISOString()
-            };
-            await addDoc(collection(db, "bookings"), d);
-            bootstrap.Modal.getInstance('#jobModal').hide();
-            Swal.fire('Live!', 'Job dispatched', 'success');
-        };
-
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
