@@ -1,4 +1,4 @@
-     <!DOCTYPE html>
+       <!DOCTYPE html>
 <html lang="hi">
 <head>
   <!-- Google tag (gtag.js) -->
@@ -1317,7 +1317,14 @@ function sendOrderToWA(status) {
     let itemsTxt = cart.map(i => `${i.n} (x${i.qty || 1})`).join(', ');
     let total = document.getElementById('fTotal').innerText;
     
-    let msg = `*SewaAstra - NEW ORDER*%0A--------------------%0A*Status:* ${status}%0A*Items:* ${itemsTxt}%0A*Total:* ${total}%0A*Date:* ${date}%0A*Time:* ${time}%0A*Remark:* ${remark || 'None'}%0A*Client:* ${localStorage.getItem('sw_name')message += `*📍 लाइव लोकेशन:* ${mapLink}%0A`;}
+    let msg = `*SewaAstra - NEW ORDER*%0A--------------------%0A*Status:* ${status}
+    %0A*Items:* ${itemsTxt}
+    %0A*Total:* ${total}
+    %0A*Date:* ${date}
+    %0A*Time:* ${time}
+    %0A*Remark:* ${remark || 'None'}
+    %0A*Client:* ${localStorage.getItem('sw_name')message += `*📍 लाइव लोकेशन:* ${mapLink}%0
+    %0A*Remark:* ${remark || 'None';}
     
     window.open(`https://wa.me/917869969190?text=${msg}`);
     location.reload(); // ऑर्डर के बाद कार्ट साफ़
