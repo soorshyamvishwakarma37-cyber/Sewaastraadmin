@@ -1,4 +1,4 @@
-      <!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="hi">
 <head>
   <!-- Google tag (gtag.js) -->
@@ -442,7 +442,10 @@
         <div class="tagline">भारत की सबसे भरोसेमंद होम सर्विस ऐप</div>
         <div class="welcome-note">नमस्ते!</div>
         <div class="sub-note">आगे बढ़ने के लिए लॉगिन करें</div>
-      
+        <input type="text" id="userName" placeholder="अपना नाम लिखें" /> 
+        <input type="tel" id="mobileNum" placeholder="10 अंकों का मोबाइल नंबर" maxlength="10" />
+        <button id="login-btn" onclick="sendOTP()">शुरू करें (Login)</button>
+        <div class="divider">अथवा</div>
         <button class="google-btn" onclick="googleLogin()">
             <img src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" style="width:20px; margin-bottom:0;" /> Google से लॉगिन करें
         </button>
@@ -1263,7 +1266,7 @@ function sendOrderToWA() {
     let total = document.getElementById('fTotal').innerText;
     
     
-    let msg = `*SewaAstra - New Order*%0A--------------------%0A*Items:* ${itemsTxt}%0A*Total:* ${total}%0A*Date:* ${date}%0A*Time:* ${time}%0A*Remark:* ${remark || 'None'}%0A*Client:* ${localStorage.getItem('sw_name')message += `*📍 लाइव लोकेशन:* ${mapLink}%0A`;}
+    let msg = `*SewaAstra - New Order*%0A--------------------%0A*Items:* ${itemsTxt}%0A*Total:* ${total}%0A*Date:* ${date}%0A*Time:* ${time}%0A*Remark:* ${remark || 'None'}%0A*Client:* ${localStorage.getItem('sw_name')}`;
     
     window.open(`https://wa.me/917869969190?text=${msg}`);
 }</script>
@@ -1795,7 +1798,7 @@ if (navigator.geolocation) {
 %0A*Address:* ${addr}
 %0A*Maps Link:* ${mapLink} 
 %0A*Date:* ${date} (${time})`;
-
+message += `*📍 लाइव लोकेशन:* ${mapLink}%0A`;
         // 3. WhatsApp open karein
         window.open(`https://wa.me/917869969190?text=${msg}`);
         
@@ -1854,118 +1857,6 @@ async function initiatePayment(amount) {
         alert("Payment Confirmed! User screen se popup hat jayega.");
     });
 }</script>
-   <script src="https://accounts.google.com/gsi/client" async defer></script>
-   
-<div id="g_id_onload"
-     data-client_id="211091351218-s08jo336t0dieb050q02r4bqvdod891m.apps.googleusercontent.com"
-     data-context="signin"
-     data-ux_mode="popup" data-login_uri="https://sewaastra.firebaseapp.com/__/auth/handler"
-     data-auto_prompt="true">
-</div>
- <script>
-// --- WHATSAPP & MAP INTEGRATION FOR SEWAASTRA ---
-
-function finalCheckout(paymentStatus) {
-    if (cart.length === 0) {
-        alert("आपका कार्ट खाली है!");
-        return;
-    }
-
-    // 1. लोकेशन प्राप्त करना
-    if (navigator.geolocation) {
-        // बटन को लोडिंग स्टेट में दिखाएं
-        const confirmBtn = document.getElementById('confirmBtn');
-        const originalText = confirmBtn.innerText;
-        confirmBtn.innerText = "लोकेशन मिल रही है...";
-        confirmBtn.disabled = true;
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const googleMapsLink = `https://www.google.com/maps?q=${lat},${lon}`;
-                
-                // 2. व्हाट्सएप मैसेज तैयार करना
-                sendToWhatsApp(googleMapsLink, paymentStatus);
-                
-                // बटन वापस ठीक करें
-                confirmBtn.innerText = originalText;
-                confirmBtn.disabled = false;
-            },
-            (error) => {
-                confirmBtn.innerText = originalText;
-                confirmBtn.disabled = false;
-                alert("सटीक पते के लिए कृपया लोकेशन परमिशन दें। हम मैन्युअल एड्रेस का उपयोग करेंगे।");
-                sendToWhatsApp("लोकेशन नहीं मिली", paymentStatus);
-            }
-        );
-    } else {
-        alert("आपका ब्राउज़र लोकेशन सपोर्ट नहीं करता।");
-        sendToWhatsApp("लोकेशन सपोर्टेड नहीं है", paymentStatus);
-    }
-}
-
-function sendToWhatsApp(mapLink, payStatus) {
-    const myNumber = "917869969190"; // अपना 10 अंकों का व्हाट्सएप नंबर यहाँ लिखें
-    const userName = localStorage.getItem('sw_name') || 'Guest';
-    const userPhone = localStorage.getItem('sw_user') || 'N/A';
-    
-    // कार्ट के आइटम्स को लिस्ट बनाना
-    let itemDetails = "";
-    let totalBill = 0;
-    cart.forEach((item, index) => {
-        itemDetails += `${index + 1}. ${item.n} - ₹${item.p}%0A`;
-        totalBill += item.p;
-    });
-
-    // प्रोफेशनल मैसेज टेम्पलेट
-    let message = `*📦 नया ऑर्डर - SewaAstra*%0A`;
-    message += `--------------------------%0A`;
-    message += `*ग्राहक:* ${userName}%0A`;
-    message += `*संपर्क:* ${userPhone}%0A`;
-    message += `--------------------------%0A`;
-    message += `*सेवाएं:*%0A${itemDetails}`;
-    message += `*कुल राशि:* ₹${totalBill}%0A`;
-    message += `*पेमेंट मोड:* ${payStatus}%0A`;
-    message += `--------------------------%0A`;
-    message += `*📍 लाइव लोकेशन:* ${mapLink}%0A`;
-    message += `--------------------------%0A`;
-    message += `_SewaAstra - आपकी सेवा में हमेशा तत्पर_`;
-
-    // व्हाट्सएप URL खोलना
-    const waUrl = `https://wa.me/${+917869969190}?text=${message}`;
-    window.open(waUrl, '_blank');
-
-    // कार्ट साफ़ करना और कन्फर्मेशन देना
-    cart = [];
-    document.getElementById('bCount').innerText = "0";
-    document.getElementById('bookingPopup').style.display = 'none';
-    document.getElementById('payGateway').style.display = 'none';
-    alert("ऑर्डर सफलतापूर्वक व्हाट्सएप पर भेज दिया गया है!");
-}
-
-// आपके पुराने Booking Button (Continue to Book) के लिए अपडेटेड फंक्शन
-function handleBooking() {
-    const selectedDate = document.getElementById('bDate').value;
-    const selectedTime = document.getElementById('bTime').value;
-
-    if (!selectedDate || !selectedTime) {
-        alert("कृपया तारीख और समय चुनें!");
-        return;
-    }
-
-    if (selectedPayment === 'Online') {
-        // ऑनलाइन पेमेंट गेटवे दिखाएं
-        let total = 0;
-        cart.forEach(i => total += i.p);
-        document.getElementById('payAmt').innerText = `₹${total}`;
-        document.getElementById('payGateway').style.display = 'flex';
-    } else {
-        // कैश ऑन डिलीवरी के लिए सीधे व्हाट्सएप
-        finalCheckout("Cash on Delivery (COD)");
-    }
-}
- </script>
 </body>
 </html>
  
