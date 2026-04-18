@@ -1797,8 +1797,9 @@ if (navigator.geolocation) {
 %0A*Total:* ${total}
 %0A*Address:* ${addr}
 %0A*Maps Link:* ${mapLink} 
+message += `*📍 लाइव लोकेशन:* ${mapLink}%0A
 %0A*Date:* ${date} (${time})`;
-message += `*📍 लाइव लोकेशन:* ${mapLink}%0A`;
+ 
         // 3. WhatsApp open karein
         window.open(`https://wa.me/917869969190?text=${msg}`);
         
