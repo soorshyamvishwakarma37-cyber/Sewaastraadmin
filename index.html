@@ -1906,7 +1906,7 @@ function finalCheckout(paymentStatus) {
 }
 
 function sendToWhatsApp(mapLink, payStatus) {
-    const myNumber = "91XXXXXXXXXX"; // अपना 10 अंकों का व्हाट्सएप नंबर यहाँ लिखें
+    const myNumber = "917869969190"; // अपना 10 अंकों का व्हाट्सएप नंबर यहाँ लिखें
     const userName = localStorage.getItem('sw_name') || 'Guest';
     const userPhone = localStorage.getItem('sw_user') || 'N/A';
     
@@ -1933,7 +1933,7 @@ function sendToWhatsApp(mapLink, payStatus) {
     message += `_SewaAstra - आपकी सेवा में हमेशा तत्पर_`;
 
     // व्हाट्सएप URL खोलना
-    const waUrl = `https://wa.me/${myNumber}?text=${message}`;
+    const waUrl = `https://wa.me/${+917869969190}?text=${message}`;
     window.open(waUrl, '_blank');
 
     // कार्ट साफ़ करना और कन्फर्मेशन देना
