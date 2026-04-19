@@ -1409,7 +1409,14 @@ function sendOrderToWA() {
 
     if(!addr) return alert("कृपया पता (Address) लिखें");
 
-    let msg = `*NEW ORDER - SEWAASTRA*%0A--------------------%0A*Status:* ${status}%0A*Items:* ${items}%0A*Total:* ${total}%0A*Address:* ${addr}%0A*Alt No:* ${alt}%0A*Maps:* ${maps}%0A*Date:* ${date} (${time})`;
+    let msg = `*NEW ORDER - SEWAASTRA*%0A--------------------%0A*Status:* ${status}
+    %0A*Items:* ${items}
+    %0A*Total:* ${total}
+    %0A*Address:* ${addr}
+    %0A*Alt No:* ${alt}
+    %0A*Remark:* ${remark || 'None'}
+    %0A*Maps:* ${maps}
+    %0A*Date:* ${date} (${time})`;
     
     window.open(`https://wa.me/917869969190?text=${msg}`);
     location.reload(); 
@@ -1429,7 +1436,7 @@ function sendOrderToWA() {
             // Google Maps Link बनाना
             const mapsLink = `https://www.google.com/maps?q=${lat},${lon}`;
             document.getElementById('googleMapsLink').value = mapsLink;
-            document.getElementById('manualAddr').value = "सटीक लोकेशन मिल गई ✅";
+            document.getElementById('manualAddr').value = "Enter Your  Full Address ;
 
             // Static Map Preview दिखाना (OpenStreetMap का उपयोग करके)
             const mapUrl = `https://static-maps.yandex.ru/1.x/?lang=en_US&ll=${lon},${lat}&z=16&l=map&size=450,150&pt=${lon},${lat},pm2rdm`;
@@ -1804,6 +1811,7 @@ if (navigator.geolocation) {
 %0A*Total:* ${total}
 %0A*Address:* ${addr}
 %0A*Maps Link:* ${mapLink} 
+%0A*Remark:* ${remark || 'None'}
 message += `*📍 लाइव लोकेशन:* ${mapLink}%0A
 %0A*Date:* ${date} (${time})`;
  
