@@ -8,20 +8,19 @@
     :root {
       --primary-red: #e23744;
       --primary-hover: #c92a35;
-      --bg-main: #f8fafc;
+      --bg-main: #f4f6f8;
       --bg-card: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --success: #16a34a;
-      --warning: #ca8a04;
-      --danger: #dc2626;
-      --blue: #2563eb;
-      --purple: #7c3aed;
-      --indigo: #4f46e5;
+      --text-main: #1c1c1c;
+      --text-muted: #696969;
+      --border: #e0e0e0;
+      --success: #24963f;
+      --warning: #ffb300;
+      --danger: #d32f2f;
+      --blue: #1976d2;
+      --purple: #7b1fa2;
     }
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       margin: 0;
       padding: 0;
       background-color: var(--bg-main);
@@ -30,7 +29,7 @@
     .screen {
       display: none;
       min-height: 100vh;
-      padding: 12px;
+      padding: 15px;
       box-sizing: border-box;
     }
     .screen.active {
@@ -50,16 +49,16 @@
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      padding: 20px;
-      border-radius: 16px;
+      padding: 24px;
+      border-radius: 14px;
       width: 100%;
       max-width: 440px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
       box-sizing: border-box;
       margin-bottom: 15px;
     }
     h1, h2, h3, h4 { margin: 0; }
-    .form-group { margin-bottom: 14px; }
+    .form-group { margin-bottom: 16px; }
     label {
       display: block;
       font-size: 11px;
@@ -75,34 +74,34 @@
       background: #fff;
       border: 1px solid var(--border);
       color: var(--text-main);
-      border-radius: 10px;
+      border-radius: 8px;
       box-sizing: border-box;
       font-size: 14px;
     }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
     button {
       background-color: var(--blue);
       color: white;
       border: none;
       padding: 12px 18px;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
       font-weight: 700;
       width: 100%;
       font-size: 14px;
-      transition: all 0.2s;
+      transition: background 0.2s;
     }
-    button:hover { background-color: #1d4ed8; transform: translateY(-1px); }
+    button:hover { background-color: #115293; }
     .btn-outline { background: transparent; border: 1px solid var(--blue); color: var(--blue); }
-    .btn-danger { background-color: var(--danger); }
-    .btn-danger:hover { background-color: #b91c1c; }
+    .btn-danger { background-color: var(--danger); color: white; }
+    .btn-danger:hover { background-color: #b71c1c; }
     .btn-google { background: #4285F4; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .btn-google:hover { background: #3367D6; }
 
     .app-header {
-      background: linear-gradient(135deg, var(--indigo), var(--blue));
+      background: var(--blue);
       color: white;
-      padding: 16px;
+      padding: 14px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -110,8 +109,8 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      border-radius: 0 0 16px 16px;
-      box-shadow: 0 4px 12px rgba(37,99,235,0.15);
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .bottom-nav {
@@ -125,120 +124,98 @@
       z-index: 100;
       max-width: 650px;
       margin: 0 auto;
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
     }
     .nav-item { text-align: center; font-size: 10px; color: var(--text-muted); cursor: pointer; font-weight: 600; flex: 1; }
     .nav-item.active { color: var(--blue); }
-    .nav-item span { display: block; font-size: 20px; margin-bottom: 2px; }
+    .nav-item span { display: block; font-size: 17px; margin-bottom: 2px; }
 
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .badge-success { background: rgba(22, 163, 74, 0.1); color: var(--success); }
-    .badge-pending { background: rgba(202, 138, 4, 0.1); color: var(--warning); }
-    .badge-danger { background: rgba(220, 38, 38, 0.1); color: var(--danger); }
-    .badge-blue { background: rgba(37, 99, 235, 0.1); color: var(--blue); }
-    .badge-purple { background: rgba(124, 58, 237, 0.1); color: var(--purple); }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .badge-success { background: rgba(36, 150, 63, 0.1); color: var(--success); }
+    .badge-pending { background: rgba(255, 179, 0, 0.15); color: #b27d00; }
+    .badge-danger { background: rgba(211, 47, 47, 0.1); color: var(--danger); }
+    .badge-blue { background: rgba(25, 118, 210, 0.1); color: var(--blue); }
 
     .admin-card {
       background: #fff; border: 1px solid var(--border); border-left: 5px solid var(--blue);
-      padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      padding: 16px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .stat-box { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
-    .stat-box .val { font-size: 20px; font-weight: 800; color: var(--blue); }
-    .stat-box .lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-top: 4px; }
+    .stat-box { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+    .stat-box .val { font-size: 18px; font-weight: 800; color: var(--blue); }
+    .stat-box .lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-top: 2px; }
     
     .console-box {
-      background: #0f172a; color: #38bdf8; padding: 14px; border-radius: 10px;
-      font-family: monospace; font-size: 11px; height: 140px; overflow-y: auto; margin-top: 12px;
+      background: #121212; color: #00ff66; padding: 12px; border-radius: 8px;
+      font-family: monospace; font-size: 11px; height: 120px; overflow-y: auto; margin-top: 12px;
     }
 
-    /* LOADER OVERLAY */
-    #globalLoader {
-      position: fixed; inset: 0; background: rgba(255, 255, 255, 0.85); z-index: 9999;
-      display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px;
-      backdrop-filter: blur(4px); transition: opacity 0.3s;
+    /* Loader Modal */
+    #loaderOverlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 9999;
     }
     .spinner {
-      width: 48px; height: 48px; border: 4px solid var(--border); border-top: 4px solid var(--blue);
+      width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--blue);
       border-radius: 50%; animation: spin 0.8s linear infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .loader-text { font-size: 13px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; }
-
-    /* MODAL POPUP FOR DOCUMENTS */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000;
-      display: none; justify-content: center; align-items: center; padding: 15px;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-card {
-      background: #fff; width: 100%; max-width: 450px; border-radius: 16px; padding: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto;
-    }
   </style>
 </head>
 <body>
 
-  <div id="globalLoader">
-    <div class="spinner"></div>
-    <div class="loader-text" id="loaderText">Connecting to Sewaastra Cloud...</div>
-  </div>
-
-  <div id="docModal" class="modal-overlay">
-    <div class="modal-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 style="font-size: 16px;" id="modalTitle">Document Inspector</h3>
-        <button onclick="closeDocModal()" style="width: auto; padding: 4px 10px; background: #cbd5e1; color: #0f172a; font-size: 12px;">✕</button>
+  <div id="loaderOverlay">
+    <div style="background: white; padding: 20px; border-radius: 12px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+      <div class="spinner"></div>
+      <div>
+        <h4 style="font-size: 14px; margin: 0; color: var(--text-main);">Processing Sync...</h4>
+        <span style="font-size: 11px; color: var(--text-muted);">Please wait while Firebase updates...</span>
       </div>
-      <div id="modalDocContent" style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 15px;">
-        </div>
-      <button onclick="closeDocModal()">Close Viewer</button>
     </div>
   </div>
 
-  <div id="adminLoginScreen" class="screen">
+  <div id="adminLoginScreen" class="screen active">
     <div class="card" style="text-align: center;">
-      <div style="font-size: 48px; margin-bottom: 10px;">🛡️</div>
-      <h2 style="color: var(--blue); font-weight: 900; font-size: 22px; margin-bottom: 6px;">MASTER COMMAND OS</h2>
-      <p style="color: var(--danger); font-size: 11px; font-weight: bold; margin-bottom: 24px;">🔒 Secure Access: Authorized Master ID Only</p>
+      <div style="font-size: 40px; margin-bottom: 8px;">🛡️</div>
+      <h2 style="color: var(--blue); font-weight: 900; font-size: 22px; margin-bottom: 6px;">SEWAASTRA MASTER OS</h2>
+      <p style="color: var(--danger); font-size: 11px; font-weight: bold; margin-bottom: 20px;">🔒 Locked Terminal: Exclusive Access Portal</p>
       
       <button onclick="loginAsMasterAdmin()" class="btn-google" style="padding: 14px; font-size: 14px; margin-bottom: 15px;">
         <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#fff" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.1 8.9 5 12 5zm6.5 7c0-.4-.1-.8-.2-1.2H12v2.4h3.6c-.2 1-.8 1.9-1.7 2.5l2.7 2.1c1.6-1.5 2.7-3.7 2.7-6.3zm-11.8 3.5c-.3-.9-.5-1.9-.5-2.9s.2-2 .5-2.9L3.5 6.6C2.5 8.6 2 10.7 2 13s.5 4.4 1.5 6.4l3.7-2.9Z"/></svg>
         Sign in with Google (soorshyamvishwakarma37@gmail.com)
       </button>
-      <p style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">Automated security wall enforced. Unauthorized profiles are instantly blocked.</p>
+      <p style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">Automated security guard active. Non-authorized logins are blocked instantly.</p>
     </div>
   </div>
 
   <div id="adminDashboardScreen" class="screen">
     <div class="app-header">
       <div>
-        <h3 style="font-size: 15px; font-weight: 900;">⚡ Sewaastra Enterprise OS</h3>
-        <span style="font-size: 10px; opacity: 0.9;">soorshyamvishwakarma37@gmail.com</span>
+        <h3 style="font-size: 14px; font-weight: 900;">⚡ Master Dispatch OS v3.0</h3>
+        <span style="font-size: 10px; opacity: 0.85;">soorshyamvishwakarma37@gmail.com</span>
       </div>
-      <button onclick="adminLogout()" class="btn-outline" style="width: auto; padding: 6px 12px; font-size: 11px; border-color: white; color: white;">Logout</button>
+      <button onclick="adminLogout()" class="btn-outline" style="width: auto; padding: 4px 8px; font-size: 10px; border-color: white; color: white;">Logout</button>
     </div>
 
     <div id="kycTab" class="tab-content active" style="padding: 15px 0;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="font-size: 15px;">👥 Partner Fleet & KYC Control</h3>
-        <span class="badge badge-success">● Realtime Sync</span>
+        <h3 style="font-size: 15px;">👥 Partner Fleet & Document KYC Hub</h3>
+        <span class="badge badge-blue">Live Database</span>
       </div>
       <div id="adminKycListContainer">
-        <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Synchronizing partner nodes...</p>
+        <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Fetching partner profiles from Firebase...</p>
       </div>
     </div>
 
     <div id="dispatchTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">📦 Smart Dispatch & Order History</h3>
+      <h3 style="font-size: 15px; margin-bottom: 12px;">⚡ Live Dispatch & Auto-Assignment Engine</h3>
       
       <div class="card" style="max-width: 100%; margin-bottom: 15px;">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">⚡ Create & Auto-Assign Booking</h4>
+        <h4 style="font-size: 13px; margin-bottom: 10px;">📦 Create New Booking & Trigger Geo Auto-Assign</h4>
         <div class="form-group">
-          <label>Service Package & Rate:</label>
+          <label>Service Category:</label>
           <select id="adminNewServiceCat">
             <option value="AC Split Jet Cleaning & Servicing (₹899)">AC Split Jet Cleaning (₹899)</option>
             <option value="Geyser Tank Heating Element Fix (₹599)">Geyser Element Repair (₹599)</option>
@@ -246,15 +223,21 @@
             <option value="RO Water Purifier Filter Replacements (₹649)">RO Purifier Filter Service (₹649)</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Simulated Service Coordinates (Lat, Lng):</label>
-          <input type="text" id="adminOrderCoords" value="28.6139, 77.2090" placeholder="e.g. 28.6139, 77.2090">
+        <div class="grid-2" style="margin-bottom: 12px;">
+          <div>
+            <label>Customer Latitude:</label>
+            <input type="number" id="orderLat" value="28.6139" step="0.0001">
+          </div>
+          <div>
+            <label>Customer Longitude:</label>
+            <input type="number" id="orderLng" value="77.2090" step="0.0001">
+          </div>
         </div>
-        <button onclick="adminCreateAndAutoAssignOrder()">Broadcast & Auto-Assign Nearest Partner 🚀</button>
+        <button onclick="adminCreateOrderWithAutoAssign()" style="background: var(--success);">Broadcast & Geo Auto-Assign Partner 🎯</button>
       </div>
 
       <div class="card" style="max-width: 100%; margin-bottom: 15px;">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">⚡ Live Active Orders & Manual Override</h4>
+        <h4 style="font-size: 13px; margin-bottom: 10px;">⚡ Active Dispatch Queue & Custom Assignment</h4>
         <div id="adminOrdersContainer">
           <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 15px;">Loading active orders...</p>
         </div>
@@ -263,46 +246,57 @@
       <div class="card" style="max-width: 100%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h4 style="font-size: 13px; margin: 0;">📜 Completed Order History Archive</h4>
-          <button onclick="adminClearOrderHistory()" class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 11px;">Clear History 🗑️</button>
+          <button onclick="adminClearAllOrderHistory()" class="btn-danger" style="width: auto; padding: 4px 10px; font-size: 11px;">Clear All History 🗑️</button>
         </div>
         <div id="adminOrderHistoryContainer">
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 15px;">No historical orders found.</p>
+          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 15px;">Loading history...</p>
         </div>
       </div>
     </div>
 
     <div id="paymentTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">💰 Financial Payouts & Ledger</h3>
+      <h3 style="font-size: 15px; margin-bottom: 12px;">💰 Financial Payouts & Earnings Audit</h3>
       
       <div class="grid-2">
-        <div class="stat-box"><div class="val" id="adminTotalRevenue">₹0</div><div class="lbl">Platform GMV</div></div>
-        <div class="stat-box"><div class="val" id="adminTotalJobsCompleted">0</div><div class="lbl">Fulfilled Gigs</div></div>
+        <div class="stat-box"><div class="val" id="adminTotalRevenue">₹0</div><div class="lbl">Platform Revenue</div></div>
+        <div class="stat-box"><div class="val" id="adminTotalJobsCompleted">0</div><div class="lbl">Total Completed Gigs</div></div>
       </div>
 
       <div class="card" style="max-width: 100%; margin-bottom: 15px;">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">Partner Weekly Bank Payouts</h4>
+        <h4 style="font-size: 13px; margin-bottom: 10px;">Weekly Partner Bank Settlement</h4>
         <div id="adminPartnerWalletList">
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Loading ledger data...</p>
+          <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Loading partner wallet records...</p>
         </div>
       </div>
     </div>
 
     <div id="settingsTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">⚙️ Cloud Diagnostics & Event Stream</h3>
+      <h3 style="font-size: 15px; margin-bottom: 12px;">⚙️ Enterprise Telemetry & Diagnostics</h3>
       <div class="card" style="max-width: 100%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h4 style="font-size: 12px; margin: 0;">Real-Time Firebase Terminal</h4>
-          <button onclick="document.getElementById('adminConsole').innerHTML=''" style="width: auto; padding: 4px 8px; font-size: 10px; background: #334155;">Clear Log</button>
+          <h4 style="font-size: 12px; margin: 0;">Real-Time Firebase Event Log</h4>
+          <button onclick="document.getElementById('adminConsole').innerHTML=''" style="width: auto; padding: 3px 8px; font-size: 10px; background: #333;">Clear</button>
         </div>
         <div class="console-box" id="adminConsole"></div>
       </div>
     </div>
 
     <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchAdminTab('kycTab', this)"><span>👥</span>Partners</div>
-      <div class="nav-item" onclick="switchAdminTab('dispatchTab', this)"><span>⚡</span>Dispatch</div>
+      <div class="nav-item active" onclick="switchAdminTab('kycTab', this)"><span>👥</span>KYC & Partners</div>
+      <div class="nav-item" onclick="switchAdminTab('dispatchTab', this)"><span>⚡</span>Dispatch & History</div>
       <div class="nav-item" onclick="switchAdminTab('paymentTab', this)"><span>💰</span>Payouts</div>
       <div class="nav-item" onclick="switchAdminTab('settingsTab', this)"><span>⚙️</span>Telemetry</div>
+    </div>
+  </div>
+
+  <div id="docViewerModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 15px;">
+    <div class="card" style="max-width: 450px; background: white; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3 style="font-size: 15px;">📂 Partner KYC Document Vault</h3>
+        <button onclick="closeDocModal()" style="width: auto; padding: 4px 8px; font-size: 11px; background: var(--text-muted);">✕</button>
+      </div>
+      <div id="docModalContent" style="font-size: 13px; line-height: 1.6;">
+        </div>
     </div>
   </div>
 
@@ -311,7 +305,6 @@
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getDatabase, ref, set, push, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
       authDomain: "sewaastra.firebaseapp.com",
@@ -330,19 +323,10 @@
 
     const TARGET_ADMIN_EMAIL = "soorshyamvishwakarma37@gmail.com";
     const consoleBox = document.getElementById("adminConsole");
-    const loader = document.getElementById("globalLoader");
-    const loaderText = document.getElementById("loaderText");
+    const loaderOverlay = document.getElementById("loaderOverlay");
 
-    function showLoader(msg = "Syncing with Cloud...") {
-      loaderText.innerText = msg;
-      loader.style.opacity = "1";
-      loader.style.pointerEvents = "auto";
-    }
-
-    function hideLoader() {
-      loader.style.opacity = "0";
-      loader.style.setTimeout = setTimeout(() => { loader.style.pointerEvents = "none"; }, 300);
-    }
+    function showLoader() { if(loaderOverlay) loaderOverlay.style.display = 'flex'; }
+    function hideLoader() { if(loaderOverlay) loaderOverlay.style.display = 'none'; }
 
     function logMessage(text) {
       if(!consoleBox) return;
@@ -363,26 +347,22 @@
       document.getElementById(screenId).classList.add('active');
     }
 
-    // SECURE ADMIN GOOGLE LOGIN GATEWAY
+    // SECURE ADMIN GOOGLE LOGIN (NO LOADER SPINNER ON LOGIN SCREEN)
     window.loginAsMasterAdmin = async function() {
-      showLoader("Authenticating Master Credentials...");
       try {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
 
         if (user.email !== TARGET_ADMIN_EMAIL) {
-          hideLoader();
-          alert(`❌ Access Denied! Logged-in email (${user.email}) is unauthorized.`);
+          alert(`❌ Access Denied! Logged-in email (${user.email}) is not authorized as Master Admin.`);
           await signOut(auth);
           return;
         }
 
-        logMessage(`Master Admin logged in: ${user.email}`);
+        logMessage(`Master Admin authenticated successfully: ${user.email}`);
         showScreen('adminDashboardScreen');
         initMasterAdminListeners();
-        hideLoader();
       } catch (error) {
-        hideLoader();
         alert("Authentication Error: " + error.message);
         logMessage(`Login error: ${error.message}`);
       }
@@ -394,19 +374,16 @@
       logMessage("Master Admin signed out.");
     };
 
-    // REALTIME LISTENERS & DASHBOARD SYNC
+    // INITIALIZE REALTIME LISTENERS
     function initMasterAdminListeners() {
-      showLoader("Loading Enterprise Fleet Data...");
-
       // 1. Partners & KYC Listener
       onValue(ref(db, 'live_partners'), (snap) => {
         const kycContainer = document.getElementById("adminKycListContainer");
         const walletContainer = document.getElementById("adminPartnerWalletList");
         
         if (!snap.exists()) {
-          kycContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No partners registered in database.</p>`;
-          walletContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No financial ledgers found.</p>`;
-          hideLoader();
+          kycContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No partners registered yet.</p>`;
+          walletContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No wallet data available.</p>`;
           return;
         }
 
@@ -420,28 +397,26 @@
           totalRev += (data.totalEarned || 0);
           totalJobs += (data.completedJobs || 0);
 
-          const isBlocked = data.isBlocked === true;
-          const kycStatus = data.kycStatus || 'pending';
-          const badgeClass = kycStatus === "approved" ? "badge-success" : (kycStatus === "rejected" ? "badge-danger" : "badge-pending");
-          const blockBadge = isBlocked ? `<span class="badge badge-danger">BLOCKED ⛔</span>` : `<span class="badge badge-success">ACTIVE 🟢</span>`;
-
+          const kycBadge = data.kycStatus === "approved" ? "badge-success" : (data.kycStatus === "rejected" ? "badge-danger" : "badge-pending");
+          const blockBadge = data.isBlocked ? `<span class="badge badge-danger">BLOCKED</span>` : `<span class="badge badge-success">ACTIVE</span>`;
+          
           kycHtml += `
-            <div class="admin-card" style="border-left-color: ${isBlocked ? 'var(--danger)' : 'var(--blue)'};">
+            <div class="admin-card">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <h4 style="font-size: 14px;">${data.name || 'Unnamed Partner'} ${blockBadge}</h4>
-                <span class="badge ${badgeClass}">${kycStatus.toUpperCase()}</span>
+                <span class="badge ${kycBadge}">${(data.kycStatus || 'pending').toUpperCase()}</span>
               </div>
-              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
                 📧 Email: <b>${data.email}</b><br>
                 📱 Phone: <b>${data.phone || 'N/A'}</b> | Skill: <b>${data.skill || 'General'}</b><br>
-                ⭐ Rating: <b>${data.rating || '4.8'} / 5.0</b> (${data.completedJobs || 0} gigs)<br>
-                📍 Location: <b>Lat: ${data.latitude || '28.6'}, Lng: ${data.longitude || '77.2'}</b>
+                ⭐ Rating: <b>${data.rating || '4.5'} / 5.0</b> (${data.totalRatingsCount || 0} reviews)<br>
+                📍 Location: Lat ${data.latitude || '0'}, Lng ${data.longitude || '0'}
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button onclick="adminViewDocuments('${uid}')" class="btn-outline" style="padding: 6px 10px; font-size: 11px; flex: 1;">📂 View Docs</button>
-                <button onclick="adminApproveKyc('${uid}')" style="background: var(--success); padding: 6px 10px; font-size: 11px; flex: 1;">Approve ✅</button>
-                <button onclick="adminRejectKyc('${uid}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 6px 10px; font-size: 11px; flex: 1;">Reject ❌</button>
-                <button onclick="adminToggleBlockPartner('${uid}', ${isBlocked})" class="btn-danger" style="padding: 6px 10px; font-size: 11px; flex: 1;">${isBlocked ? 'Unblock 🔓' : 'Block 🔒'}</button>
+                <button onclick="adminApproveKyc('${uid}')" style="background: var(--success); padding: 7px; font-size: 11px; flex: 1;">Approve ✅</button>
+                <button onclick="adminRejectKyc('${uid}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 7px; font-size: 11px; flex: 1;">Reject ❌</button>
+                <button onclick="adminViewDocuments('${uid}')" style="background: var(--purple); padding: 7px; font-size: 11px; flex: 1;">View Docs 📂</button>
+                <button onclick="adminToggleBlock('${uid}', ${!data.isBlocked})" class="btn-danger" style="padding: 7px; font-size: 11px; flex: 1;">${data.isBlocked ? 'Unblock 🔓' : 'Block 🔒'}</button>
               </div>
             </div>
           `;
@@ -450,11 +425,11 @@
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
               <div>
                 <b>${data.name || data.email}</b><br>
-                <span style="color: var(--text-muted); font-size: 11px;">Bank A/C: ${data.bank || 'Not Linked'} | Completed: ${data.completedJobs || 0}</span>
+                <span style="color: var(--text-muted); font-size: 11px;">A/C: ${data.bank || 'Not Provided'} | Gigs: ${data.completedJobs || 0}</span>
               </div>
               <div style="text-align: right;">
                 <b style="color: var(--success);">₹${data.totalEarned || 0}</b><br>
-                <button onclick="adminSettlePayout('${uid}')" style="padding: 3px 8px; font-size: 10px; background: var(--blue); margin-top: 2px; width: auto;">Settle Payout</button>
+                <button onclick="adminSettlePayout('${uid}')" style="padding: 2px 6px; font-size: 10px; background: var(--blue); margin-top: 2px; width: auto;">Settle</button>
               </div>
             </div>
           `;
@@ -464,17 +439,16 @@
         walletContainer.innerHTML = walletHtml;
         document.getElementById("adminTotalRevenue").innerText = `₹${totalRev}`;
         document.getElementById("adminTotalJobsCompleted").innerText = totalJobs;
-        hideLoader();
       });
 
-      // 2. Orders & History Listener
+      // 2. Active Orders & History Listener
       onValue(ref(db, 'live_orders'), async (snap) => {
         const ordersContainer = document.getElementById("adminOrdersContainer");
         const historyContainer = document.getElementById("adminOrderHistoryContainer");
         
         if (!snap.exists()) {
-          ordersContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No live active orders.</p>`;
-          historyContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No completed order history.</p>`;
+          ordersContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No active service orders.</p>`;
+          historyContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No history records available.</p>`;
           return;
         }
 
@@ -486,9 +460,9 @@
         const orders = snap.val();
 
         for (const [orderId, orderData] of Object.entries(orders)) {
-          const isCompleted = orderData.status === "completed";
-          let partnerDropdownOptions = `<option value="">-- Choose Partner --</option>`;
+          const badgeColor = orderData.status === "completed" ? "badge-success" : (orderData.status === "assigned" ? "badge-blue" : "badge-pending");
           
+          let partnerDropdownOptions = `<option value="">-- Choose Partner --</option>`;
           for (const [pId, pData] of Object.entries(partnersData)) {
             if(pData.kycStatus === "approved" && !pData.isBlocked) {
               const selected = orderData.assignedPartnerId === pId ? "selected" : "";
@@ -496,99 +470,105 @@
             }
           }
 
-          const cardHtml = `
-            <div class="admin-card" style="border-left-color: ${isCompleted ? 'var(--success)' : 'var(--purple)'};">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-size: 11px; font-weight: bold; color: var(--text-muted);">ID: ${orderId.substring(0,8)}...</span>
-                <span class="badge ${isCompleted ? 'badge-success' : 'badge-purple'}">${(orderData.status || 'pending').toUpperCase()}</span>
+          if (orderData.status === "completed" || orderData.status === "cancelled") {
+            historyHtml += `
+              <div class="admin-card" style="border-left-color: var(--success);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <span style="font-size: 11px; font-weight: bold; color: var(--text-muted);">ID: ${orderId.substring(0,8)}</span>
+                  <span class="badge ${badgeColor}">${orderData.status.toUpperCase()}</span>
+                </div>
+                <div style="font-size: 13px; font-weight: bold;">${orderData.category}</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Paid: ₹${orderData.amount} | Assigned Partner ID: ${orderData.assignedPartnerId || 'None'}</div>
+                <div style="margin-top: 8px; text-align: right;">
+                  <button onclick="adminDeleteSingleOrder('${orderId}')" class="btn-danger" style="width: auto; padding: 3px 8px; font-size: 10px;">Delete Record 🗑️</button>
+                </div>
               </div>
-              <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px;">${orderData.category}</div>
-              <div style="font-size: 12px; color: var(--success); font-weight: bold; margin-bottom: 10px;">Amount: ₹${orderData.amount} | OTP: ${orderData.completionOtp || 'N/A'}</div>
-              
-              ${!isCompleted ? `
+            `;
+          } else {
+            activeHtml += `
+              <div class="admin-card" style="border-left-color: var(--purple);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 11px; font-weight: bold; color: var(--text-muted);">ID: ${orderId.substring(0,8)}</span>
+                  <span class="badge ${badgeColor}">${(orderData.status || 'pending').toUpperCase()}</span>
+                </div>
+                <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px;">${orderData.category}</div>
+                <div style="font-size: 12px; color: var(--success); font-weight: bold; margin-bottom: 8px;">Amount: ₹${orderData.amount} | OTP: ${orderData.completionOtp || 'N/A'}</div>
+                
                 <div class="form-group" style="margin-bottom: 8px;">
-                  <label>Manual Partner Re-Assignment:</label>
+                  <label>Custom Partner Assignment:</label>
                   <select id="select_assign_${orderId}" style="font-size: 12px; padding: 8px;">
                     ${partnerDropdownOptions}
                   </select>
                 </div>
-                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                  <button onclick="adminCustomAssignOrder('${orderId}')" style="background: var(--purple); padding: 8px; font-size: 12px; flex: 1;">Reassign ⚡</button>
-                  <button onclick="adminUnassignOrder('${orderId}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 8px; font-size: 12px; flex: 1;">Unassign 🔄</button>
-                </div>
-              ` : `
-                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Fulfilled by Partner UID: <b>${orderData.assignedPartnerId || 'N/A'}</b></div>
-              `}
-              <button onclick="adminDeleteOrder('${orderId}')" class="btn-danger" style="padding: 6px; font-size: 11px;">Delete Order Record 🗑️</button>
-            </div>
-          `;
 
-          if (isCompleted) {
-            historyHtml += cardHtml;
-          } else {
-            activeHtml += cardHtml;
+                <div style="display: flex; gap: 8px;">
+                  <button onclick="adminCustomAssignOrder('${orderId}')" style="background: var(--purple); padding: 8px; font-size: 12px; flex: 1;">Assign ⚡</button>
+                  <button onclick="adminUnassignOrder('${orderId}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 8px; font-size: 12px; flex: 1;">Unassign 🔄</button>
+                  <button onclick="adminDeleteSingleOrder('${orderId}')" class="btn-danger" style="padding: 8px; font-size: 12px; width: auto;">🗑️</button>
+                </div>
+              </div>
+            `;
           }
         }
-
         ordersContainer.innerHTML = activeHtml || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No active orders.</p>`;
-        historyContainer.innerHTML = historyHtml || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No completed order history.</p>`;
+        historyContainer.innerHTML = historyHtml || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No history records.</p>`;
       });
     }
 
-    // ADVANCED FEATURE: AUTO-ASSIGN NEAREST PARTNER ALGORITHM (Haversine Formula)
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371; // Radius of the earth in km
-      const dLat = (lat2 - lat1) * (Math.PI / 180);
-      const dLon = (lon2 - lon1) * (Math.PI / 180);
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c; // Distance in KM
-    }
-
-    window.adminCreateAndAutoAssignOrder = async function() {
-      showLoader("Running Auto-Dispatch Engine...");
+    // GEO AUTO-ASSIGN ALGORITHM (Finds nearest available approved partner based on Haversine distance)
+    window.adminCreateOrderWithAutoAssign = async function() {
+      showLoader();
       const serviceCat = document.getElementById("adminNewServiceCat").value;
       const amount = serviceCat.includes("899") ? 899 : (serviceCat.includes("599") ? 599 : (serviceCat.includes("649") ? 649 : 749));
+      const custLat = parseFloat(document.getElementById("orderLat").value) || 28.6139;
+      const custLng = parseFloat(document.getElementById("orderLng").value) || 77.2090;
       const completionOtp = Math.floor(1000 + Math.random() * 9000).toString();
-      const coordsInput = document.getElementById("adminOrderCoords").value.split(',');
-      const orderLat = parseFloat(coordsInput[0]) || 28.6139;
-      const orderLng = parseFloat(coordsInput[1]) || 77.2090;
 
       // Fetch all partners
       const partSnap = await get(child(ref(db), 'live_partners'));
       let assignedPartnerId = null;
+      let orderStatus = "pending";
 
       if (partSnap.exists()) {
         const partners = partSnap.val();
         let minDistance = Infinity;
 
         for (const [pId, pData] of Object.entries(partners)) {
-          // Filter: Must be approved, not blocked, and available
-          if (pData.kycStatus === "approved" && !pData.isBlocked && pData.status !== "busy") {
+          // Check if partner is approved, not blocked, and available
+          if (pData.kycStatus === "approved" && !pData.isBlocked && (pData.status === "available" || !pData.status)) {
             const pLat = pData.latitude || 28.6139;
             const pLng = pData.longitude || 77.2090;
-            const dist = calculateDistance(orderLat, orderLng, pLat, pLng);
 
-            if (dist < minDistance) {
-              minDistance = dist;
+            // Haversine distance formula calculation in KM
+            const R = 6371;
+            const dLat = (pLat - custLat) * (Math.PI / 180);
+            const dLng = (pLng - custLng) * (Math.PI / 180);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(custLat * (Math.PI/180)) * Math.cos(pLat * (Math.PI/180)) *
+                      Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+
+            if (distance < minDistance) {
+              minDistance = distance;
               assignedPartnerId = pId;
             }
           }
         }
       }
 
+      if (assignedPartnerId) {
+        orderStatus = "assigned";
+      }
+
       const newOrderRef = push(ref(db, 'live_orders'));
       const orderId = newOrderRef.key;
-      const status = assignedPartnerId ? "assigned" : "pending";
-
       const payload = {
         category: serviceCat,
         amount,
-        latitude: orderLat,
-        longitude: orderLng,
-        status,
+        latitude: custLat,
+        longitude: custLng,
+        status: orderStatus,
         assignedPartnerId: assignedPartnerId || null,
         completionOtp,
         createdAt: new Date().toISOString()
@@ -603,62 +583,74 @@
 
       await update(ref(db), updates);
       hideLoader();
-      logMessage(`Auto-dispatched order ${orderId} to nearest partner: ${assignedPartnerId || 'None available (Pending queue)'}`);
-      alert(assignedPartnerId ? `⚡ Order auto-assigned to nearest partner successfully!` : `📦 Order posted to pending queue (No nearby active partner found).`);
+      logMessage(`New order broadcasted & Auto-assigned to partner: ${assignedPartnerId || 'None (Queued)'}`);
+      alert(assignedPartnerId ? "🎯 Order broadcasted & Geo Auto-Assigned to nearest partner!" : "📦 Order broadcasted to pending queue (No nearby partner available).");
     };
 
-    // VIEW DOCUMENTS MODAL
+    // DOCUMENT VIEWER FUNCTIONS
     window.adminViewDocuments = async function(uid) {
-      showLoader("Fetching Partner Vault...");
-      const snap = await get(child(ref(db), `live_partners/${uid}`));
+      showLoader();
+      const snap = await get(ref(db, `live_partners/${uid}`));
       hideLoader();
       if (!snap.exists()) return;
       const data = snap.val();
 
-      document.getElementById("modalTitle").innerText = `${data.name || 'Partner'} - Verified Documents`;
-      document.getElementById("modalDocContent").innerHTML = `
-        <div style="margin-bottom: 10px;">🆔 <b>Aadhaar Number:</b> ${data.aadhaar || 'Not Uploaded'}</div>
-        <div style="margin-bottom: 10px;">💳 <b>PAN Card:</b> ${data.pan || 'Not Uploaded'}</div>
-        <div style="margin-bottom: 10px;">🏦 <b>Bank A/C Details:</b> ${data.bank || 'Not Provided'}</div>
-        <div style="margin-bottom: 10px;">🛠️ <b>Skill Specialty:</b> ${data.skill || 'General Technician'}</div>
-        <div style="margin-bottom: 10px;">⭐ <b>Customer Rating:</b> ${data.rating || '4.8'} / 5.0</div>
+      const modalContent = document.getElementById("docModalContent");
+      modalContent.innerHTML = `
+        <p><b>Partner Name:</b> ${data.name || 'N/A'}</p>
+        <p><b>Email:</b> ${data.email || 'N/A'}</p>
+        <p><b>Phone:</b> ${data.phone || 'N/A'}</p>
+        <hr style="border:0; border-top:1px solid var(--border); margin: 10px 0;">
+        <p><b>Aadhaar Number:</b> ${data.aadhaar || 'Not Provided'}</p>
+        <p><b>PAN Number:</b> ${data.pan || 'Not Provided'}</p>
+        <p><b>Bank Account:</b> ${data.bank || 'Not Provided'}</p>
+        <p><b>Uploaded Document URL / Proof:</b><br>
+           ${data.docUrl ? `<a href="${data.docUrl}" target="_blank" style="color:var(--blue);">View Uploaded Document Link ↗️</a>` : '<span style="color:var(--text-muted);">No document file uploaded.</span>'}
+        </p>
       `;
-      document.getElementById("docModal").classList.add('active');
+      document.getElementById("docViewerModal").style.display = "flex";
     };
 
     window.closeDocModal = function() {
-      document.getElementById("docModal").classList.remove('active');
+      document.getElementById("docViewerModal").style.display = "none";
     };
 
-    // ADMIN ACTIONS: APPROVE / REJECT / BLOCK / DELETE
+    // BLOCK / UNBLOCK PARTNER
+    window.adminToggleBlock = async function(uid, blockState) {
+      showLoader();
+      await update(ref(db, `live_partners/${uid}`), { isBlocked: blockState });
+      hideLoader();
+      logMessage(`Partner ${uid} block status updated to: ${blockState}`);
+      alert(blockState ? "🔒 Partner blocked successfully!" : "🔓 Partner unblocked successfully!");
+    };
+
+    // ADMIN ACTIONS: KYC APPROVAL / REJECTION
     window.adminApproveKyc = async function(uid) {
-      showLoader("Updating KYC Status...");
+      showLoader();
       await update(ref(db, `live_partners/${uid}`), { kycStatus: "approved" });
       hideLoader();
-      alert("✅ Partner KYC Approved!");
+      logMessage(`KYC Approved for partner UID: ${uid}`);
+      alert("✅ Partner KYC Approved successfully!");
     };
 
     window.adminRejectKyc = async function(uid) {
-      showLoader("Updating KYC Status...");
+      showLoader();
       await update(ref(db, `live_partners/${uid}`), { kycStatus: "rejected" });
       hideLoader();
+      logMessage(`KYC Rejected for partner UID: ${uid}`);
       alert("❌ Partner KYC Rejected!");
     };
 
-    window.adminToggleBlockPartner = async function(uid, currentStatus) {
-      const newState = !currentStatus;
-      showLoader(newState ? "Blocking Partner..." : "Unblocking Partner...");
-      await update(ref(db, `live_partners/${uid}`), { isBlocked: newState });
-      hideLoader();
-      alert(newState ? "🔒 Partner blocked successfully!" : "🔓 Partner unblocked successfully!");
-    };
-
+    // CUSTOM ASSIGN ORDER
     window.adminCustomAssignOrder = async function(orderId) {
       const selectEl = document.getElementById(`select_assign_${orderId}`);
       const partnerId = selectEl.value;
-      if (!partnerId) { alert("Select a valid partner."); return; }
+      if (!partnerId) {
+        alert("Please select a valid approved partner.");
+        return;
+      }
 
-      showLoader("Assigning Order...");
+      showLoader();
       const updates = {};
       updates[`/live_orders/${orderId}/status`] = "assigned";
       updates[`/live_orders/${orderId}/assignedPartnerId`] = partnerId;
@@ -667,55 +659,65 @@
 
       await update(ref(db), updates);
       hideLoader();
+      logMessage(`Order ${orderId} custom-assigned to partner ${partnerId}`);
       alert("⚡ Order assigned successfully!");
     };
 
+    // UNASSIGN ORDER
     window.adminUnassignOrder = async function(orderId) {
-      showLoader("Unassigning Order...");
+      showLoader();
       const orderSnap = await get(ref(db, `live_orders/${orderId}`));
-      if (!orderSnap.exists()) { hideLoader(); return; }
-      const prevPartnerId = orderSnap.val().assignedPartnerId;
-
-      const updates = {};
-      updates[`/live_orders/${orderId}/status`] = "pending";
-      updates[`/live_orders/${orderId}/assignedPartnerId`] = null;
-      if (prevPartnerId) {
-        updates[`/live_partners/${prevPartnerId}/status`] = "available";
-        updates[`/live_partners/${prevPartnerId}/currentOrderId`] = null;
+      if (orderSnap.exists()) {
+        const prevPartnerId = orderSnap.val().assignedPartnerId;
+        const updates = {};
+        updates[`/live_orders/${orderId}/status`] = "pending";
+        updates[`/live_orders/${orderId}/assignedPartnerId`] = null;
+        if (prevPartnerId) {
+          updates[`/live_partners/${prevPartnerId}/status`] = "available";
+          updates[`/live_partners/${prevPartnerId}/currentOrderId`] = null;
+        }
+        await update(ref(db), updates);
       }
-
-      await update(ref(db), updates);
       hideLoader();
+      logMessage(`Order ${orderId} unassigned.`);
       alert("🔄 Order unassigned!");
     };
 
-    window.adminDeleteOrder = async function(orderId) {
+    // DELETE SINGLE ORDER RECORD
+    window.adminDeleteSingleOrder = async function(orderId) {
       if(!confirm("Are you sure you want to delete this order record?")) return;
-      showLoader("Deleting Record...");
+      showLoader();
       await remove(ref(db, `live_orders/${orderId}`));
       hideLoader();
-      alert("🗑️ Order deleted successfully!");
+      logMessage(`Deleted order record: ${orderId}`);
+      alert("🗑️ Order record deleted successfully!");
     };
 
-    window.adminClearOrderHistory = async function() {
-      if(!confirm("Clear all completed order history records?")) return;
-      showLoader("Cleaning Archive...");
+    // CLEAR ALL ORDER HISTORY
+    window.adminClearAllOrderHistory = async function() {
+      if(!confirm("⚠️ Delete ALL completed & archived order history records?")) return;
+      showLoader();
       const snap = await get(ref(db, 'live_orders'));
-      if(snap.exists()) {
+      if (snap.exists()) {
         const updates = {};
-        for(const [oId, oData] of Object.entries(snap.val())) {
-          if(oData.status === "completed") updates[oId] = null;
+        for (const [oId, oData] of Object.entries(snap.val())) {
+          if (oData.status === "completed" || oData.status === "cancelled") {
+            updates[oId] = null;
+          }
         }
         await update(ref(db, 'live_orders'), updates);
       }
       hideLoader();
-      alert("🗑️ Order history cleared!");
+      logMessage("Cleared all order history records.");
+      alert("🗑️ Order history archive cleared!");
     };
 
+    // SETTLE PAYOUT
     window.adminSettlePayout = async function(uid) {
-      showLoader("Processing Payout...");
+      showLoader();
       await update(ref(db, `live_partners/${uid}`), { totalEarned: 0 });
       hideLoader();
+      logMessage(`Wallet earnings settled for partner: ${uid}`);
       alert("💰 Payout settled and ledger reset to ₹0!");
     };
   </script>
