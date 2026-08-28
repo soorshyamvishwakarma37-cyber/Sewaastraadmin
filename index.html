@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sewaastra Enterprise Master Admin OS</title>
+  <title>Sewaastra Enterprise Master Admin OS v2.0</title>
   <style>
     :root {
       --primary-red: #e23744;
@@ -95,6 +95,8 @@
     .btn-outline { background: transparent; border: 1px solid var(--blue); color: var(--blue); }
     .btn-google { background: #4285F4; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .btn-google:hover { background: #3367D6; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: #a31515; }
 
     .app-header {
       background: var(--blue);
@@ -135,6 +137,7 @@
     .badge-pending { background: rgba(255, 179, 0, 0.15); color: #b27d00; }
     .badge-danger { background: rgba(211, 47, 47, 0.1); color: var(--danger); }
     .badge-blue { background: rgba(25, 118, 210, 0.1); color: var(--blue); }
+    .badge-purple { background: rgba(123, 31, 162, 0.1); color: var(--purple); }
 
     .admin-card {
       background: #fff; border: 1px solid var(--border); border-left: 5px solid var(--blue);
@@ -149,28 +152,71 @@
       background: #121212; color: #00ff66; padding: 12px; border-radius: 8px;
       font-family: monospace; font-size: 11px; height: 120px; overflow-y: auto; margin-top: 12px;
     }
+
+    /* Spinner Loading Overlay */
+    #loadingOverlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.85); z-index: 9999;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      transition: opacity 0.3s ease;
+    }
+    #loadingOverlay.hidden { opacity: 0; pointer-events: none; display: none; }
+    .spinner {
+      width: 48px; height: 48px; border: 5px solid var(--border);
+      border-top-color: var(--blue); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modal / Document Viewer Styles */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); z-index: 1000;
+      display: none; justify-content: center; align-items: center; padding: 15px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: white; width: 100%; max-width: 420px; border-radius: 12px;
+      padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto;
+    }
   </style>
 </head>
 <body>
 
+  <div id="loadingOverlay">
+    <div class="spinner"></div>
+    <p style="margin-top: 15px; font-weight: 700; color: var(--blue); font-size: 13px;">Sewaastra Cloud Syncing...</p>
+  </div>
+
+  <div id="docModal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 15px;">Uploaded KYC Documents</h3>
+        <button onclick="closeDocModal()" style="width: auto; padding: 4px 10px; background: #666; font-size: 12px;">✕</button>
+      </div>
+      <div id="docModalContent" style="font-size: 13px; line-height: 1.6; color: var(--text-main);">
+        </div>
+    </div>
+  </div>
+
   <div id="adminLoginScreen" class="screen active">
     <div class="card" style="text-align: center;">
       <div style="font-size: 40px; margin-bottom: 8px;">👑</div>
-      <h2 style="color: var(--blue); font-weight: 900; font-size: 22px; margin-bottom: 6px;">MASTER ADMIN PORTAL</h2>
-      <p style="color: var(--danger); font-size: 11px; font-weight: bold; margin-bottom: 20px;">🔒 Restricted: Only authorized master ID permitted.</p>
+      <h2 style="color: var(--blue); font-weight: 900; font-size: 22px; margin-bottom: 6px;">MASTER ADMIN OS</h2>
+      <p style="color: var(--danger); font-size: 11px; font-weight: bold; margin-bottom: 20px;">🔒 Restricted: only soorshyamvishwakarma37@gmail.com permitted.</p>
       
       <button onclick="loginAsMasterAdmin()" class="btn-google" style="padding: 14px; font-size: 14px; margin-bottom: 15px;">
         <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#fff" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.1 8.9 5 12 5zm6.5 7c0-.4-.1-.8-.2-1.2H12v2.4h3.6c-.2 1-.8 1.9-1.7 2.5l2.7 2.1c1.6-1.5 2.7-3.7 2.7-6.3zm-11.8 3.5c-.3-.9-.5-1.9-.5-2.9s.2-2 .5-2.9L3.5 6.6C2.5 8.6 2 10.7 2 13s.5 4.4 1.5 6.4l3.7-2.9Z"/></svg>
-        Sign in with Google (soorshyamvishwakarma37@gmail.com)
+        Sign in with Google
       </button>
-      <p style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">Automated email enforcement active. Any other Google account will be automatically blocked.</p>
+      <p style="font-size: 10px; color: var(--text-muted);">Strict automated email security enforcement active.</p>
     </div>
   </div>
 
   <div id="adminDashboardScreen" class="screen">
     <div class="app-header">
       <div>
-        <h3 style="font-size: 14px; font-weight: 900;">👑 Master Command Panel</h3>
+        <h3 style="font-size: 14px; font-weight: 900;">👑 Sewaastra Enterprise OS</h3>
         <span style="font-size: 10px; opacity: 0.85;">soorshyamvishwakarma37@gmail.com</span>
       </div>
       <button onclick="adminLogout()" class="btn-outline" style="width: auto; padding: 4px 8px; font-size: 10px; border-color: white; color: white;">Logout</button>
@@ -178,21 +224,21 @@
 
     <div id="kycTab" class="tab-content active" style="padding: 15px 0;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="font-size: 15px;">Partner Onboarding & KYC Queue</h3>
+        <h3 style="font-size: 15px;">Partner KYC & Activity Management</h3>
         <span class="badge badge-blue">Live Database</span>
       </div>
       <div id="adminKycListContainer">
-        <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Fetching partner profiles from Firebase...</p>
+        <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Loading partner records...</p>
       </div>
     </div>
 
     <div id="dispatchTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">Order Management & Custom Assignment</h3>
+      <h3 style="font-size: 15px; margin-bottom: 12px;">Order Management & Auto-Assignment</h3>
       
       <div class="card" style="max-width: 100%; margin-bottom: 15px;">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">Create New Customer Booking</h4>
+        <h4 style="font-size: 13px; margin-bottom: 10px;">⚡ Create & Auto-Dispatch Booking</h4>
         <div class="form-group">
-          <label>Service Category:</label>
+          <label>Service Category & Pricing:</label>
           <select id="adminNewServiceCat">
             <option value="AC Split Jet Cleaning & Servicing (₹899)">AC Split Jet Cleaning (₹899)</option>
             <option value="Geyser Tank Heating Element Fix (₹599)">Geyser Element Repair (₹599)</option>
@@ -200,11 +246,14 @@
             <option value="RO Water Purifier Filter Replacements (₹649)">RO Purifier Filter Service (₹649)</option>
           </select>
         </div>
-        <button onclick="adminCreateOrder()">Broadcast / Post Order</button>
+        <button onclick="adminCreateOrderWithAutoAssign()">Broadcast & Auto-Assign Nearest Partner 🚀</button>
       </div>
 
       <div class="card" style="max-width: 100%;">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">Live Active Orders & Custom Assignment Control</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="font-size: 13px; margin: 0;">Active Orders & History Control</h4>
+          <button onclick="adminClearAllOrderHistory()" class="btn-danger" style="width: auto; padding: 4px 8px; font-size: 10px;">Clear Order History 🗑️</button>
+        </div>
         <div id="adminOrdersContainer">
           <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 15px;">Loading active orders...</p>
         </div>
@@ -221,7 +270,7 @@
 
       <div class="card" style="max-width: 100%; margin-bottom: 15px;">
         <h4 style="font-size: 13px; margin-bottom: 10px;">Partner Weekly Payout Control</h4>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Process bank transfers and verify settlements.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Process bank transfers and settle ledgers.</p>
         <div id="adminPartnerWalletList">
           <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Loading partner wallet records...</p>
         </div>
@@ -240,7 +289,7 @@
     </div>
 
     <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchAdminTab('kycTab', this)"><span>👥</span>KYC Approvals</div>
+      <div class="nav-item active" onclick="switchAdminTab('kycTab', this)"><span>👥</span>KYC & Partners</div>
       <div class="nav-item" onclick="switchAdminTab('dispatchTab', this)"><span>⚡</span>Dispatch & Orders</div>
       <div class="nav-item" onclick="switchAdminTab('paymentTab', this)"><span>💰</span>Payouts</div>
       <div class="nav-item" onclick="switchAdminTab('settingsTab', this)"><span>⚙️</span>Telemetry</div>
@@ -250,9 +299,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, push, get, child, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, push, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Provided Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
       authDomain: "sewaastra.firebaseapp.com",
@@ -271,6 +319,10 @@
 
     const TARGET_ADMIN_EMAIL = "soorshyamvishwakarma37@gmail.com";
     const consoleBox = document.getElementById("adminConsole");
+    const loadingOverlay = document.getElementById("loadingOverlay");
+
+    function showLoading() { if(loadingOverlay) loadingOverlay.classList.remove('hidden'); }
+    function hideLoading() { if(loadingOverlay) loadingOverlay.classList.add('hidden'); }
 
     function logMessage(text) {
       if(!consoleBox) return;
@@ -291,13 +343,15 @@
       document.getElementById(screenId).classList.add('active');
     }
 
-    // SECURE ADMIN GOOGLE LOGIN GATEWAY
+    // SECURE GOOGLE LOGIN
     window.loginAsMasterAdmin = async function() {
+      showLoading();
       try {
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
 
         if (user.email !== TARGET_ADMIN_EMAIL) {
+          hideLoading();
           alert(`❌ Access Denied! Logged-in email (${user.email}) is not authorized as Master Admin.`);
           await signOut(auth);
           return;
@@ -309,6 +363,8 @@
       } catch (error) {
         alert("Authentication Error: " + error.message);
         logMessage(`Login error: ${error.message}`);
+      } finally {
+        hideLoading();
       }
     };
 
@@ -318,16 +374,19 @@
       logMessage("Master Admin signed out.");
     };
 
-    // INITIALIZE REALTIME LISTENERS FOR ADMIN DASHBOARD
+    // REAL-TIME LISTENERS
     function initMasterAdminListeners() {
-      // 1. Listen to Partners (KYC & Payouts)
+      showLoading();
+      
+      // 1. Partners Listener
       onValue(ref(db, 'live_partners'), (snap) => {
+        hideLoading();
         const kycContainer = document.getElementById("adminKycListContainer");
         const walletContainer = document.getElementById("adminPartnerWalletList");
         
         if (!snap.exists()) {
-          kycContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No partners registered yet.</p>`;
-          walletContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No wallet data available.</p>`;
+          kycContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No partners registered.</p>`;
+          walletContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No wallet records.</p>`;
           return;
         }
 
@@ -341,29 +400,37 @@
           totalRev += (data.totalEarned || 0);
           totalJobs += (data.completedJobs || 0);
 
-          const badgeClass = data.kycStatus === "approved" ? "badge-success" : (data.kycStatus === "rejected" ? "badge-danger" : "badge-pending");
-          
-          // KYC List HTML
+          const isBlocked = data.isBlocked === true;
+          const kycStatus = data.kycStatus || 'pending';
+          const badgeClass = kycStatus === "approved" ? "badge-success" : (kycStatus === "rejected" ? "badge-danger" : "badge-pending");
+          const blockBadge = isBlocked ? `<span class="badge badge-danger">BLOCKED 🚫</span>` : `<span class="badge badge-success">ACTIVE 🟢</span>`;
+
           kycHtml += `
             <div class="admin-card">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <h4 style="font-size: 14px;">${data.name || 'Unnamed Partner'}</h4>
-                <span class="badge ${badgeClass}">${(data.kycStatus || 'pending').toUpperCase()}</span>
+                <div>
+                  <span class="badge ${badgeClass}">${kycStatus.toUpperCase()}</span>
+                  ${blockBadge}
+                </div>
               </div>
-              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
                 📧 Email: <b>${data.email}</b><br>
                 📱 Phone: <b>${data.phone || 'N/A'}</b><br>
-                🛠️ Skill: <b>${data.skill || 'General'}</b><br>
+                🛠️ Skill: <b>${data.skill || 'General'}</b> | ⭐ Rating: <b>${data.rating || '4.8'} / 5.0</b><br>
                 🆔 Aadhaar: <b>${data.aadhaar || 'N/A'}</b> | PAN: <b>${data.pan || 'N/A'}</b>
               </div>
-              <div style="display: flex; gap: 10px;">
-                <button onclick="adminApproveKyc('${uid}')" style="background: var(--success); padding: 8px; font-size: 12px;">Approve KYC ✅</button>
-                <button onclick="adminRejectKyc('${uid}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 8px; font-size: 12px;">Reject KYC ❌</button>
+              <div style="margin-bottom: 12px;">
+                <button onclick="adminViewDocuments('${uid}')" class="btn-outline" style="padding: 6px; font-size: 11px;">📂 View Uploaded KYC Documents</button>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="adminApproveKyc('${uid}')" style="background: var(--success); padding: 8px; font-size: 11px; flex: 1;">Approve ✅</button>
+                <button onclick="adminRejectKyc('${uid}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 8px; font-size: 11px; flex: 1;">Reject ❌</button>
+                <button onclick="adminToggleBlockPartner('${uid}', ${!isBlocked})" class="btn-danger" style="padding: 8px; font-size: 11px; flex: 1;">${isBlocked ? 'Unblock 🔓' : 'Block 🔒'}</button>
               </div>
             </div>
           `;
 
-          // Wallet Payout HTML
           walletHtml += `
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
               <div>
@@ -384,15 +451,14 @@
         document.getElementById("adminTotalJobsCompleted").innerText = totalJobs;
       });
 
-      // 2. Listen to Orders & Assignments
+      // 2. Orders Listener
       onValue(ref(db, 'live_orders'), async (snap) => {
         const ordersContainer = document.getElementById("adminOrdersContainer");
         if (!snap.exists()) {
-          ordersContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No service orders broadcasted.</p>`;
+          ordersContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">No orders in system.</p>`;
           return;
         }
 
-        // Fetch partners list to populate custom assignment dropdown
         const partSnap = await get(child(ref(db), 'live_partners'));
         const partnersData = partSnap.exists() ? partSnap.val() : {};
 
@@ -400,11 +466,17 @@
         const orders = snap.val();
 
         for (const [orderId, orderData] of Object.entries(orders)) {
-          const badgeColor = orderData.status === "completed" ? "badge-success" : (orderData.status === "assigned" ? "badge-blue" : "badge-pending");
+          const status = orderData.status || 'pending';
+          const badgeColor = status === "completed" ? "badge-success" : (status === "assigned" ? "badge-blue" : "badge-pending");
           
-          let partnerDropdownOptions = `<option value="">-- Choose Partner to Assign --</option>`;
+          let assignedPartnerName = "Unassigned (Auto-Queue)";
+          if(orderData.assignedPartnerId && partnersData[orderData.assignedPartnerId]) {
+            assignedPartnerName = partnersData[orderData.assignedPartnerId].name;
+          }
+
+          let partnerDropdownOptions = `<option value="">-- Choose Partner --</option>`;
           for (const [pId, pData] of Object.entries(partnersData)) {
-            if(pData.kycStatus === "approved") {
+            if(pData.kycStatus === "approved" && !pData.isBlocked) {
               const selected = orderData.assignedPartnerId === pId ? "selected" : "";
               partnerDropdownOptions += `<option value="${pId}" ${selected}>${pData.name} (${pData.skill})</option>`;
             }
@@ -414,21 +486,23 @@
             <div class="admin-card" style="border-left-color: var(--purple);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <span style="font-size: 11px; font-weight: bold; color: var(--text-muted);">ID: ${orderId.substring(0,8)}...</span>
-                <span class="badge ${badgeColor}">${(orderData.status || 'pending').toUpperCase()}</span>
+                <span class="badge ${badgeColor}">${status.toUpperCase()}</span>
               </div>
               <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px;">${orderData.category}</div>
-              <div style="font-size: 12px; color: var(--success); font-weight: bold; margin-bottom: 10px;">Amount: ₹${orderData.amount} | OTP: ${orderData.completionOtp || 'N/A'}</div>
+              <div style="font-size: 12px; color: var(--success); font-weight: bold; margin-bottom: 6px;">Amount: ₹${orderData.amount} | OTP: ${orderData.completionOtp || 'N/A'}</div>
+              <div style="font-size: 11px; color: var(--blue); font-weight: bold; margin-bottom: 10px;">Assigned Partner: ${assignedPartnerName}</div>
               
               <div class="form-group" style="margin-bottom: 8px;">
-                <label>Custom Partner Assignment:</label>
+                <label>Manual Custom Assignment:</label>
                 <select id="select_assign_${orderId}" style="font-size: 12px; padding: 8px;">
                   ${partnerDropdownOptions}
                 </select>
               </div>
 
-              <div style="display: flex; gap: 8px;">
-                <button onclick="adminCustomAssignOrder('${orderId}')" style="background: var(--purple); padding: 8px; font-size: 12px; flex: 1;">Custom Assign ⚡</button>
-                <button onclick="adminUnassignOrder('${orderId}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 8px; font-size: 12px; flex: 1;">Unassign 🔄</button>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="adminCustomAssignOrder('${orderId}')" style="background: var(--purple); padding: 8px; font-size: 11px; flex: 1;">Assign ⚡</button>
+                <button onclick="adminUnassignOrder('${orderId}')" class="btn-outline" style="border-color: var(--danger); color: var(--danger); padding: 8px; font-size: 11px; flex: 1;">Unassign 🔄</button>
+                <button onclick="adminDeleteSingleOrder('${orderId}')" class="btn-danger" style="padding: 8px; font-size: 11px; width: auto;">Delete 🗑️</button>
               </div>
             </div>
           `;
@@ -437,24 +511,79 @@
       });
     }
 
-    // ADMIN ACTIONS: KYC APPROVAL / REJECTION
+    // ADMIN ACTIONS: KYC & BLOCKING
     window.adminApproveKyc = async function(uid) {
+      showLoading();
       await update(ref(db, `live_partners/${uid}`), { kycStatus: "approved" });
-      logMessage(`KYC Approved for partner UID: ${uid}`);
+      hideLoading();
+      logMessage(`KYC Approved for UID: ${uid}`);
       alert("✅ Partner KYC Approved successfully!");
     };
 
     window.adminRejectKyc = async function(uid) {
+      showLoading();
       await update(ref(db, `live_partners/${uid}`), { kycStatus: "rejected" });
-      logMessage(`KYC Rejected for partner UID: ${uid}`);
+      hideLoading();
+      logMessage(`KYC Rejected for UID: ${uid}`);
       alert("❌ Partner KYC Rejected!");
     };
 
-    // ADMIN ACTION: CREATE NEW ORDER
-    window.adminCreateOrder = async function() {
+    window.adminToggleBlockPartner = async function(uid, shouldBlock) {
+      showLoading();
+      await update(ref(db, `live_partners/${uid}`), { isBlocked: shouldBlock });
+      hideLoading();
+      logMessage(`Partner ${uid} block status updated to: ${shouldBlock}`);
+      alert(shouldBlock ? "🔒 Partner blocked successfully!" : "🔓 Partner unblocked successfully!");
+    };
+
+    // DOCUMENT VIEWER MODAL
+    window.adminViewDocuments = async function(uid) {
+      showLoading();
+      const snap = await get(ref(db, `live_partners/${uid}`));
+      hideLoading();
+      if(!snap.exists()) return;
+      const data = snap.val();
+
+      const modalContent = document.getElementById("docModalContent");
+      modalContent.innerHTML = `
+        <p><b>Partner Name:</b> ${data.name || 'N/A'}</p>
+        <p><b>Aadhaar Number:</b> ${data.aadhaar || 'Not Provided'}</p>
+        <p><b>PAN Number:</b> ${data.pan || 'Not Provided'}</p>
+        <p><b>Bank Account:</b> ${data.bank || 'Not Provided'}</p>
+        <div style="margin-top: 15px; padding: 12px; background: #f9f9f9; border-radius: 8px; text-align: center;">
+          <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Uploaded Document Verification Files:</p>
+          ${data.docUrl ? `<a href="${data.docUrl}" target="_blank" style="color: var(--blue); font-weight: bold;">🔗 Open Uploaded Document File</a>` : `<span style="color: var(--danger); font-size: 12px;">No document attachment uploaded yet.</span>`}
+        </div>
+      `;
+      document.getElementById("docModal").classList.add("active");
+    };
+
+    window.closeDocModal = function() {
+      document.getElementById("docModal").classList.remove("active");
+    };
+
+    // AUTO-ASSIGN NEARBY PARTNER LOGIC
+    window.adminCreateOrderWithAutoAssign = async function() {
+      showLoading();
       const serviceCat = document.getElementById("adminNewServiceCat").value;
       const amount = serviceCat.includes("899") ? 899 : (serviceCat.includes("599") ? 599 : (serviceCat.includes("649") ? 649 : 749));
       const completionOtp = Math.floor(1000 + Math.random() * 9000).toString();
+
+      // Fetch all approved & unblocked partners to find nearest/available
+      const partSnap = await get(child(ref(db), 'live_partners'));
+      let assignedPartnerId = null;
+      let orderStatus = "pending";
+
+      if (partSnap.exists()) {
+        const partners = partSnap.val();
+        for (const [pId, pData] of Object.entries(partners)) {
+          if (pData.kycStatus === "approved" && !pData.isBlocked && pData.status !== "busy") {
+            assignedPartnerId = pId;
+            orderStatus = "assigned";
+            break; // Auto-assigns the first available verified partner
+          }
+        }
+      }
 
       const newOrderRef = push(ref(db, 'live_orders'));
       const payload = {
@@ -462,45 +591,52 @@
         amount,
         latitude: 28.6139,
         longitude: 77.2090,
-        status: "pending",
+        status: orderStatus,
+        assignedPartnerId: assignedPartnerId || null,
         completionOtp,
         createdAt: new Date().toISOString()
       };
 
       await set(newOrderRef, payload);
-      logMessage(`New order created: ${serviceCat} (OTP: ${completionOtp})`);
-      alert("📦 Order successfully posted to Firebase database!");
+
+      if (assignedPartnerId) {
+        await update(ref(db, `live_partners/${assignedPartnerId}`), {
+          status: "busy",
+          currentOrderId: newOrderRef.key
+        });
+      }
+
+      hideLoading();
+      logMessage(`Order broadcasted & auto-assigned to partner: ${assignedPartnerId || 'None (Queued)'}`);
+      alert(assignedPartnerId ? "⚡ Order posted & automatically assigned to nearest available partner!" : "📦 Order posted to pending queue (No active partner online).");
     };
 
-    // ADMIN ACTION: CUSTOM ASSIGN PARTNER
+    // ORDER ASSIGNMENT & DELETION CONTROLS
     window.adminCustomAssignOrder = async function(orderId) {
       const selectEl = document.getElementById(`select_assign_${orderId}`);
       const partnerId = selectEl.value;
       if (!partnerId) {
-        alert("Please select a valid approved partner from the dropdown.");
+        alert("Please select a valid partner from the dropdown.");
         return;
       }
 
-      const orderSnap = await get(ref(db, `live_orders/${orderId}`));
-      if (!orderSnap.exists()) return;
-      const orderData = orderSnap.val();
-
+      showLoading();
       const updates = {};
       updates[`/live_orders/${orderId}/status`] = "assigned";
       updates[`/live_orders/${orderId}/assignedPartnerId`] = partnerId;
-
       updates[`/live_partners/${partnerId}/status`] = "busy";
       updates[`/live_partners/${partnerId}/currentOrderId`] = orderId;
 
       await update(ref(db), updates);
-      logMessage(`Order ${orderId} custom-assigned to partner ${partnerId}`);
-      alert("⚡ Order successfully assigned to selected partner!");
+      hideLoading();
+      logMessage(`Order ${orderId} assigned to partner ${partnerId}`);
+      alert("⚡ Order custom-assigned successfully!");
     };
 
-    // ADMIN ACTION: UNASSIGN PARTNER
     window.adminUnassignOrder = async function(orderId) {
+      showLoading();
       const orderSnap = await get(ref(db, `live_orders/${orderId}`));
-      if (!orderSnap.exists()) return;
+      if (!orderSnap.exists()) { hideLoading(); return; }
       const orderData = orderSnap.val();
       const prevPartnerId = orderData.assignedPartnerId;
 
@@ -514,15 +650,35 @@
       }
 
       await update(ref(db), updates);
-      logMessage(`Order ${orderId} unassigned and returned to pending pool.`);
+      hideLoading();
+      logMessage(`Order ${orderId} unassigned.`);
       alert("🔄 Order successfully unassigned!");
     };
 
-    // ADMIN ACTION: SETTLE PAYOUT
+    window.adminDeleteSingleOrder = async function(orderId) {
+      if(!confirm("Are you sure you want to delete this order record?")) return;
+      showLoading();
+      await remove(ref(db, `live_orders/${orderId}`));
+      hideLoading();
+      logMessage(`Order ${orderId} deleted.`);
+      alert("🗑️ Order deleted successfully!");
+    };
+
+    window.adminClearAllOrderHistory = async function() {
+      if(!confirm("WARNING: This will delete ALL order history from the Firebase database. Proceed?")) return;
+      showLoading();
+      await remove(ref(db, 'live_orders'));
+      hideLoading();
+      logMessage("All order history cleared.");
+      alert("🗑️ Order history wiped clean!");
+    };
+
     window.adminSettlePayout = async function(uid) {
+      showLoading();
       await update(ref(db, `live_partners/${uid}`), { totalEarned: 0 });
-      logMessage(`Wallet earnings settled for partner UID: ${uid}`);
-      alert("💰 Payout settlement processed and partner ledger reset to ₹0!");
+      hideLoading();
+      logMessage(`Payout settled for UID: ${uid}`);
+      alert("💰 Payout settled and ledger reset to ₹0!");
     };
   </script>
 </body>
