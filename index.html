@@ -274,10 +274,7 @@
         <div class="form-group">
           <label>Service Category & Price:</label>
           <select id="adminNewServiceCat">
-            <option value="AC Split Jet Cleaning & Servicing (₹899)">AC Split Jet Cleaning (₹899)</option>
-            <option value="Geyser Tank Heating Element Fix (₹599)">Geyser Element Repair (₹599)</option>
-            <option value="Washing Machine PCB Diagnostic (₹749)">Washing Machine Diagnostic (₹749)</option>
-            <option value="RO Water Purifier Filter Replacements (₹649)">RO Purifier Filter Service (₹649)</option>
+            <option value="">Catalog load ho raha hai...</option>
           </select>
         </div>
         <div class="form-group">
@@ -780,16 +777,25 @@
         disputeContainer.innerHTML = dispHtml;
       });
 
-      // 4. Service Catalog Listener
+      // 4. Service Catalog & Dispatch Select Dynamic Listener
       onValue(ref(db, 'master_service_catalog'), (snap) => {
         const catalogContainer = document.getElementById("adminCatalogContainer");
+        const dispatchSelect = document.getElementById("adminNewServiceCat");
+
         if (!snap.exists()) {
           catalogContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Catalog empty hai.</p>`;
+          if (dispatchSelect) {
+            dispatchSelect.innerHTML = `<option value="">No services available</option>`;
+          }
           return;
         }
+
         let catHtml = "";
+        let selectHtml = "";
         const catalog = snap.val();
+
         for (const [cId, cData] of Object.entries(catalog)) {
+          // Catalog Tab List
           catHtml += `
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
               <div>
@@ -799,8 +805,16 @@
               <button onclick="deleteCatalogService('${cId}')" style="padding: 3px 8px; font-size: 10px; background: var(--danger); width: auto;">Delete 🗑️</button>
             </div>
           `;
+
+          // Dispatch Tab Select Options
+          const optionText = `${cData.title} (₹${cData.price})`;
+          selectHtml += `<option value="${optionText}" data-price="${cData.price}">${optionText}</option>`;
         }
+
         catalogContainer.innerHTML = catHtml;
+        if (dispatchSelect) {
+          dispatchSelect.innerHTML = selectHtml;
+        }
       });
 
       // 5. System Settings Listener
@@ -925,8 +939,16 @@
     };
 
     window.adminCreateAndAutoAssignOrder = async function() {
-      const serviceCat = document.getElementById("adminNewServiceCat").value;
-      const amount = serviceCat.includes("899") ? 899 : (serviceCat.includes("599") ? 599 : (serviceCat.includes("649") ? 649 : 749));
+      const serviceSelect = document.getElementById("adminNewServiceCat");
+      const serviceCat = serviceSelect.value;
+      const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+      
+      if (!serviceCat) {
+        alert("Kripya pehle koi service select karein!");
+        return;
+      }
+
+      const amount = selectedOption ? Number(selectedOption.getAttribute("data-price")) || 0 : 0;
       const custLat = parseFloat(document.getElementById("custLat").value);
       const custLng = parseFloat(document.getElementById("custLng").value);
       const completionOtp = Math.floor(1000 + Math.random() * 9000).toString();
