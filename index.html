@@ -199,6 +199,28 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; max-height: 85vh; overflow-y: auto;
     }
     .search-bar { margin-bottom: 12px; }
+
+    /* Dynamic Service Radio Card Styles */
+    .service-radio-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1e293b;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border: 1px solid #334155;
+      transition: all 0.2s;
+    }
+    .service-radio-card:hover { border-color: var(--blue); }
+    .service-radio-card input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -272,10 +294,10 @@
       <div class="card">
         <h4 style="font-size: 13px; margin-bottom: 10px;">📦 Create Booking & Auto-Assign</h4>
         <div class="form-group">
-          <label>Service Category & Price:</label>
-          <select id="adminNewServiceCat">
-            <option value="">Catalog load ho raha hai...</option>
-          </select>
+          <label>Select Service Category (Live from Firebase Catalog):</label>
+          <div id="adminDispatchServiceList">
+            <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Loading services from Firebase...</p>
+          </div>
         </div>
         <div class="form-group">
           <label>Customer Coordinates (Lat / Lng):</label>
@@ -289,7 +311,7 @@
 
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h4 style="font-size: 13px; margin: 0;">📋 Active Orders</h4>
+          <h4 style="font-size: 13px; margin: 0;">📋 Active Orders (Customer App Real-Time Sync)</h4>
           <button onclick="adminClearOrderHistory()" class="btn-danger" style="width: auto; padding: 4px 8px; font-size: 10px;">Clear History 🗑️</button>
         </div>
         <div id="adminOrdersContainer">
@@ -467,6 +489,7 @@
     const loaderEl = document.getElementById("globalLoader");
     let cachedPartnersData = {};
     let cachedOrdersData = {};
+    let cachedCatalogData = {};
 
     function showLoader(show) {
       if (loaderEl) loaderEl.style.display = show ? 'flex' : 'none';
@@ -491,7 +514,6 @@
       document.getElementById(screenId).classList.add('active');
     }
 
-    // Enforce session lock: automatically lock inside the dashboard if already authenticated as the master admin
     onAuthStateChanged(auth, async (user) => {
       showLoader(true);
       if (user && user.email === TARGET_ADMIN_EMAIL) {
@@ -689,6 +711,28 @@
       document.getElementById("anTotalPartners").innerText = totalPartnersCount;
     }
 
+    function renderDispatchServiceSelection(catalog) {
+      const container = document.getElementById("adminDispatchServiceList");
+      if (!container) return;
+
+      let html = "";
+      let isFirst = true;
+      for (const [cId, cData] of Object.entries(catalog)) {
+        const checkedAttr = isFirst ? "checked" : "";
+        html += `
+          <label class="service-radio-card">
+            <div>
+              <div style="font-weight: bold; font-size: 13px;">${cData.title}</div>
+              <div style="color: #38bdf8; font-size: 12px; font-weight: bold; margin-top: 2px;">₹${cData.price}</div>
+            </div>
+            <input type="radio" name="adminServiceRadio" value="${cData.title} (₹${cData.price})" data-price="${cData.price}" ${checkedAttr}>
+          </label>
+        `;
+        isFirst = false;
+      }
+      container.innerHTML = html || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Catalog empty hai.</p>`;
+    }
+
     function initMasterAdminListeners() {
       // 1. Partners Listener
       onValue(ref(db, 'live_partners'), (snap) => {
@@ -701,7 +745,7 @@
         renderPartnersUI(cachedPartnersData);
       });
 
-      // 2. Orders Listener
+      // 2. Orders Listener (Customer App Real-Time Sync)
       onValue(ref(db, 'live_orders'), async (snap) => {
         const ordersContainer = document.getElementById("adminOrdersContainer");
         if (!snap.exists()) {
@@ -777,25 +821,20 @@
         disputeContainer.innerHTML = dispHtml;
       });
 
-      // 4. Service Catalog & Dispatch Select Dynamic Listener
+      // 4. Service Catalog Listener (Updates dispatch select options live from Firebase)
       onValue(ref(db, 'master_service_catalog'), (snap) => {
         const catalogContainer = document.getElementById("adminCatalogContainer");
-        const dispatchSelect = document.getElementById("adminNewServiceCat");
-
         if (!snap.exists()) {
+          cachedCatalogData = {};
           catalogContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Catalog empty hai.</p>`;
-          if (dispatchSelect) {
-            dispatchSelect.innerHTML = `<option value="">No services available</option>`;
-          }
+          renderDispatchServiceSelection({});
           return;
         }
+        cachedCatalogData = snap.val();
+        renderDispatchServiceSelection(cachedCatalogData);
 
         let catHtml = "";
-        let selectHtml = "";
-        const catalog = snap.val();
-
-        for (const [cId, cData] of Object.entries(catalog)) {
-          // Catalog Tab List
+        for (const [cId, cData] of Object.entries(cachedCatalogData)) {
           catHtml += `
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
               <div>
@@ -805,16 +844,8 @@
               <button onclick="deleteCatalogService('${cId}')" style="padding: 3px 8px; font-size: 10px; background: var(--danger); width: auto;">Delete 🗑️</button>
             </div>
           `;
-
-          // Dispatch Tab Select Options
-          const optionText = `${cData.title} (₹${cData.price})`;
-          selectHtml += `<option value="${optionText}" data-price="${cData.price}">${optionText}</option>`;
         }
-
         catalogContainer.innerHTML = catHtml;
-        if (dispatchSelect) {
-          dispatchSelect.innerHTML = selectHtml;
-        }
       });
 
       // 5. System Settings Listener
@@ -842,7 +873,7 @@
       const newRef = push(ref(db, 'master_service_catalog'));
       await set(newRef, { title, price });
       showLoader(false);
-      alert("✅ Service successfully added to master catalog!");
+      alert("✅ Service successfully added to master catalog and updated in Dispatch!");
       logMessage(`New service catalog item added: ${title} (₹${price})`);
       document.getElementById("newSvcTitle").value = "";
       document.getElementById("newSvcPrice").value = "";
@@ -939,16 +970,14 @@
     };
 
     window.adminCreateAndAutoAssignOrder = async function() {
-      const serviceSelect = document.getElementById("adminNewServiceCat");
-      const serviceCat = serviceSelect.value;
-      const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-      
-      if (!serviceCat) {
-        alert("Kripya pehle koi service select karein!");
+      const selectedRadio = document.querySelector('input[name="adminServiceRadio"]:checked');
+      if (!selectedRadio) {
+        alert("Kripya ek service select karein!");
         return;
       }
+      const serviceCat = selectedRadio.value;
+      const amount = Number(selectedRadio.dataset.price);
 
-      const amount = selectedOption ? Number(selectedOption.getAttribute("data-price")) || 0 : 0;
       const custLat = parseFloat(document.getElementById("custLat").value);
       const custLng = parseFloat(document.getElementById("custLng").value);
       const completionOtp = Math.floor(1000 + Math.random() * 9000).toString();
