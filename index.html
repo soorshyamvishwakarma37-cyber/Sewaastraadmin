@@ -1,1067 +1,548 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sewaastra Enterprise Master Admin OS v6.0 (Advanced Intelligence)</title>
-  <style>
-    :root {
-      --primary-red: #e23744;
-      --primary-hover: #c92a35;
-      --bg-main: #f1f5f9;
-      --bg-card: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --success: #16a34a;
-      --warning: #ca8a04;
-      --danger: #dc2626;
-      --blue: #2563eb;
-      --purple: #7c3aed;
-      --indigo: #4f46e5;
-      --teal: #0d9488;
-    }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-    }
-    .screen {
-      display: none;
-      min-height: 100vh;
-      padding: 12px;
-      box-sizing: border-box;
-    }
-    .screen.active {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    #adminDashboardScreen.active {
-      display: block;
-      justify-content: unset;
-      align-items: unset;
-      max-width: 720px;
-      margin: 0 auto;
-      padding-bottom: 105px;
-    }
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 18px;
-      border-radius: 14px;
-      width: 100%;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.03);
-      box-sizing: border-box;
-      margin-bottom: 15px;
-    }
-    h1, h2, h3, h4 { margin: 0; }
-    .form-group { margin-bottom: 14px; }
-    label {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
-      color: var(--text-muted);
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      background: #fff;
-      border: 1px solid var(--border);
-      color: var(--text-main);
-      border-radius: 8px;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
-    button {
-      background-color: var(--blue);
-      color: white;
-      border: none;
-      padding: 12px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      width: 100%;
-      font-size: 14px;
-      transition: background 0.2s;
-    }
-    button:hover { background-color: #1d4ed8; }
-    .btn-outline { background: transparent; border: 1px solid var(--blue); color: var(--blue); }
-    .btn-google { background: #4285F4; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .btn-google:hover { background: #3367D6; }
-    .btn-danger { background-color: var(--danger); }
-    .btn-danger:hover { background-color: #b91c1c; }
-    .btn-success { background-color: var(--success); }
-    .btn-success:hover { background-color: #15803d; }
-    .btn-warning { background-color: var(--warning); color: #fff; }
-    .btn-purple { background-color: var(--purple); color: #fff; }
-    .btn-teal { background-color: var(--teal); color: #fff; }
-
-    .app-header {
-      background: linear-gradient(135deg, var(--indigo), var(--blue));
-      color: white;
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-radius: 0 0 14px 14px;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: #fff;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      padding: 8px 2px;
-      z-index: 100;
-      max-width: 720px;
-      margin: 0 auto;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.03);
-      overflow-x: auto;
-    }
-    .nav-item { text-align: center; font-size: 8px; color: var(--text-muted); cursor: pointer; font-weight: 600; flex: 1; min-width: 55px; }
-    .nav-item.active { color: var(--blue); }
-    .nav-item span { display: block; font-size: 15px; margin-bottom: 2px; }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .badge-success { background: #dcfce7; color: var(--success); }
-    .badge-pending { background: #fef9c3; color: #854d0e; }
-    .badge-danger { background: #fee2e2; color: var(--danger); }
-    .badge-blue { background: #dbeafe; color: var(--blue); }
-    .badge-purple { background: #f3e8ff; color: var(--purple); }
-    .badge-teal { background: #ccfbf1; color: var(--teal); }
-
-    .admin-card {
-      background: #fff; border: 1px solid var(--border); border-left: 5px solid var(--blue);
-      padding: 16px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-    }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-    .stat-box { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
-    .stat-box .val { font-size: 18px; font-weight: 800; color: var(--blue); }
-    .stat-box .lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-top: 2px; }
-    
-    .console-box {
-      background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 8px;
-      font-family: monospace; font-size: 11px; height: 120px; overflow-y: auto; margin-top: 12px;
-    }
-
-    #globalLoader {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(3px);
-      z-index: 9999;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 4px solid var(--border);
-      border-top: 4px solid var(--blue);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .loader-text { font-size: 12px; font-weight: 700; color: var(--blue); }
-
-    .doc-preview-box {
-      background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 11px; margin-top: 10px; border: 1px dashed var(--border);
-    }
-
-    #docModal {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.6); z-index: 1000;
-      display: none; justify-content: center; align-items: center; padding: 20px;
-    }
-    .modal-content {
-      background: #fff; width: 100%; max-width: 500px; padding: 20px; border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; max-height: 85vh; overflow-y: auto;
-    }
-    .search-bar { margin-bottom: 12px; }
-
-    /* Dynamic Service Radio Card Styles */
-    .service-radio-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #1e293b;
-      color: #fff;
-      padding: 12px 16px;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      border: 1px solid #334155;
-      transition: all 0.2s;
-    }
-    .service-radio-card:hover { border-color: var(--blue); }
-    .service-radio-card input[type="radio"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--blue);
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SewaAstra Admin – Control Panel</title>
+<meta name="theme-color" content="#0b1220">
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+<style>
+:root{--pr:#ff6b00;--gold:#ffd700;--ok:#15a04a;--rd:#e53935;--bl:#1976d2;--card:#171e2c;--bg:#0d1320;--tx:#e8ecf4;--bd:#26304a;--mut:#8a94ab;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--tx);padding-bottom:76px;}
+.hd{position:sticky;top:0;z-index:100;background:linear-gradient(120deg,#0b1220,#2a1440 55%,#4a2408);padding:13px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 18px rgba(0,0,0,.4);}
+.hd b{font-size:15px;} .hd b span{color:var(--pr);}
+.gold{font-size:8.5px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#5a3a00;border-radius:20px;padding:2px 8px;font-weight:900;letter-spacing:.5px;}
+.cd{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:13px 14px;margin-bottom:10px;}
+.wrap{max-width:560px;margin:0 auto;padding:12px 12px 20px;}
+.rw{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.mut{color:var(--mut);font-size:10.5px;font-weight:700;}
+.ch{font-size:9.5px;font-weight:800;border-radius:20px;padding:3px 9px;white-space:nowrap;}
+.bn{border:none;border-radius:11px;padding:9px 13px;font-weight:800;font-size:11px;cursor:pointer;color:#fff;}
+.bn.o{background:linear-gradient(135deg,#ff6b00,#ff9a3d);}
+.bn.g{background:linear-gradient(135deg,#0f9d45,#2bc96e);}
+.bn.r{background:#3a1418;color:#ff8a80;border:1px solid #5a2025;}
+.bn.b{background:#12294a;color:#7fb3ff;border:1px solid #1e3d68;}
+.bn.gy{background:#222b40;color:#aab6cf;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tile{background:var(--card);border:1px solid var(--bd);border-radius:15px;padding:12px;text-align:center;}
+.tile b{font-size:18px;display:block;} .tile span{font-size:9.5px;color:var(--mut);font-weight:800;}
+.tile.hot{border-color:var(--pr);} .tile.hot b{color:var(--pr);}
+.nv{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#101827;border-top:1px solid var(--bd);display:flex;max-width:100%;overflow-x:auto;}
+.nv button{flex:1;min-width:62px;background:none;border:none;color:var(--mut);font-size:9px;font-weight:800;padding:8px 2px 10px;cursor:pointer;position:relative;}
+.nv button i{display:block;font-size:19px;margin-bottom:3px;font-style:normal;}
+.nv button.act{color:var(--pr);}
+.bdg{position:absolute;top:3px;right:12px;background:var(--rd);color:#fff;font-size:8px;font-weight:900;border-radius:10px;padding:1px 5px;display:none;}
+.sec{display:none;} .sec.act{display:block;animation:fu .25s;}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd);border-radius:10px;color:var(--tx);padding:9px 11px;font-size:12px;margin-top:7px;outline:none;font-weight:600;}
+.tt{font-size:12.5px;font-weight:800;margin:14px 0 8px;}
+.ov{position:fixed;inset:0;z-index:900;display:none;align-items:flex-end;justify-content:center;background:rgba(5,8,18,.7);backdrop-filter:blur(4px);}
+.ov.on{display:flex;}
+.sheet{background:var(--card);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:16px 16px 26px;max-height:88vh;overflow-y:auto;animation:su .25s;}
+@keyframes su{from{transform:translateY(60%)}to{transform:none}}
+.kimg{width:100%;border-radius:12px;border:1px solid var(--bd);margin-top:6px;}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;}
+.tabs span{font-size:10px;font-weight:800;border-radius:20px;padding:6px 12px;background:#0f1626;border:1px solid var(--bd);color:var(--mut);cursor:pointer;white-space:nowrap;}
+.tabs span.on{background:var(--pr);color:#fff;border-color:var(--pr);}
+#tst{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:#fff;color:#111;font-size:12px;font-weight:800;border-radius:30px;padding:10px 18px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none;z-index:9999;white-space:nowrap;}
+#lgOv{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,#0b1220,#241536 60%,#3a1c0a);padding:16px;}
+.lgc{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:30px 22px;width:100%;max-width:360px;text-align:center;backdrop-filter:blur(10px);}
+.dt{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+.em{text-align:center;color:var(--mut);font-size:11.5px;font-weight:700;padding:26px 10px;}
+.ldr{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;background:rgba(5,8,18,.6);}
+.spin{width:44px;height:44px;border:4px solid rgba(255,255,255,.15);border-top-color:var(--pr);border-radius:50%;animation:rot .8s linear infinite;}
+@keyframes rot{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
 
-  <div id="globalLoader">
-    <div class="spinner"></div>
-    <div class="loader-text">Advanced Intelligence Syncing...</div>
+<!-- LOGIN -->
+<div id="lgOv">
+  <div class="lgc">
+    <div style="font-size:52px;">👨‍💼</div>
+    <h2 style="margin:10px 0 4px;font-size:20px;">SewaAstra <span style="color:var(--pr);">Admin</span></h2>
+    <div class="mut" style="margin-bottom:18px;">A→Z Control Panel • <span class="gold">⭐ PREMIUM</span></div>
+    <button class="bn" style="width:100%;padding:13px;background:#fff;color:#222;font-size:13px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:9px;" onclick="gLogin()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G"> Google से Login
+    </button>
+    <div class="mut" style="margin-top:14px;line-height:1.7;">🔒 सिर्फ authorized admin:<br><b style="color:var(--gold);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7a091515080912031b170c1309120d1b111b08171b494d3a1d171b131654191517">[email&#160;protected]</a></b></div>
+    <div id="lgE" style="color:#ff8a80;font-size:11px;font-weight:800;margin-top:10px;"></div>
   </div>
+</div>
 
-  <!-- Document & Detail Viewer Modal -->
-  <div id="docModal">
-    <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h3 id="modalTitle" style="font-size: 16px;">📄 Enterprise Inspector</h3>
-        <button onclick="closeDocModal()" style="width: auto; padding: 4px 10px; background: var(--danger); font-size: 12px;">✕ Close</button>
-      </div>
-      <div id="modalDocBody"></div>
-    </div>
+<!-- HEADER -->
+<div class="hd">
+  <div style="font-size:22px;">👨‍💼</div>
+  <div style="flex:1;"><b>SewaAstra <span>Admin</span> <span class="gold">⭐ PREMIUM</span></b>
+  <div class="mut" id="hSub">Control Panel</div></div>
+  <button class="bn gy" onclick="refreshAll()">🔄</button>
+  <button class="bn r" onclick="lgOut()">🚪</button>
+</div>
+
+<div class="wrap">
+  <!-- DASHBOARD -->
+  <div class="sec act" id="secD"><div id="dX"></div></div>
+  <!-- ORDERS -->
+  <div class="sec" id="secO">
+    <div class="tabs" id="oTabs"></div><div id="oX"></div>
   </div>
+  <!-- PARTNERS -->
+  <div class="sec" id="secP"><div id="trkC"></div><div id="pX"></div></div>
+  <!-- KYC -->
+  <div class="sec" id="secK"><div id="kX"></div></div>
+  <!-- MONEY -->
+  <div class="sec" id="secM"><div id="mX"></div></div>
+  <!-- GIFTS + TICKETS -->
+  <div class="sec" id="secT"><div id="tX"></div></div>
+</div>
 
-  <!-- Login Screen -->
-  <div id="adminLoginScreen" class="screen active">
-    <div class="card" style="text-align: center; max-width: 420px;">
-      <div style="font-size: 44px; margin-bottom: 8px;">⚡</div>
-      <h2 style="color: var(--blue); font-weight: 900; font-size: 20px; margin-bottom: 6px;">SEWAASTRA MASTER OS v6.0</h2>
-      <p style="color: var(--danger); font-size: 11px; font-weight: bold; margin-bottom: 20px;">🔒 Enterprise Terminal: Master Admin Intelligence</p>
-      
-      <button onclick="loginAsMasterAdmin()" class="btn-google" style="padding: 14px; font-size: 14px; margin-bottom: 15px;">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#fff" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.1 8.9 5 12 5zm6.5 7c0-.4-.1-.8-.2-1.2H12v2.4h3.6c-.2 1-.8 1.9-1.7 2.5l2.7 2.1c1.6-1.5 2.7-3.7 2.7-6.3zm-11.8 3.5c-.3-.9-.5-1.9-.5-2.9s.2-2 .5-2.9L3.5 6.6C2.5 8.6 2 10.7 2 13s.5 4.4 1.5 6.4l3.7-2.9Z"/></svg>
-        Sign in with Google
-      </button>
-      <p style="font-size: 10px; color: var(--text-muted); line-height: 1.4;">Authorized Admin ID: <br><b>soorshyamvishwakarma37@gmail.com</b></p>
-    </div>
-  </div>
+<!-- NAV -->
+<div class="nv">
+  <button class="act" onclick="tab('D',this)"><i>📊</i>Dash</button>
+  <button onclick="tab('O',this)"><i>📦</i>Orders<span class="bdg" id="bO"></span></button>
+  <button onclick="tab('P',this)"><i>🧑‍🔧</i>Partners</button>
+  <button onclick="tab('K',this)"><i>🪪</i>KYC<span class="bdg" id="bK"></span></button>
+  <button onclick="tab('M',this)"><i>💰</i>Money<span class="bdg" id="bM"></span></button>
+  <button onclick="tab('T',this)"><i>🎫</i>Support<span class="bdg" id="bT"></span></button>
+</div>
 
-  <!-- Dashboard Screen -->
-  <div id="adminDashboardScreen" class="screen">
-    <div class="app-header">
-      <div>
-        <h3 style="font-size: 14px; font-weight: 900;">⚡ Sewaastra Intelligence OS</h3>
-        <span style="font-size: 10px; opacity: 0.9;">soorshyamvishwakarma37@gmail.com</span>
-      </div>
-      <button onclick="adminLogout()" class="btn-outline" style="width: auto; padding: 4px 10px; font-size: 10px; border-color: white; color: white;">Logout</button>
-    </div>
+<!-- DETAIL SHEET -->
+<div class="ov" id="shO"><div class="sheet" id="shX"></div></div>
+<div id="tst"></div>
+<div class="ldr" id="ldr"><div class="spin"></div></div>
 
-    <!-- TAB 1: KYC & PARTNERS -->
-    <div id="kycTab" class="tab-content active" style="padding: 15px 0;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="font-size: 15px;">👥 Partner KYC & Profiles</h3>
-        <span class="badge badge-success">Live Sync</span>
-      </div>
-      <div class="search-bar">
-        <input type="text" id="partnerSearchInput" placeholder="🔍 Search partners by name, email or phone..." oninput="filterPartnersList()">
-      </div>
-      <div id="adminKycListContainer">
-        <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px;">Partners data load ho raha hai...</p>
-      </div>
-    </div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ═══ ADMIN FIREBASE CONFIG ═══ */
+var firebaseConfig = {
+  apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
+  authDomain: "sewaastra.firebaseapp.com",
+  databaseURL: "https://sewaastra-default-rtdb.firebaseio.com",
+  projectId: "sewaastra",
+  storageBucket: "sewaastra.firebasestorage.app",
+  messagingSenderId: "211091351218",
+  appId: "1:211091351218:web:47fe25d6db3e8dd0464bab",
+  measurementId: "G-BX0Z5YQGZB"
+};
+firebase.initializeApp(firebaseConfig);
+var FS=firebase.firestore();
+var ADMIN_EMAIL='soorshyamvishwakarma37@gmail.com';
 
-    <!-- TAB 2: SMART DISPATCH & FLEET RADAR -->
-    <div id="dispatchTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">⚡ Smart Dispatch & Fleet Radar</h3>
-      
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">🛰️ Live Fleet Radar (Active Partners)</h4>
-        <div id="adminFleetRadarContainer" style="max-height: 200px; overflow-y: auto;">
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Fleet telemetry scanning...</p>
-        </div>
-      </div>
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function toast(m){var t=$('tst');t.innerText=m;t.style.display='block';clearTimeout(t._x);t._x=setTimeout(function(){t.style.display='none';},2600);}
+function ldr(){$('ldr').style.display='flex';} function ldrX(){$('ldr').style.display='none';}
+function ago(ts){if(!ts)return '';var m=Math.floor((Date.now()-ts)/60000);return m<1?'अभी':m<60?m+'m':m<1440?Math.floor(m/60)+'h':Math.floor(m/1440)+'d';}
+function inr(n){return '₹'+(n||0).toLocaleString('en-IN');}
 
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">📦 Create Booking & Auto-Assign</h4>
-        <div class="form-group">
-          <label>Select Service Category (Live from Firebase Catalog):</label>
-          <div id="adminDispatchServiceList">
-            <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Loading services from Firebase...</p>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Customer Coordinates (Lat / Lng):</label>
-          <div class="grid-2" style="margin-bottom:0;">
-            <input type="number" id="custLat" value="28.6139" step="0.0001" placeholder="Latitude">
-            <input type="number" id="custLng" value="77.2090" step="0.0001" placeholder="Longitude">
-          </div>
-        </div>
-        <button onclick="adminCreateAndAutoAssignOrder()" class="btn-success">🚀 Near Partner ko Auto-Assign Karein</button>
-      </div>
+/* ═══ LOGIN — सिर्फ ADMIN GMAIL ═══ */
+function gLogin(){
+  var p=new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(p).catch(function(e){
+    if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].indexOf(e.code)>-1){
+      firebase.auth().signInWithRedirect(p).catch(function(e2){$('lgE').innerText='❌ '+e2.message;});
+    } else $('lgE').innerText='❌ '+(e.message||e.code);
+  });
+}
+firebase.auth().getRedirectResult().catch(function(){});
+function lgOut(){ firebase.auth().signOut(); location.reload(); }
+var AUTHED=false;
+firebase.auth().onAuthStateChanged(function(u){
+  if(!u){ $('lgOv').style.display='flex'; return; }
+  if((u.email||'').toLowerCase()!==ADMIN_EMAIL){
+    $('lgE').innerHTML='⛔ <b>'+esc(u.email||'?')+'</b> authorized नहीं है!<br>सिर्फ admin Gmail से login करें।';
+    firebase.auth().signOut();
+    return;
+  }
+  AUTHED=true;
+  $('lgOv').style.display='none';
+  $('hSub').innerText='👑 '+u.email;
+  boot();
+});
 
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h4 style="font-size: 13px; margin: 0;">📋 Active Orders (Customer App Real-Time Sync)</h4>
-          <button onclick="adminClearOrderHistory()" class="btn-danger" style="width: auto; padding: 4px 8px; font-size: 10px;">Clear History 🗑️</button>
-        </div>
-        <div id="adminOrdersContainer">
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 15px;">Orders load ho rahe hain...</p>
-        </div>
-      </div>
-    </div>
+/* ═══ DATA ═══ */
+var ORD=[], PTR=[], TIK=[], USR={};
+var WDS=[], DEPS=[], INCS=[], GIFTS=[];
+var booted=false;
+function boot(){
+  if(booted) return; booted=true;
+  FS.collection('orders').onSnapshot(function(s){
+    ORD=s.docs.map(function(d){var o=d.data();o._id=d.id;return o;});
+    drawDash(); drawOrders(); badges();
+  },function(e){ toast('❌ orders: '+e.message); });
+  FS.collection('partners').onSnapshot(function(s){
+    PTR=s.docs.map(function(d){var p=d.data();p._id=d.id;return p;});
+    drawDash(); drawPartners(); drawKyc(); badges();
+  },function(e){ toast('❌ partners: '+e.message); });
+  FS.collection('tickets').onSnapshot(function(s){
+    TIK=s.docs.map(function(d){var t=d.data();t._id=d.id;return t;}).sort(function(a,b){return (b.ts||0)-(a.ts||0);});
+    drawTix(); badges();
+  },function(e){});
+  FS.collection('users').get().then(function(s){ s.docs.forEach(function(d){USR[d.id]=d.data();}); }).catch(function(){});
+  loadGroups();
+  toast('👑 Admin Panel तैयार!');
+}
+function loadGroups(){
+  Promise.all([
+    FS.collectionGroup('withdrawals').get(),
+    FS.collectionGroup('deposits').get(),
+    FS.collectionGroup('incentives').get(),
+    FS.collectionGroup('gifts').get()
+  ]).then(function(r){
+    function mp(sn){ return sn.docs.map(function(d){ var x=d.data(); x._id=d.id; x._ph=d.ref.parent.parent.id; x._ref=d.ref; return x; }).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); }
+    WDS=mp(r[0]); DEPS=mp(r[1]); INCS=mp(r[2]); GIFTS=mp(r[3]);
+    drawMoney(); drawTix(); drawDash(); badges();
+  }).catch(function(e){ toast('⚠️ '+e.message); });
+}
+function refreshAll(){ ldr(); loadGroups(); setTimeout(function(){ldrX();toast('🔄 Refresh!');},900); }
 
-    <!-- TAB 3: PAYMENTS & DISPUTES -->
-    <div id="paymentTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">💰 Financial Ledger & Dispute Hub</h3>
-      
-      <div class="grid-2">
-        <div class="stat-box"><div class="val" id="adminTotalRevenue">₹0</div><div class="lbl">Platform Revenue</div></div>
-        <div class="stat-box"><div class="val" id="adminTotalJobsCompleted">0</div><div class="lbl">Completed Gigs</div></div>
-      </div>
+/* ═══ TABS ═══ */
+function tab(t,btn){
+  ['D','O','P','K','M','T'].forEach(function(x){$('sec'+x).classList.remove('act');});
+  $('sec'+t).classList.add('act');
+  document.querySelectorAll('.nv button').forEach(function(b){b.classList.remove('act');});
+  btn.classList.add('act');
+  if(t==='M') drawMoney();
+  if(t==='T') drawTix();
+}
+function badges(){
+  function bd(id,n){var e=$(id);e.style.display=n?'block':'none';e.innerText=n;}
+  bd('bO',ORD.filter(function(o){return o.status==='Order Placed';}).length);
+  bd('bK',PTR.filter(function(p){return p.kycStatus==='Submitted';}).length);
+  bd('bM',WDS.filter(function(w){return w.status==='Requested';}).length+DEPS.filter(function(d){return d.status==='Pending';}).length);
+  bd('bT',TIK.filter(function(t){return (t.status||'Open')==='Open';}).length+GIFTS.filter(function(g){return g.status==='Booked';}).length);
+}
 
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">⚡ Payment Approval & Commission Gateway</h4>
-        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-          <button id="autoApprovalBtn" onclick="togglePaymentAutoApproval(true)" class="btn-success" style="font-size: 12px; padding: 8px;">Auto-Approval: ON</button>
-          <button id="manualApprovalBtn" onclick="togglePaymentAutoApproval(false)" class="btn-outline" style="font-size: 12px; padding: 8px;">Manual Mode</button>
-        </div>
-        <button onclick="exportLedgerCSV()" class="btn-purple" style="font-size: 12px; padding: 8px; margin-bottom: 8px;">📥 Export Financial Ledger as CSV</button>
-      </div>
+/* ═══ DASHBOARD ═══ */
+var SC={'Order Placed':'#ff6b00','Accepted':'#1976d2','On the Way':'#7b1fa2','Working':'#b07800','Completed':'#15a04a','Cancelled':'#e53935'};
+function drawDash(){
+  var td=new Date().toDateString();
+  var tdO=ORD.filter(function(o){return new Date(o.createdAt||0).toDateString()===td;});
+  var done=ORD.filter(function(o){return o.status==='Completed';});
+  var rev=done.reduce(function(s,o){return s+(o.total||0);},0);
+  var tdRev=done.filter(function(o){return new Date(o.createdAt||0).toDateString()===td;}).reduce(function(s,o){return s+(o.total||0);},0);
+  var onlP=PTR.filter(function(p){return p.online;}).length;
+  var pk=PTR.filter(function(p){return p.kycStatus==='Submitted';}).length;
+  var pw=WDS.filter(function(w){return w.status==='Requested';}).length;
+  var pd=DEPS.filter(function(d){return d.status==='Pending';}).length;
+  var pt=TIK.filter(function(t){return (t.status||'Open')==='Open';}).length;
+  var pg=GIFTS.filter(function(g){return g.status==='Booked';}).length;
+  $('dX').innerHTML=
+  '<div class="grid2">'+
+  '<div class="tile hot"><b>'+inr(rev)+'</b><span>कुल REVENUE</span></div>'+
+  '<div class="tile"><b>'+inr(tdRev)+'</b><span>आज की कमाई</span></div>'+
+  '<div class="tile"><b>'+ORD.length+'</b><span>कुल ORDERS</span></div>'+
+  '<div class="tile"><b>'+tdO.length+'</b><span>आज के ORDERS</span></div>'+
+  '<div class="tile"><b>'+PTR.length+'</b><span>PARTNERS</span></div>'+
+  '<div class="tile"><b style="color:#2bc96e;">'+onlP+' 🟢</b><span>ONLINE अभी</span></div>'+
+  '</div>'+
+  '<div class="tt">⚡ Action चाहिए</div>'+
+  '<div class="grid2">'+
+  '<div class="tile '+(pk?'hot':'')+'" onclick="tab(\'K\',document.querySelectorAll(\'.nv button\')[3])" style="cursor:pointer;"><b>'+pk+'</b><span>KYC PENDING 🪪</span></div>'+
+  '<div class="tile '+(pw?'hot':'')+'" onclick="tab(\'M\',document.querySelectorAll(\'.nv button\')[4])" style="cursor:pointer;"><b>'+pw+'</b><span>WITHDRAWALS 💸</span></div>'+
+  '<div class="tile '+(pd?'hot':'')+'" onclick="tab(\'M\',document.querySelectorAll(\'.nv button\')[4])" style="cursor:pointer;"><b>'+pd+'</b><span>CASH DEPOSITS 💵</span></div>'+
+  '<div class="tile '+(pt+pg?'hot':'')+'" onclick="tab(\'T\',document.querySelectorAll(\'.nv button\')[5])" style="cursor:pointer;"><b>'+(pt+pg)+'</b><span>TICKETS+GIFTS 🎫</span></div>'+
+  '</div>'+
+  '<div class="tt">🔴 Live Orders</div>'+
+  (ORD.filter(function(o){return ['Order Placed','Accepted','On the Way','Working'].indexOf(o.status)>-1;}).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}).slice(0,6).map(oRow).join('')||'<div class="em">कोई live order नहीं</div>');
+}
 
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">⚠️ Customer Refund & Dispute Requests</h4>
-        <div id="adminDisputesContainer">
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Koi dispute claim nahi hai.</p>
-        </div>
-      </div>
+/* ═══ ORDERS ═══ */
+var oFil='ALL';
+var FLOWS=['Order Placed','Accepted','On the Way','Working','Completed','Cancelled'];
+function drawOrders(){
+  var t=$('oTabs');
+  t.innerHTML=['ALL'].concat(FLOWS).map(function(f){
+    var n=f==='ALL'?ORD.length:ORD.filter(function(o){return o.status===f;}).length;
+    return '<span class="'+(oFil===f?'on':'')+'" onclick="oFil=\''+f+'\';drawOrders()">'+f+' ('+n+')</span>';
+  }).join('');
+  var l=(oFil==='ALL'?ORD:ORD.filter(function(o){return o.status===oFil;})).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+  $('oX').innerHTML=l.slice(0,60).map(oRow).join('')||'<div class="em">📭 कोई order नहीं</div>';
+}
+function oRow(o){
+  var pay=o.payment||{};
+  var pv=pay.verified||/^paid/i.test(pay.status||'');
+  return '<div class="cd" onclick="oView(\''+o._id+'\')" style="cursor:pointer;">'+
+  '<div class="rw"><b style="font-size:12px;">'+esc(o.id||o._id)+'</b><span class="ch" style="background:'+(SC[o.status]||'#555')+'22;color:'+(SC[o.status]||'#999')+';">'+esc(o.status||'')+'</span></div>'+
+  '<div class="mut" style="margin-top:4px;">👤 '+esc(o.mobile||'')+' • '+esc(o.date||'')+' '+esc(o.time||'')+' • '+ago(o.createdAt)+'</div>'+
+  '<div class="rw" style="margin-top:5px;"><span style="font-size:11px;font-weight:700;">🛠️ '+esc((o.items||[]).map(function(i){return i.n;}).join(', ').slice(0,40))+'</span>'+
+  '<b style="color:'+(pv?'#2bc96e':'#ffb74d')+';">'+inr(o.total)+(pv?' ✅':' ⏳')+'</b></div>'+
+  (o.partnerName?'<div class="mut" style="margin-top:3px;">🧑‍🔧 '+esc(o.partnerName)+' ('+esc(o.partnerPhone||'')+')'+(o.startSelfie?' • 🤳✓':'')+'</div>':'')+'</div>';
+}
+function oView(id){
+  var o=ORD.filter(function(x){return x._id===id;})[0]; if(!o) return;
+  var pay=o.payment||{};
+  $('shX').innerHTML=
+  '<div class="rw"><b style="font-size:14px;">📦 '+esc(o.id||id)+'</b><span style="font-size:20px;cursor:pointer;" onclick="shClose()">✕</span></div>'+
+  '<div class="mut" style="margin:4px 0 8px;">'+esc(o.status)+' • '+ago(o.createdAt)+' • '+esc(o.mode||'')+'</div>'+
+  '<div class="cd"><b style="font-size:11.5px;">🛒 Items — '+inr(o.total)+'</b><div class="mut" style="margin-top:5px;line-height:1.8;">'+(o.items||[]).map(function(i){return '• '+esc(i.n)+' ×'+(i.qty||1);}).join('<br>')+'</div>'+
+  '<div class="mut" style="margin-top:6px;">📍 '+esc(o.address||'')+'</div>'+
+  '<div class="mut">👤 Customer: '+esc(o.mobile||'')+' <a href="tel:+91'+esc(o.mobile||'')+'" style="color:#7fb3ff;">📞</a></div>'+
+  (o.partnerPhone?'<div class="mut">🧑‍🔧 Partner: '+esc(o.partnerName||'')+' ('+esc(o.partnerPhone)+')</div>':'<div class="mut">🧑‍🔧 अभी assign नहीं</div>')+'</div>'+
+  '<div class="cd"><b style="font-size:11.5px;">💳 Payment</b>'+
+  '<div class="mut" style="margin-top:4px;">Status: '+esc(pay.status||'—')+' • UTR: '+esc(pay.ref||'—')+(pay.verified?' • ✅ Verified':'')+'</div>'+
+  (!pay.verified&&pay.ref?'<button class="bn g" style="width:100%;margin-top:8px;" onclick="oPayV(\''+id+'\')">✅ Payment VERIFY करें</button>':'')+'</div>'+
+  (o.startSelfie&&o.startSelfie.img?'<div class="cd"><b style="font-size:11.5px;">🤳 Work-start Selfie '+(o.startSelfie.live?'(LIVE ✓)':'')+' — '+esc(o.startSelfie.at||'')+'</b><img class="kimg" src="'+o.startSelfie.img+'"></div>':'')+
+  '<div class="cd"><b style="font-size:11.5px;">⚙️ Status बदलें</b>'+
+  '<select id="oSt">'+FLOWS.map(function(f){return '<option '+(o.status===f?'selected':'')+'>'+f+'</option>';}).join('')+'</select>'+
+  '<div style="display:flex;gap:8px;margin-top:9px;"><button class="bn o" style="flex:2;" onclick="oSet(\''+id+'\')">💾 Update</button>'+
+  '<button class="bn r" style="flex:1;" onclick="oDel(\''+id+'\')">🗑️ Delete</button></div></div>';
+  $('shO').classList.add('on');
+}
+function oPayV(id){
+  ldr();
+  FS.collection('orders').doc(id).update({'payment.verified':true,'payment.status':'Paid ✅ (Admin verified)','payment.verifiedAt':Date.now()})
+  .then(function(){ldrX();toast('✅ Payment verified!');shClose();}).catch(function(e){ldrX();toast('❌ '+e.message);});
+}
+function oSet(id){
+  var st=$('oSt').value; ldr();
+  var u={status:st}; u['t_'+st.replace(/\s/g,'')]=Date.now();
+  FS.collection('orders').doc(id).update(u).then(function(){ldrX();toast('📌 '+st);shClose();}).catch(function(e){ldrX();toast('❌ '+e.message);});
+}
+function oDel(id){
+  if(!confirm('पक्का DELETE? वापस नहीं आएगा!')) return;
+  ldr();
+  FS.collection('orders').doc(id).delete().then(function(){ldrX();toast('🗑️ Deleted');shClose();}).catch(function(e){ldrX();toast('❌ '+e.message);});
+}
+function shClose(){ $('shO').classList.remove('on'); }
 
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">Partner Wallet Settlements</h4>
-        <div id="adminPartnerWalletList">
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Ledger load ho raha hai...</p>
-        </div>
-      </div>
-    </div>
+/* ═══ PARTNERS ═══ */
+function drawPartners(){
+  var l=PTR.slice().sort(function(a,b){return (b.lastSeen||b.lastLogin||0)-(a.lastSeen||a.lastLogin||0);});
+  $('pX').innerHTML=l.map(function(p){
+    var on=p.online&&(Date.now()-(p.lastSeen||p.onlineAt||0))<150000;
+    var kc=p.kycStatus==='Approved'?'#2bc96e':p.kycStatus==='Submitted'?'#ffb74d':'#ff8a80';
+    return '<div class="cd" onclick="pView(\''+p._id+'\')" style="cursor:pointer;"><div class="rw">'+
+    '<b style="font-size:12.5px;"><span class="dt" style="background:'+(on?'#2bc96e':'#555')+';"></span>'+esc(p.name||'Partner')+'</b>'+
+    '<span class="ch" style="background:'+kc+'22;color:'+kc+';">'+esc(p.kycStatus||'No KYC')+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;">📱 '+esc(p._id)+' • ⭐ '+(p.avgRating||'—')+' • '+(on?'🟢 ONLINE':'⚫ '+ago(p.lastSeen||p.lastLogin))+(p.trainingDone?' • 🎓':'')+(p.dnd?' • 📵':'')+'</div></div>';
+  }).join('')||'<div class="em">🧑‍🔧 अभी कोई partner नहीं</div>';
+}
+function pView(ph){
+  var p=PTR.filter(function(x){return x._id===ph;})[0]; if(!p) return;
+  var ki=p.kycInfo||{}, b=p.bank||{};
+  $('shX').innerHTML=
+  '<div class="rw"><b style="font-size:14px;">🧑‍🔧 '+esc(p.name||'Partner')+'</b><span style="font-size:20px;cursor:pointer;" onclick="shClose()">✕</span></div>'+
+  '<div class="mut" style="margin:4px 0 8px;">📱 '+esc(ph)+' • ⭐ '+(p.avgRating||'—')+' ('+(p.ratingCount||0)+') • '+esc(p.kycStatus||'No KYC')+(p.trainingDone?' • 🎓 Trained':'')+'</div>'+
+  '<div class="cd"><b style="font-size:11.5px;">📋 KYC जानकारी</b><div class="mut" style="margin-top:5px;line-height:2;">'+
+  '👤 '+esc(p.name||'—')+' • 👨 पिता: '+esc(ki.father||'—')+'<br>🎂 '+esc(ki.dob||'—')+' • 🛠️ '+esc(ki.mainSkill||(p.skills||[]).join(', ')||'—')+
+  '<br>🏠 '+esc(ki.address||'—')+', '+esc(ki.city||'')+' - '+esc(ki.pin||'')+
+  '<br>🪪 आधार: '+esc(ki.aadhaar||'—')+' • PAN: '+esc(ki.pan||'—')+
+  '<br>🏦 '+esc(b.holder||'—')+' • '+esc(b.acc||'—')+' • '+esc(b.ifsc||'')+'<br>💜 UPI: '+esc(b.upi||'—')+
+  '<br>📍 Area: '+esc(p.wkCity||'—')+' ('+esc(p.wkPin||'')+') • Radius '+(p.radiusKm||8)+'km • 🚗 '+esc(p.vehicle||'—')+'</div></div>'+
+  '<div class="cd"><b style="font-size:11.5px;">📸 KYC Documents</b><div id="pDocs" class="mut" style="margin-top:5px;">Loading photos...</div></div>'+
+  '<div class="cd"><b style="font-size:11.5px;">⚙️ Actions</b>'+
+  '<div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;">'+
+  (p.kycStatus!=='Approved'?'<button class="bn g" style="flex:1;" onclick="pKyc(\''+ph+'\',\'Approved\')">✅ APPROVE</button>':'')+
+  (p.kycStatus==='Submitted'?'<button class="bn r" style="flex:1;" onclick="pKyc(\''+ph+'\',\'Rejected\')">❌ REJECT</button>':'')+
+  (p.kycStatus==='Approved'?'<button class="bn r" style="flex:1;" onclick="pKyc(\''+ph+'\',\'Pending\')">🔄 KYC Reset</button>':'')+
+  '<a class="bn b" style="flex:1;text-align:center;text-decoration:none;" href="tel:+91'+esc(ph)+'">📞 Call</a>'+
+  '<a class="bn g" style="flex:1;text-align:center;text-decoration:none;" href="https://wa.me/91'+esc(ph)+'" target="_blank">💬 WA</a></div></div>';
+  $('shO').classList.add('on');
+  FS.collection('partners').doc(ph).collection('kyc').get().then(function(s){
+    var h='';
+    s.docs.forEach(function(d){ var x=d.data(); if(x.img) h+='<div class="mut" style="margin-top:8px;font-weight:800;">'+esc(d.id)+' • '+esc(x.at||'')+'</div><img class="kimg" src="'+x.img+'">'; });
+    $('pDocs').innerHTML=h||'📭 कोई document नहीं';
+  }).catch(function(e){ $('pDocs').innerText='❌ '+e.message; });
+}
+function pKyc(ph,st){
+  ldr();
+  FS.collection('partners').doc(ph).set({kycStatus:st,kycActionAt:Date.now(),kycActionBy:ADMIN_EMAIL},{merge:true})
+  .then(function(){ldrX();toast(st==='Approved'?'🎉 APPROVED — partner को तुरंत खुल जाएगा!':'📌 '+st);shClose();})
+  .catch(function(e){ldrX();toast('❌ '+e.message);});
+}
 
-    <!-- TAB 4: ADVANCED ANALYTICS -->
-    <div id="analyticsTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">📊 Enterprise Business Intelligence</h3>
-      
-      <div class="grid-3">
-        <div class="stat-box"><div class="val" id="anTotalPartners">0</div><div class="lbl">Total Partners</div></div>
-        <div class="stat-box"><div class="val" id="anActiveOrders">0</div><div class="lbl">Active Pipeline</div></div>
-        <div class="stat-box"><div class="val" id="anAvgRating">4.8★</div><div class="lbl">Fleet Quality</div></div>
-      </div>
+/* ═══ KYC QUEUE ═══ */
+function drawKyc(){
+  var q=PTR.filter(function(p){return p.kycStatus==='Submitted';});
+  $('kX').innerHTML='<div class="tt">🪪 KYC Approval Queue ('+q.length+')</div>'+
+  (q.map(function(p){
+    var ki=p.kycInfo||{};
+    return '<div class="cd"><div class="rw"><b style="font-size:12.5px;">'+esc(p.name||'Partner')+'</b><span class="mut">'+ago(p.kycAt)+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;line-height:1.9;">📱 '+esc(p._id)+' • 🏠 '+esc(ki.city||'—')+' • 🪪 '+esc(ki.aadhaar||'—')+'<br>🛠️ '+esc(ki.mainSkill||'—')+' • 👨 '+esc(ki.father||'—')+'</div>'+
+    '<div style="display:flex;gap:8px;margin-top:9px;">'+
+    '<button class="bn gy" style="flex:1;" onclick="pView(\''+p._id+'\')">👁️ पूरा देखें</button>'+
+    '<button class="bn g" style="flex:1;" onclick="pKyc(\''+p._id+'\',\'Approved\')">✅ APPROVE</button>'+
+    '<button class="bn r" onclick="pKyc(\''+p._id+'\',\'Rejected\')">❌</button></div></div>';
+  }).join('')||'<div class="em">✅ कोई KYC pending नहीं — सब clear!</div>')+
+  '<div class="tt">✔ Approved Partners</div>'+
+  (PTR.filter(function(p){return p.kycStatus==='Approved';}).map(function(p){
+    return '<div class="cd" style="padding:9px 13px;" onclick="pView(\''+p._id+'\')"><div class="rw"><b style="font-size:11.5px;">✅ '+esc(p.name||'')+'</b><span class="mut">'+esc(p._id)+'</span></div></div>';
+  }).join('')||'<div class="em">—</div>');
+}
 
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">📈 Service Fulfillment Breakdown</h4>
-        <div id="analyticsCategoryBreakdown" style="font-size: 12px; color: var(--text-muted);">
-          Calculating distribution metrics...
-        </div>
-      </div>
+/* ═══ MONEY: withdrawals + deposits + incentives ═══ */
+function drawMoney(){
+  $('mX').innerHTML=
+  '<div class="tt">💸 Withdraw Requests</div>'+
+  (WDS.map(function(w){
+    var cl=w.status==='Paid'?'#2bc96e':'#ffb74d';
+    return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+inr(w.amt)+' → '+esc(w.upi||'')+'</b><span class="ch" style="background:'+cl+'22;color:'+cl+';">'+esc(w.status||'')+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;">🧑‍🔧 '+esc(w.name||'')+' ('+esc(w._ph)+') • '+esc(w.at||'')+'</div>'+
+    (w.status!=='Paid'?'<div style="display:flex;gap:8px;margin-top:8px;"><a class="bn b" style="flex:1;text-align:center;text-decoration:none;" href="upi://pay?pa='+encodeURIComponent(w.upi||'')+'&pn=Partner&am='+(w.amt||0)+'&cu=INR">📲 UPI से भेजें</a>'+
+    '<button class="bn g" style="flex:1;" onclick="gSet(this,\'withdrawals\',\''+w._ph+'\',\''+w._id+'\',\'Paid\')">✅ PAID mark</button></div>':'')+'</div>';
+  }).join('')||'<div class="em">कोई withdraw request नहीं</div>')+
+  '<div class="tt">💵 Cash Deposits (floating limit ₹2000)</div>'+
+  (DEPS.map(function(d){
+    var cl=d.status==='Approved'?'#2bc96e':d.status==='Rejected'?'#ff8a80':'#ffb74d';
+    return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+inr(d.amt)+' • UTR: '+esc(d.ref||'')+'</b><span class="ch" style="background:'+cl+'22;color:'+cl+';">'+esc(d.status||'')+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;">🧑‍🔧 '+esc(d.name||'')+' ('+esc(d._ph)+') • '+esc(d.at||'')+'</div>'+
+    (d.status==='Pending'?'<div style="display:flex;gap:8px;margin-top:8px;"><button class="bn g" style="flex:1;" onclick="gSet(this,\'deposits\',\''+d._ph+'\',\''+d._id+'\',\'Approved\')">✅ APPROVE</button>'+
+    '<button class="bn r" style="flex:1;" onclick="gSet(this,\'deposits\',\''+d._ph+'\',\''+d._id+'\',\'Rejected\')">❌ REJECT</button></div>':'')+'</div>';
+  }).join('')||'<div class="em">कोई deposit नहीं</div>')+
+  '<div class="tt">🏆 Incentives Earned</div>'+
+  (INCS.map(function(x){
+    var cl=x.status==='Paid'?'#2bc96e':'#ffb74d';
+    return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+esc(x.name||'')+' — '+inr(x.amt)+'</b><span class="ch" style="background:'+cl+'22;color:'+cl+';">'+esc(x.status||'')+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;">🧑‍🔧 '+esc(x.pname||'')+' ('+esc(x._ph)+') • '+esc(x.at||'')+'</div>'+
+    (x.status!=='Paid'?'<button class="bn g" style="width:100%;margin-top:8px;" onclick="gSet(this,\'incentives\',\''+x._ph+'\',\''+x._id+'\',\'Paid\')">✅ PAID mark</button>':'')+'</div>';
+  }).join('')||'<div class="em">कोई incentive नहीं</div>');
+}
+function gSet(btn,coll,ph,id,st){
+  ldr();
+  FS.collection('partners').doc(ph).collection(coll).doc(id).set({status:st,actionAt:Date.now(),actionBy:ADMIN_EMAIL},{merge:true})
+  .then(function(){ ldrX(); toast('✅ '+st); loadGroups(); })
+  .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+}
 
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">⚡ Automated System Health Audit</h4>
-        <div style="font-size: 12px; line-height: 1.6; color: var(--text-main);">
-          🟢 Database Latency: <b>18ms (Optimal)</b><br>
-          🟢 Firebase Auth Gateway: <b>Active & Secure</b><br>
-          🟢 Geofencing Dispatch Engine: <b>Online (10km Radius)</b><br>
-          🟢 Automated Ledger Sync: <b>Running smoothly</b>
-        </div>
-      </div>
-    </div>
+/* ═══ TICKETS + GIFTS ═══ */
+function drawTix(){
+  $('tX').innerHTML=
+  '<div class="tt">🎫 Support Tickets</div>'+
+  (TIK.map(function(t){
+    var st=t.status||'Open';
+    var cl=st==='Resolved'?'#2bc96e':st==='In Progress'?'#7fb3ff':'#ffb74d';
+    return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+esc(t.cat||'')+'</b><span class="ch" style="background:'+cl+'22;color:'+cl+';">'+esc(st)+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;">'+esc(t.name||'')+' ('+esc(t.phone||'')+') • '+esc(t.at||'')+'</div>'+
+    '<div style="font-size:11.5px;margin-top:6px;line-height:1.6;">'+esc(t.msg||'')+'</div>'+
+    (t.reply?'<div class="mut" style="background:#0f1626;border-radius:9px;padding:7px 10px;margin-top:6px;">👨‍💼 '+esc(t.reply)+'</div>':'')+
+    (st!=='Resolved'?'<div style="display:flex;gap:8px;margin-top:8px;"><button class="bn o" style="flex:1;" onclick="tReply(\''+t._id+'\')">💬 Reply + Resolve</button>'+
+    '<button class="bn b" onclick="tProg(\''+t._id+'\')">🔧</button></div>':'')+'</div>';
+  }).join('')||'<div class="em">🎉 कोई ticket नहीं</div>')+
+  '<div class="tt">🎁 Gift Bookings</div>'+
+  (GIFTS.map(function(g){
+    var cl=g.status==='Delivered'?'#2bc96e':'#ffb74d';
+    return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+esc(g.icon||'🎁')+' '+esc(g.item||'')+' ('+(g.pts||0)+' pts)</b><span class="ch" style="background:'+cl+'22;color:'+cl+';">'+esc(g.status||'')+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;">🧑‍🔧 '+esc(g.name||'')+' ('+esc(g._ph)+') • '+esc(g.at||'')+'</div>'+
+    (g.status!=='Delivered'?'<button class="bn g" style="width:100%;margin-top:8px;" onclick="gSet(this,\'gifts\',\''+g._ph+'\',\''+g._id+'\',\'Delivered\')">📦 DELIVERED mark</button>':'')+'</div>';
+  }).join('')||'<div class="em">कोई gift booking नहीं</div>');
+}
+function tReply(id){
+  var r=prompt('Partner को जवाब लिखें:');
+  if(!r) return;
+  ldr();
+  FS.collection('tickets').doc(id).update({reply:r,status:'Resolved',repliedAt:Date.now(),repliedBy:ADMIN_EMAIL})
+  .then(function(){ldrX();toast('✅ Reply भेज दिया — Resolved');}).catch(function(e){ldrX();toast('❌ '+e.message);});
+}
+function tProg(id){
+  FS.collection('tickets').doc(id).update({status:'In Progress'}).then(function(){toast('🔧 In Progress');});
+}
+console.log('%c 👑 SewaAstra ADMIN v1.0 — A→Z CONTROL ','background:linear-gradient(90deg,#ffd700,#ff6b00);color:#1a1030;font-weight:bold;padding:4px;');
 
-    <!-- TAB 5: DYNAMIC SERVICE CATALOG & PRICING -->
-    <div id="servicesTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">🛠️ Service Catalog & Dynamic Pricing</h3>
-      
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">➕ Add New Enterprise Service</h4>
-        <div class="form-group">
-          <label>Service Title:</label>
-          <input type="text" id="newSvcTitle" placeholder="e.g. Inverter Repair & Servicing">
-        </div>
-        <div class="form-group">
-          <label>Standard Price (₹):</label>
-          <input type="number" id="newSvcPrice" placeholder="799">
-        </div>
-        <button onclick="addNewCatalogService()" class="btn-teal">Add to Master Catalog ⚡</button>
-      </div>
+/* ═══════════════ ADMIN v2.0 — TRACKING + BLOCK + ALERTS + COMPLAINTS ═══════════════ */
 
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">📋 Active Master Catalog Items</h4>
-        <div id="adminCatalogContainer">
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Catalog load ho raha hai...</p>
-        </div>
-      </div>
-    </div>
+function leaf(){
+  if(window.L) return Promise.resolve();
+  return new Promise(function(res,rej){
+    var c=document.createElement('link');c.rel='stylesheet';c.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(c);
+    var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+}
 
-    <!-- TAB 6: BROADCAST & SETTINGS -->
-    <div id="settingsTab" class="tab-content" style="padding: 15px 0;">
-      <h3 style="font-size: 15px; margin-bottom: 12px;">⚙️ Broadcast & System Telemetry</h3>
-      
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">📢 Send Broadcast Notification to All App Users</h4>
-        <div class="form-group">
-          <label>Target Audience:</label>
-          <select id="broadcastTarget">
-            <option value="all">All Users & Partners</option>
-            <option value="partners">All Active Partners Only</option>
-            <option value="customers">All Registered Customers Only</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Notification Title:</label>
-          <input type="text" id="broadcastTitle" placeholder="e.g. Festival Bonus Alert! 🚀">
-        </div>
-        <div class="form-group">
-          <label>Message Content:</label>
-          <textarea id="broadcastBody" rows="3" placeholder="Enter alert message details here..."></textarea>
-        </div>
-        <button onclick="sendGlobalBroadcast()" class="btn-success">📢 Broadcast Push Alert</button>
-      </div>
-
-      <div class="card">
-        <h4 style="font-size: 13px; margin-bottom: 10px;">🎛️ Platform Controls</h4>
-        <div class="form-group">
-          <label>Admin Commission Rate (%):</label>
-          <input type="number" id="adminCommissionRate" value="15" min="0" max="50" onchange="saveCommissionRate(this.value)">
-        </div>
-        <div class="form-group" style="margin-bottom:0;">
-          <label>Broadcast Radius (KM):</label>
-          <input type="number" id="adminBroadcastRadius" value="10" min="1" max="50" onchange="saveBroadcastRadius(this.value)">
-        </div>
-      </div>
-
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h4 style="font-size: 12px; margin: 0;">Real-Time Firebase Telemetry Stream</h4>
-          <button onclick="document.getElementById('adminConsole').innerHTML=''" style="width: auto; padding: 3px 8px; font-size: 10px; background: #333;">Clear</button>
-        </div>
-        <div class="console-box" id="adminConsole"></div>
-      </div>
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchAdminTab('kycTab', this)"><span>👥</span>KYC</div>
-      <div class="nav-item" onclick="switchAdminTab('dispatchTab', this)"><span>⚡</span>Dispatch</div>
-      <div class="nav-item" onclick="switchAdminTab('paymentTab', this)"><span>💰</span>Finance</div>
-      <div class="nav-item" onclick="switchAdminTab('analyticsTab', this)"><span>📊</span>Analytics</div>
-      <div class="nav-item" onclick="switchAdminTab('servicesTab', this)"><span>🛠️</span>Catalog</div>
-      <div class="nav-item" onclick="switchAdminTab('settingsTab', this)"><span>⚙️</span>Settings</div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, set, push, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
-      authDomain: "sewaastra.firebaseapp.com",
-      databaseURL: "https://sewaastra-default-rtdb.firebaseio.com",
-      projectId: "sewaastra",
-      storageBucket: "sewaastra.firebasestorage.app",
-      messagingSenderId: "211091351218",
-      appId: "1:211091351218:web:47fe25d6db3e8dd0464bab",
-      measurementId: "G-BX0Z5YQGZB"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    const googleProvider = new GoogleAuthProvider();
-
-    const TARGET_ADMIN_EMAIL = "soorshyamvishwakarma37@gmail.com";
-    const consoleBox = document.getElementById("adminConsole");
-    const loaderEl = document.getElementById("globalLoader");
-    let cachedPartnersData = {};
-    let cachedOrdersData = {};
-    let cachedCatalogData = {};
-
-    function showLoader(show) {
-      if (loaderEl) loaderEl.style.display = show ? 'flex' : 'none';
+/* 🗺️ 1) PARTNER LIVE TRACKING MAP */
+var aMap=null,aLG=null;
+(function(){
+  var t=$('trkC'); if(!t) return;
+  t.innerHTML='<div class="cd"><div class="rw"><b style="font-size:12px;">🗺️ Partner LIVE Tracking</b><span class="mut" id="aMapS"></span></div><div id="aMapC" style="height:240px;border-radius:13px;overflow:hidden;margin-top:8px;border:1px solid var(--bd);"></div></div>';
+})();
+function aMapDraw(){
+  var el=$('aMapC'); if(!el||!AUTHED) return;
+  leaf().then(function(){
+    if(!aMap){
+      aMap=L.map('aMapC').setView([23.2599,77.4126],11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(aMap);
+      aLG=L.layerGroup().addTo(aMap);
+      setTimeout(function(){try{aMap.invalidateSize();}catch(e){}},400);
     }
-
-    function logMessage(text) {
-      if(!consoleBox) return;
-      const time = new Date().toLocaleTimeString();
-      consoleBox.innerHTML += `[${time}] ${text}<br>`;
-      consoleBox.scrollTop = consoleBox.scrollHeight;
-    }
-
-    window.switchAdminTab = function(tabId, el) {
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      el.classList.add('active');
-    };
-
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
-    }
-
-    onAuthStateChanged(auth, async (user) => {
-      showLoader(true);
-      if (user && user.email === TARGET_ADMIN_EMAIL) {
-        showScreen('adminDashboardScreen');
-        initMasterAdminListeners();
-        logMessage(`Master Admin session verified and locked: ${user.email}`);
-      } else {
-        if (user && user.email !== TARGET_ADMIN_EMAIL) {
-          alert(`❌ Access Denied! Logged-in email (${user.email}) Master Admin authorized nahi hai.`);
-          await signOut(auth);
-        }
-        showScreen('adminLoginScreen');
-        logMessage("Awaiting Master Admin authentication.");
-      }
-      setTimeout(() => showLoader(false), 400);
+    aLG.clearLayers();
+    var n=0,pts=[];
+    PTR.forEach(function(p){
+      var l=p.loc&&p.loc.lat?p.loc:(p.workCenter&&p.workCenter.lat?p.workCenter:null);
+      if(!l) return;
+      var on=p.online&&(Date.now()-(p.lastSeen||0))<150000;
+      var live=p.loc&&p.loc.ts&&(Date.now()-p.loc.ts)<120000;
+      if(on)n++;
+      pts.push([l.lat,l.lon]);
+      L.marker([l.lat,l.lon],{icon:L.divIcon({html:'<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));'+(on?'':'opacity:.45;')+'">'+(p.blocked?'⛔':'🧑‍🔧')+'</div>',iconSize:[28,28],className:''})}).addTo(aLG)
+        .bindPopup('<b>'+esc(p.name||'Partner')+'</b> '+(on?'🟢':'⚫')+(live?' <span style="color:#e53935;font-weight:800;">LIVE</span>':'')+'<br>📱 '+esc(p._id)+'<br>⭐ '+(p.avgRating||'—')+' • '+esc(p.kycStatus||'')+'<br><a href="#" onclick="pView(\''+p._id+'\');return false;">पूरा देखें →</a>');
     });
+    if(pts.length===1) aMap.setView(pts[0],13);
+    else if(pts.length>1){ try{ aMap.fitBounds(pts,{padding:[26,26]}); }catch(e){} }
+    var s=$('aMapS'); if(s) s.innerText='🟢 '+n+' online • '+pts.length+' on map';
+  }).catch(function(){});
+}
+var _dP2=drawPartners;
+drawPartners=function(){ _dP2(); try{ aMapDraw(); }catch(e){} };
+var _tab2=tab;
+tab=function(t,btn){ _tab2(t,btn); if(t==='P') setTimeout(function(){ try{ aMap&&aMap.invalidateSize(); aMapDraw(); }catch(e){} },250); };
 
-    window.loginAsMasterAdmin = async function() {
-      try {
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
+/* ⛔ 2) PARTNER BLOCK / UNBLOCK */
+function pBlock(ph,flag){
+  if(flag&&!confirm('पक्का BLOCK करें? Partner app तुरंत लॉक हो जाएगा!')) return;
+  ldr();
+  FS.collection('partners').doc(ph).set({blocked:flag,blockedAt:flag?Date.now():null,blockedBy:ADMIN_EMAIL,online:false},{merge:true})
+  .then(function(){ ldrX(); toast(flag?'⛔ BLOCKED — partner लॉक हो गया':'✅ UNBLOCK — partner फिर चालू'); shClose(); })
+  .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+}
+var _pV2=pView;
+pView=function(ph){
+  _pV2(ph);
+  var p=PTR.filter(function(x){return x._id===ph;})[0]; if(!p) return;
+  var low=(p.avgRating&&p.avgRating<3.5&&(p.ratingCount||0)>=2);
+  $('shX').insertAdjacentHTML('beforeend',
+    (low?'<div class="cd" style="border-color:#e53935;"><b style="font-size:11.5px;color:#ff8a80;">⚠️ POOR RATING ALERT — ⭐ '+p.avgRating+' ('+(p.ratingCount||0)+' reviews)</b><div class="mut" style="margin-top:4px;">Training दोबारा करवाएँ या warning दें</div></div>':'')+
+    '<div class="cd"><b style="font-size:11.5px;">'+(p.blocked?'⛔ यह partner BLOCKED है':'🚦 Partner Control')+'</b>'+
+    '<div style="display:flex;gap:8px;margin-top:9px;">'+
+    (p.blocked?'<button class="bn g" style="flex:1;" onclick="pBlock(\''+ph+'\',false)">✅ UNBLOCK करें</button>'
+      :'<button class="bn r" style="flex:1;" onclick="pBlock(\''+ph+'\',true)">⛔ BLOCK करें</button>')+
+    '</div></div>');
+};
 
-        if (user.email !== TARGET_ADMIN_EMAIL) {
-          alert(`❌ Access Denied! Logged-in email (${user.email}) Master Admin authorized nahi hai.`);
-          await signOut(auth);
-          return;
-        }
+/* ⚠️ 3) DASHBOARD ALERTS — poor rating + blocked */
+var _dD2=drawDash;
+drawDash=function(){
+  _dD2();
+  var low=PTR.filter(function(p){return p.avgRating&&p.avgRating<3.5&&(p.ratingCount||0)>=2&&!p.blocked;});
+  var blk=PTR.filter(function(p){return p.blocked;});
+  var h='';
+  if(low.length) h+='<div class="tt" style="color:#ff8a80;">⚠️ Poor Rating Alerts ('+low.length+')</div>'+low.map(function(p){
+    return '<div class="cd" style="border-color:#5a2025;" onclick="pView(\''+p._id+'\')"><div class="rw"><b style="font-size:12px;">⚠️ '+esc(p.name||'Partner')+'</b><b style="color:#ff8a80;">⭐ '+p.avgRating+'</b></div><div class="mut" style="margin-top:3px;">📱 '+esc(p._id)+' • '+(p.ratingCount||0)+' reviews • tap करके action लें</div></div>';
+  }).join('');
+  if(blk.length) h+='<div class="tt">⛔ Blocked Partners ('+blk.length+')</div>'+blk.map(function(p){
+    return '<div class="cd" onclick="pView(\''+p._id+'\')"><div class="rw"><b style="font-size:12px;">⛔ '+esc(p.name||'')+'</b><span class="mut">'+esc(p._id)+'</span></div></div>';
+  }).join('');
+  if(h) $('dX').insertAdjacentHTML('beforeend',h);
+};
 
-        showLoader(true);
-        logMessage(`Master Admin verified successfully: ${user.email}`);
-        showScreen('adminDashboardScreen');
-        initMasterAdminListeners();
-        setTimeout(() => showLoader(false), 500);
-      } catch (error) {
-        showLoader(false);
-        alert("Authentication Error: " + error.message);
-        logMessage(`Login error: ${error.message}`);
-      }
-    };
-
-    window.adminLogout = async function() {
-      await signOut(auth);
-      showScreen('adminLoginScreen');
-      logMessage("Master Admin signed out.");
-    };
-
-    window.saveCommissionRate = async function(rate) {
-      await set(ref(db, 'system_settings/commission_rate'), Number(rate));
-      logMessage(`Platform commission updated to ${rate}%`);
-    };
-
-    window.saveBroadcastRadius = async function(radius) {
-      await set(ref(db, 'system_settings/broadcast_radius'), Number(radius));
-      logMessage(`Broadcast radius updated to ${radius} KM`);
-    };
-
-    window.togglePaymentAutoApproval = async function(enabled) {
-      await set(ref(db, 'system_settings/auto_payment_approval'), enabled);
-      const autoBtn = document.getElementById("autoApprovalBtn");
-      const manBtn = document.getElementById("manualApprovalBtn");
-      if (enabled) {
-        autoBtn.className = "btn-success";
-        autoBtn.innerText = "Auto-Approval: ON";
-        manBtn.className = "btn-outline";
-      } else {
-        autoBtn.className = "btn-outline";
-        autoBtn.innerText = "Manual Mode";
-        manBtn.className = "btn-warning";
-      }
-      logMessage(`Payment Auto-Approval set to: ${enabled}`);
-    };
-
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
-
-    window.viewPartnerDocument = function(url, name, type) {
-      const modal = document.getElementById("docModal");
-      const titleEl = document.getElementById("modalTitle");
-      const body = document.getElementById("modalDocBody");
-      titleEl.innerText = `📄 Partner Verification: ${name}`;
-      body.innerHTML = `
-        <p style="font-size: 12px; margin-bottom: 8px;">Doc Type: <b>${type}</b></p>
-        <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center;">
-          ${url && url !== '#' ? `<img src="${url}" style="max-width: 100%; max-height: 350px; border-radius: 6px;" alt="Doc Preview"/>` : `<p style="color:var(--text-muted); padding:20px;">No preview file uploaded.</p>`}
-        </div>
-        <div style="margin-top: 15px;">
-          <a href="${url || '#'}" target="_blank" class="btn" style="text-align: center; text-decoration: none; display: block;">Open Original File ↗</a>
-        </div>
-      `;
-      modal.style.display = "flex";
-    };
-
-    window.closeDocModal = function() {
-      document.getElementById("docModal").style.display = "none";
-    };
-
-    window.filterPartnersList = function() {
-      const query = document.getElementById("partnerSearchInput").value.toLowerCase();
-      renderPartnersUI(cachedPartnersData, query);
-    };
-
-    function renderPartnersUI(partners, filterQuery = "") {
-      const kycContainer = document.getElementById("adminKycListContainer");
-      const walletContainer = document.getElementById("adminPartnerWalletList");
-      const radarContainer = document.getElementById("adminFleetRadarContainer");
-      
-      let kycHtml = "";
-      let walletHtml = "";
-      let radarHtml = "";
-      let totalRev = 0;
-      let totalJobs = 0;
-      let totalPartnersCount = 0;
-
-      for (const [uid, data] of Object.entries(partners)) {
-        totalPartnersCount++;
-        const name = (data.name || 'Unnamed Partner').toLowerCase();
-        const email = (data.email || '').toLowerCase();
-        const phone = (data.phone || '').toLowerCase();
-
-        if (filterQuery && !name.includes(filterQuery) && !email.includes(filterQuery) && !phone.includes(filterQuery)) {
-          continue;
-        }
-
-        totalRev += (data.totalEarned || 0);
-        totalJobs += (data.completedJobs || 0);
-
-        const badgeClass = data.kycStatus === "approved" ? "badge-success" : (data.kycStatus === "rejected" ? "badge-danger" : "badge-pending");
-        const isBlocked = data.isBlocked === true;
-        const blockBadge = isBlocked ? `<span class="badge badge-danger">BLOCKED</span>` : `<span class="badge badge-success">ACTIVE</span>`;
-
-        kycHtml += `
-          <div class="admin-card" style="border-left-color: ${isBlocked ? 'var(--danger)' : 'var(--blue)'};">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <h4 style="font-size: 14px;">${data.name || 'Unnamed Partner'} ${blockBadge}</h4>
-              <span class="badge ${badgeClass}">${(data.kycStatus || 'pending').toUpperCase()}</span>
-            </div>
-            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">
-              📧 Email: <b>${data.email}</b><br>
-              📱 Phone: <b>${data.phone || 'N/A'}</b><br>
-              🛠️ Skill: <b>${data.skill || 'General'}</b><br>
-              ⭐ Rating: <b>${data.rating || '4.5'} / 5.0</b> (${data.totalReviews || 0} reviews)
-            </div>
-            
-            <div class="doc-preview-box">
-              📁 <b>Documents & Verification:</b><br>
-              💳 PAN: <b>${data.pan || 'N/A'}</b> | Aadhaar: Verified<br>
-              🖼️ File: <a href="javascript:void(0)" onclick="viewPartnerDocument('${data.docUrl || ''}', '${data.name || 'Partner'}', 'ID Proof')" style="color: var(--blue); font-weight: bold;">View File ↗</a>
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-              <button onclick="adminApproveKyc('${uid}')" style="background: var(--success); padding: 6px 10px; font-size: 11px; width: auto;">Approve KYC</button>
-              <button onclick="adminRejectKyc('${uid}')" style="background: var(--warning); padding: 6px 10px; font-size: 11px; width: auto;">Reject KYC</button>
-              <button onclick="adminToggleBlockPartner('${uid}', ${!isBlocked})" style="background: ${isBlocked ? 'var(--success)' : 'var(--danger)'}; padding: 6px 10px; font-size: 11px; width: auto;">${isBlocked ? 'Unblock' : 'Block'}</button>
-              <button onclick="adminDeletePartner('${uid}')" class="btn-danger" style="padding: 6px 10px; font-size: 11px; width: auto;">Delete 🗑️</button>
-            </div>
-          </div>
-        `;
-
-        walletHtml += `
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
-            <div>
-              <b>${data.name || data.email}</b><br>
-              <span style="color: var(--text-muted); font-size: 11px;">Bank A/C: ${data.bank || 'Not Provided'} | Gigs: ${data.completedJobs || 0}</span>
-            </div>
-            <div style="text-align: right;">
-              <b style="color: var(--success);">₹${data.totalEarned || 0}</b><br>
-              <button onclick="adminSettlePayout('${uid}')" style="padding: 3px 8px; font-size: 10px; background: var(--blue); margin-top: 2px; width: auto;">Settle Payout</button>
-            </div>
-          </div>
-        `;
-
-        const pStatusBadge = data.status === "busy" ? `<span class="badge badge-purple">BUSY ON JOB</span>` : `<span class="badge badge-success">AVAILABLE</span>`;
-        radarHtml += `
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 6px; font-size: 12px;">
-            <div>
-              <b>🛰️ ${data.name || 'Partner'}</b> (${data.skill || 'Tech'})<br>
-              <span style="font-size: 10px; color: var(--text-muted);">GPS: [${data.latitude || '28.6'}, ${data.longitude || '77.2'}]</span>
-            </div>
-            <div>${pStatusBadge}</div>
-          </div>
-        `;
-      }
-
-      kycContainer.innerHTML = kycHtml || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Koi partner nahi mila.</p>`;
-      walletContainer.innerHTML = walletHtml || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Ledger data available nahi hai.</p>`;
-      radarContainer.innerHTML = radarHtml || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Koi live partner online nahi hai.</p>`;
-      
-      document.getElementById("adminTotalRevenue").innerText = `₹${totalRev}`;
-      document.getElementById("adminTotalJobsCompleted").innerText = totalJobs;
-      document.getElementById("anTotalPartners").innerText = totalPartnersCount;
-    }
-
-    function renderDispatchServiceSelection(catalog) {
-      const container = document.getElementById("adminDispatchServiceList");
-      if (!container) return;
-
-      let html = "";
-      let isFirst = true;
-      for (const [cId, cData] of Object.entries(catalog)) {
-        const checkedAttr = isFirst ? "checked" : "";
-        html += `
-          <label class="service-radio-card">
-            <div>
-              <div style="font-weight: bold; font-size: 13px;">${cData.title}</div>
-              <div style="color: #38bdf8; font-size: 12px; font-weight: bold; margin-top: 2px;">₹${cData.price}</div>
-            </div>
-            <input type="radio" name="adminServiceRadio" value="${cData.title} (₹${cData.price})" data-price="${cData.price}" ${checkedAttr}>
-          </label>
-        `;
-        isFirst = false;
-      }
-      container.innerHTML = html || `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Catalog empty hai.</p>`;
-    }
-
-    function initMasterAdminListeners() {
-      // 1. Partners Listener
-      onValue(ref(db, 'live_partners'), (snap) => {
-        if (!snap.exists()) {
-          cachedPartnersData = {};
-          renderPartnersUI({});
-          return;
-        }
-        cachedPartnersData = snap.val();
-        renderPartnersUI(cachedPartnersData);
-      });
-
-      // 2. Orders Listener (Customer App Real-Time Sync)
-      onValue(ref(db, 'live_orders'), async (snap) => {
-        const ordersContainer = document.getElementById("adminOrdersContainer");
-        if (!snap.exists()) {
-          cachedOrdersData = {};
-          ordersContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Koi active order nahi hai.</p>`;
-          document.getElementById("anActiveOrders").innerText = 0;
-          return;
-        }
-
-        cachedOrdersData = snap.val();
-        document.getElementById("anActiveOrders").innerText = Object.keys(cachedOrdersData).length;
-
-        const partSnap = await get(child(ref(db), 'live_partners'));
-        const partnersData = partSnap.exists() ? partSnap.val() : {};
-
-        let ordersHtml = "";
-        let categoryCounts = {};
-
-        for (const [orderId, orderData] of Object.entries(cachedOrdersData)) {
-          const cat = orderData.category || 'General';
-          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-
-          const badgeColor = orderData.status === "completed" ? "badge-success" : (orderData.status === "assigned" ? "badge-blue" : "badge-pending");
-          let assignedPartnerName = "Unassigned";
-          if (orderData.assignedPartnerId && partnersData[orderData.assignedPartnerId]) {
-            assignedPartnerName = partnersData[orderData.assignedPartnerId].name || partnersData[orderData.assignedPartnerId].email;
-          }
-
-          ordersHtml += `
-            <div class="admin-card" style="border-left-color: var(--purple);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <span style="font-size: 11px; font-weight: bold; color: var(--text-muted);">ID: ${orderId.substring(0,8)}...</span>
-                <span class="badge ${badgeColor}">${(orderData.status || 'pending').toUpperCase()}</span>
-              </div>
-              <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px;">${orderData.category}</div>
-              <div style="font-size: 12px; color: var(--success); font-weight: bold; margin-bottom: 4px;">Amount: ₹${orderData.amount} | OTP: ${orderData.completionOtp || 'N/A'}</div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Assigned Partner: <b>${assignedPartnerName}</b></div>
-
-              <div style="display: flex; gap: 8px;">
-                <button onclick="adminDeleteOrder('${orderId}')" class="btn-danger" style="padding: 6px; font-size: 11px; width: auto;">Delete Order 🗑️</button>
-              </div>
-            </div>
-          `;
-        }
-        ordersContainer.innerHTML = ordersHtml;
-
-        // Update Analytics breakdown
-        let breakdownHtml = "";
-        for (const [cName, cCount] of Object.entries(categoryCounts)) {
-          breakdownHtml += `• ${cName}: <b>${cCount} orders</b><br>`;
-        }
-        document.getElementById("analyticsCategoryBreakdown").innerHTML = breakdownHtml || "No active breakdown data.";
-      });
-
-      // 3. Disputes / Refund Claims Listener
-      onValue(ref(db, 'live_disputes'), (snap) => {
-        const disputeContainer = document.getElementById("adminDisputesContainer");
-        if (!snap.exists()) {
-          disputeContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Koi dispute claim nahi hai.</p>`;
-          return;
-        }
-        let dispHtml = "";
-        const disputes = snap.val();
-        for (const [dId, dData] of Object.entries(disputes)) {
-          dispHtml += `
-            <div style="border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
-              <b>Customer ID: ${dData.customerId || 'User'}</b> | Order: ${dData.orderId || 'N/A'}<br>
-              <span style="color: var(--danger);">Reason: ${dData.reason || 'Service Issue'}</span><br>
-              <button onclick="resolveDispute('${dId}')" style="padding: 3px 8px; font-size: 10px; background: var(--success); margin-top: 4px; width: auto;">Issue Refund & Close ✓</button>
-            </div>
-          `;
-        }
-        disputeContainer.innerHTML = dispHtml;
-      });
-
-      // 4. Service Catalog Listener (Updates dispatch select options live from Firebase)
-      onValue(ref(db, 'master_service_catalog'), (snap) => {
-        const catalogContainer = document.getElementById("adminCatalogContainer");
-        if (!snap.exists()) {
-          cachedCatalogData = {};
-          catalogContainer.innerHTML = `<p style="font-size: 12px; text-align: center; color: var(--text-muted);">Catalog empty hai.</p>`;
-          renderDispatchServiceSelection({});
-          return;
-        }
-        cachedCatalogData = snap.val();
-        renderDispatchServiceSelection(cachedCatalogData);
-
-        let catHtml = "";
-        for (const [cId, cData] of Object.entries(cachedCatalogData)) {
-          catHtml += `
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
-              <div>
-                <b>${cData.title}</b><br>
-                <span style="color: var(--success); font-weight: bold;">₹${cData.price}</span>
-              </div>
-              <button onclick="deleteCatalogService('${cId}')" style="padding: 3px 8px; font-size: 10px; background: var(--danger); width: auto;">Delete 🗑️</button>
-            </div>
-          `;
-        }
-        catalogContainer.innerHTML = catHtml;
-      });
-
-      // 5. System Settings Listener
-      onValue(ref(db, 'system_settings'), (snap) => {
-        if (snap.exists()) {
-          const settings = snap.val();
-          if (settings.commission_rate) document.getElementById("adminCommissionRate").value = settings.commission_rate;
-          if (settings.broadcast_radius) document.getElementById("adminBroadcastRadius").value = settings.broadcast_radius;
-          if (settings.auto_payment_approval !== undefined) {
-            togglePaymentAutoApproval(settings.auto_payment_approval);
-          }
-        }
-      });
-    }
-
-    // Add New Service Catalog Item
-    window.addNewCatalogService = async function() {
-      const title = document.getElementById("newSvcTitle").value.trim();
-      const price = Number(document.getElementById("newSvcPrice").value);
-      if (!title || !price) {
-        alert("Kripya valid title aur price bharein!");
-        return;
-      }
-      showLoader(true);
-      const newRef = push(ref(db, 'master_service_catalog'));
-      await set(newRef, { title, price });
-      showLoader(false);
-      alert("✅ Service successfully added to master catalog and updated in Dispatch!");
-      logMessage(`New service catalog item added: ${title} (₹${price})`);
-      document.getElementById("newSvcTitle").value = "";
-      document.getElementById("newSvcPrice").value = "";
-    };
-
-    window.deleteCatalogService = async function(cId) {
-      if (!confirm("Is service ko catalog se delete karna chahte hain?")) return;
-      showLoader(true);
-      await remove(ref(db, `master_service_catalog/${cId}`));
-      showLoader(false);
-      logMessage(`Catalog item deleted: ${cId}`);
-      alert("🗑️ Catalog item removed.");
-    };
-
-    window.resolveDispute = async function(dId) {
-      showLoader(true);
-      await remove(ref(db, `live_disputes/${dId}`));
-      showLoader(false);
-      alert("✅ Refund issued and dispute closed successfully!");
-      logMessage(`Dispute ${dId} resolved with refund.`);
-    };
-
-    window.exportLedgerCSV = function() {
-      let csvContent = "data:text/csv;charset=utf-8,Partner UID,Name,Email,Phone,Total Earned,Completed Jobs\n";
-      for (const [uid, data] of Object.entries(cachedPartnersData)) {
-        csvContent += `"${uid}","${data.name || ''}","${data.email || ''}","${data.phone || ''}",${data.totalEarned || 0},${data.completedJobs || 0}\n`;
-      }
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "sewaastra_financial_ledger.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      logMessage("Financial ledger exported to CSV successfully.");
-    };
-
-    window.sendGlobalBroadcast = async function() {
-      const target = document.getElementById("broadcastTarget").value;
-      const title = document.getElementById("broadcastTitle").value.trim();
-      const body = document.getElementById("broadcastBody").value.trim();
-
-      if (!title || !body) {
-        alert("Kripya title aur message dono bharein!");
-        return;
-      }
-
-      showLoader(true);
-      const notificationRef = push(ref(db, 'broadcast_notifications'));
-      await set(notificationRef, {
-        target,
-        title,
-        body,
-        createdAt: new Date().toISOString()
-      });
-      showLoader(false);
-      alert("📢 Broadcast notification successfully send ho gayi!");
-      logMessage(`Broadcast sent to [${target}]: ${title}`);
-      document.getElementById("broadcastTitle").value = "";
-      document.getElementById("broadcastBody").value = "";
-    };
-
-    window.adminApproveKyc = async function(uid) {
-      showLoader(true);
-      await update(ref(db, `live_partners/${uid}`), { kycStatus: "approved" });
-      showLoader(false);
-      logMessage(`KYC Approved for partner UID: ${uid}`);
-      alert("✅ Partner KYC successfully approved!");
-    };
-
-    window.adminRejectKyc = async function(uid) {
-      showLoader(true);
-      await update(ref(db, `live_partners/${uid}`), { kycStatus: "rejected" });
-      showLoader(false);
-      logMessage(`KYC Rejected for partner UID: ${uid}`);
-      alert("❌ Partner KYC rejected.");
-    };
-
-    window.adminToggleBlockPartner = async function(uid, blockState) {
-      showLoader(true);
-      await update(ref(db, `live_partners/${uid}`), { isBlocked: blockState });
-      showLoader(false);
-      logMessage(`Partner ${uid} block state: ${blockState}`);
-      alert(blockState ? "🚫 Partner blocked successfully." : "✅ Partner unblocked.");
-    };
-
-    window.adminDeletePartner = async function(uid) {
-      if (!confirm("Kya aap is partner profile ko delete karna chahte hain?")) return;
-      showLoader(true);
-      await remove(ref(db, `live_partners/${uid}`));
-      showLoader(false);
-      logMessage(`Partner deleted: ${uid}`);
-      alert("🗑️ Partner successfully deleted.");
-    };
-
-    window.adminCreateAndAutoAssignOrder = async function() {
-      const selectedRadio = document.querySelector('input[name="adminServiceRadio"]:checked');
-      if (!selectedRadio) {
-        alert("Kripya ek service select karein!");
-        return;
-      }
-      const serviceCat = selectedRadio.value;
-      const amount = Number(selectedRadio.dataset.price);
-
-      const custLat = parseFloat(document.getElementById("custLat").value);
-      const custLng = parseFloat(document.getElementById("custLng").value);
-      const completionOtp = Math.floor(1000 + Math.random() * 9000).toString();
-
-      showLoader(true);
-      const partSnap = await get(child(ref(db), 'live_partners'));
-      if (!partSnap.exists()) {
-        showLoader(false);
-        alert("❌ Koi approved partner available nahi hai!");
-        return;
-      }
-
-      const partners = partSnap.val();
-      let nearestPartnerId = null;
-      let minDistance = Infinity;
-
-      for (const [pId, pData] of Object.entries(partners)) {
-        if (pData.kycStatus === "approved" && !pData.isBlocked && pData.status !== "busy") {
-          const dist = calculateDistance(custLat, custLng, pData.latitude || 28.6139, pData.longitude || 77.2090);
-          if (dist < minDistance) {
-            minDistance = dist;
-            nearestPartnerId = pId;
-          }
-        }
-      }
-
-      const orderStatus = nearestPartnerId ? "assigned" : "pending";
-      const newOrderRef = push(ref(db, 'live_orders'));
-      const orderId = newOrderRef.key;
-
-      await set(newOrderRef, {
-        category: serviceCat,
-        amount,
-        latitude: custLat,
-        longitude: custLng,
-        status: orderStatus,
-        assignedPartnerId: nearestPartnerId || null,
-        completionOtp,
-        createdAt: new Date().toISOString()
-      });
-
-      if (nearestPartnerId) {
-        await update(ref(db, `live_partners/${nearestPartnerId}`), { status: "busy", currentOrderId: orderId });
-        logMessage(`Order ${orderId} auto-assigned to partner ${nearestPartnerId} (${minDistance.toFixed(2)} km)`);
-        alert(`⚡ Order successfully auto-assigned to nearest partner (${minDistance.toFixed(2)} km away)!`);
-      } else {
-        logMessage(`Order ${orderId} moved to pending queue.`);
-        alert("📦 Order pending queue me add kar diya gaya hai.");
-      }
-      showLoader(false);
-    };
-
-    window.adminDeleteOrder = async function(orderId) {
-      if (!confirm("Order delete karna chahte hain?")) return;
-      showLoader(true);
-      const orderSnap = await get(ref(db, `live_orders/${orderId}`));
-      if (orderSnap.exists()) {
-        const orderData = orderSnap.val();
-        if (orderData.assignedPartnerId) {
-          await update(ref(db, `live_partners/${orderData.assignedPartnerId}`), { status: "available", currentOrderId: null });
-        }
-      }
-      await remove(ref(db, `live_orders/${orderId}`));
-      showLoader(false);
-      logMessage(`Order deleted: ${orderId}`);
-      alert("🗑️ Order deleted.");
-    };
-
-    window.adminClearOrderHistory = async function() {
-      if (!confirm("Saara order history clear karna chahte hain?")) return;
-      showLoader(true);
-      await remove(ref(db, 'live_orders'));
-      showLoader(false);
-      logMessage("Order history cleared.");
-      alert("🧹 History cleared.");
-    };
-
-    window.adminSettlePayout = async function(uid) {
-      showLoader(true);
-      await update(ref(db, `live_partners/${uid}`), { totalEarned: 0 });
-      showLoader(false);
-      logMessage(`Payout settled for UID: ${uid}`);
-      alert("💰 Manual payout settled successfully and earnings reset to ₹0!");
-    };
-  </script>
-</body>
+/* 🛒 4) COMPLAINTS FILTER — customer vs partner tickets */
+var tFil='ALL';
+var _dT2=drawTix;
+drawTix=function(){
+  var all=TIK;
+  TIK=tFil==='ALL'?all:all.filter(function(t){ return (t.from||'partner')===tFil; });
+  _dT2();
+  TIK=all;
+  var nC=all.filter(function(t){return t.from==='customer';}).length;
+  var nP=all.length-nC;
+  $('tX').insertAdjacentHTML('afterbegin',
+    '<div class="tabs">'+
+    '<span class="'+(tFil==='ALL'?'on':'')+'" onclick="tFil=\'ALL\';drawTix()">सब ('+all.length+')</span>'+
+    '<span class="'+(tFil==='partner'?'on':'')+'" onclick="tFil=\'partner\';drawTix()">🧑‍🔧 Partner ('+nP+')</span>'+
+    '<span class="'+(tFil==='customer'?'on':'')+'" onclick="tFil=\'customer\';drawTix()">🛒 Customer शिकायत ('+nC+')</span></div>');
+};
+console.log('%c 👑 ADMIN v2.0 — TRACKING + BLOCK + ALERTS ✅ ','background:#e53935;color:#fff;font-weight:bold;padding:3px;');
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3502d735e7147bf',t:'MTc4ODM5MDUxNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
