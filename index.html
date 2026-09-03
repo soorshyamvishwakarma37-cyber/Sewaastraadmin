@@ -68,7 +68,7 @@ input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd)
     <button class="bn" style="width:100%;padding:13px;background:#fff;color:#222;font-size:13px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:9px;" onclick="gLogin()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G"> Google से Login
     </button>
-    <div class="mut" style="margin-top:14px;line-height:1.7;">🔒 सिर्फ authorized admin:<br><b style="color:var(--gold);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="55263a3a27263d2c3438233c263d22343e342738346662153238343c397b363a38">[email&#160;protected]</a></b></div>
+    <div class="mut" style="margin-top:14px;line-height:1.7;">🔒 सिर्फ authorized admin:<br><b style="color:var(--gold);">soorshyamvishwakarma37@gmail.com</b></div>
     <div id="lgE" style="color:#ff8a80;font-size:11px;font-weight:800;margin-top:10px;"></div>
   </div>
 </div>
@@ -114,7 +114,7 @@ input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd)
 <div id="tst"></div>
 <div class="ldr" id="ldr"><div class="spin"></div></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 /* ═══ ADMIN FIREBASE CONFIG ═══ */
 var firebaseConfig = {
   apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
@@ -697,5 +697,277 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
   console.log('%c 📢 ADMIN v3.0 — BROADCAST MANAGER ✅ ','background:#ff6b00;color:#fff;font-weight:bold;padding:3px;');
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3509f300c86aed9',t:'MTc4ODM5NTE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<style>
+#aCOv{position:fixed;inset:0;z-index:999999;display:none;align-items:center;justify-content:center;background:rgba(4,8,18,.72);backdrop-filter:blur(5px);padding:20px}
+#aCOv.on{display:flex}
+.acard{width:100%;max-width:400px;border-radius:26px;overflow:hidden;background:var(--card);color:var(--tx);border:1px solid var(--bd);box-shadow:0 34px 100px rgba(0,0,0,.6);animation:ain .28s cubic-bezier(.2,1.25,.4,1)}
+@keyframes ain{from{transform:scale(.9) translateY(16px);opacity:0}to{transform:none;opacity:1}}
+.ach{background:linear-gradient(135deg,#ff6b00,#ff9a3d);padding:24px 16px 16px;text-align:center;color:#fff}
+.ach .ai{font-size:48px;line-height:1}
+.ach .at{font-weight:900;font-size:16px;margin-top:8px}
+.acb{padding:16px 18px 20px}
+.acm{font-size:13px;line-height:1.7;color:#c6cbdb;font-weight:600;white-space:pre-wrap;word-break:break-word}
+.acrw{display:flex;gap:9px;margin-top:15px}
+.acrw button{flex:1;border:none;border-radius:13px;padding:13px;font-weight:900;font-size:12.5px;cursor:pointer}
+.acrw .ano{background:#222b40;color:#aab6cf}
+.acrw .ayes{background:linear-gradient(135deg,#ff6b00,#ff9a3d);color:#fff}
+.acrw .ayes.danger{background:linear-gradient(135deg,#e53935,#ff6b5a)}
+</style>
+<script>
+/* ═══════════════ ADMIN v3.1 — SUNDER CONFIRM (Delete/Block/Broadcast) ═══════════════ */
+(function(){
+  if(window.__a31) return; window.__a31=1;
+  function escA(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function aConfirm(msg,o){
+    o=o||{};
+    var ov=document.getElementById('aCOv');
+    if(!ov){ ov=document.createElement('div'); ov.id='aCOv'; document.body.appendChild(ov); }
+    ov.innerHTML='<div class="acard"><div class="ach"><div class="ai">'+escA(o.ic||'⚠️')+'</div><div class="at">'+escA(o.t||'पक्का?')+'</div></div><div class="acb"><div class="acm">'+escA(String(msg==null?'':msg)).replace(/\n/g,'<br>')+'</div><div class="acrw"><button class="ano" id="aCNo">✕ '+(o.no||'नहीं')+'</button><button class="ayes '+(o.danger?'danger':'')+'" id="aCYes">'+(o.ok||'✅ हाँ')+'</button></div></div></div>';
+    ov.classList.add('on');
+    return new Promise(function(res){
+      document.getElementById('aCYes').onclick=function(){ ov.classList.remove('on'); res(true); };
+      document.getElementById('aCNo').onclick=function(){ ov.classList.remove('on'); res(false); };
+    });
+  }
+  window.aConfirm=aConfirm;
+
+  /* Order Delete */
+  window.oDel=function(id){
+    aConfirm('पक्का DELETE? वापस नहीं आएगा!',{ic:'🗑️',t:'Delete Order',ok:'हाँ, delete करें',danger:true}).then(function(ok){
+      if(!ok) return;
+      ldr();
+      FS.collection('orders').doc(id).delete().then(function(){ ldrX(); toast('🗑️ Deleted'); shClose(); }).catch(function(e){ ldrX(); toast('❌ '+e.message); });
+    });
+  };
+  /* Block */
+  window.pBlock=function(ph,flag){
+    if(flag){
+      aConfirm('पक्का BLOCK करें? Partner app तुरंत लॉक हो जाएगा!',{ic:'⛔',t:'Block Partner',ok:'हाँ, BLOCK करें',danger:true}).then(function(ok){
+        if(!ok) return;
+        doBlock(ph,true);
+      });
+    } else doBlock(ph,false);
+    function doBlock(ph2,fl){
+      ldr();
+      FS.collection('partners').doc(ph2).set({blocked:fl,blockedAt:fl?Date.now():null,blockedBy:ADMIN_EMAIL,online:false},{merge:true})
+      .then(function(){ ldrX(); toast(fl?'⛔ BLOCKED — partner लॉक हो गया':'✅ UNBLOCK — partner फिर चालू'); shClose(); })
+      .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+    }
+  };
+  /* Broadcast delete */
+  window.vADel=function(id){
+    aConfirm('यह message हमेशा के लिए delete होगा? Apps से तुरंत हट जाएगा।',{ic:'🗑️',t:'Delete Message',ok:'हाँ, delete करें',danger:true}).then(function(ok){
+      if(!ok) return;
+      FS.collection('broadcasts').doc(id).delete().then(function(){ toast('🗑️ Delete हो गया'); }).catch(function(e){ toast('❌ '+e.message); });
+    });
+  };
+  console.log('%c 🔔 ADMIN v3.1 — SUNDER CONFIRM ✅ ','background:#e53935;color:#fff;font-weight:bold;padding:3px;');
+})();
+</script>
+
+<script>
+/* ═══════════════ ADMIN v3.2 — 🧾 GST % BILL SETTING (config/global) ═══════════════ */
+(function(){
+  if(window.__a32) return; window.__a32=1;
+  var gG=0, gInited=false;
+  function gstFill(){
+    var el=document.getElementById('gstIn');
+    if(el && document.activeElement!==el) el.value=gG;
+  }
+  function gstCard(){
+    var host=document.getElementById('secD'); if(!host) return;
+    if(!document.getElementById('gstCard')){
+      host.insertAdjacentHTML('afterbegin',
+      '<div class="cd" id="gstCard" style="border-color:#2a1d45;">'+
+        '<div class="rw"><b style="font-size:12.5px;">🧾 Bill GST %</b><span class="gold">BILL SETTING</span></div>'+
+        '<div style="font-size:10.5px;color:#aab6cf;font-weight:700;margin-top:4px;">Customer के 🧾 Bill/Invoice पर GST दिखेगा — यहाँ से % बदलो, Save दबाओ, सबको live लागू होगा</div>'+
+        '<div style="display:flex;gap:8px;align-items:center;margin-top:8px;">'+
+          '<input id="gstIn" type="number" min="0" max="28" style="width:120px;text-align:center;font-weight:900;" placeholder="GST %">'+
+          '<button class="bn o" onclick="gstSave()">💾 Save</button>'+
+        '</div>'+
+        '<div style="margin-top:8px;">'+[0,5,12,18].map(function(v){
+          return '<span style="display:inline-block;margin:2px;font-size:10px;font-weight:800;border-radius:16px;padding:4px 11px;background:#0f1626;border:1px solid var(--bd);color:#c6cbdb;cursor:pointer;" onclick="gstSet('+v+')">'+(v?v+'%':'0% (बिना)')+'</span>';
+        }).join('')+'</div>'+
+        '<div style="font-size:10px;color:#8a94ab;font-weight:800;margin-top:7px;">ℹ️ GST amount = (Subtotal − Discount) × GST% — Bill में "included" दिखेगा। Cash ऑर्डर पर QR नहीं, सिर्फ Online पर QR।</div>'+
+      '</div>');
+    }
+    gstFill();
+  }
+  window.gstSet=function(v){ gG=Number(v)||0; gstFill(); };
+  window.gstSave=function(){
+    var el=document.getElementById('gstIn'); if(!el) return;
+    var v=Math.max(0, Math.min(28, parseInt(el.value||'0',10)||0));
+    ldr();
+    FS.collection('config').doc('global').set({gstPct:v, updatedAt:Date.now(), by:ADMIN_EMAIL||''},{merge:true})
+      .then(function(){ ldrX(); gG=v; toast('✅ GST '+v+'% save — customer bill पर live apply'); })
+      .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  };
+  /* live listen */
+  try{
+    FS.collection('config').doc('global').onSnapshot(function(d){ gG=(d.exists? (Number(d.data().gstPct)||0):0); gstFill(); },function(){});
+  }catch(e){}
+  /* drawDash wrap → card + list refresh */
+  var _dd3=drawDash;
+  drawDash=function(){ _dd3(); gstCard(); };
+  console.log('%c 🧾 ADMIN v3.2 — GST BILL SETTING ✅ ','background:#7b1fa2;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+
+<script>
+/* ═══════════════ ADMIN v3.3 — 🗂️ CATALOGUE / PRICE LIST (photo + rate, har category) ═══════════════ */
+(function(){
+  if(window.__a33) return; window.__a33=1;
+  var vCats=[], vSrv={}, vCCat='';
+  function esc3(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function slug(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,14)||('cat'+Date.now().toString().slice(-4)); }
+
+  function inj(){
+    var nav=document.querySelector('.nv');
+    if(nav && !document.getElementById('bC')) nav.insertAdjacentHTML('beforeend','<button onclick="tab(\'C\',this)"><i>🗂️</i>Price List</button>');
+    var wrap=document.querySelector('.wrap');
+    if(wrap && !document.getElementById('secC')) wrap.insertAdjacentHTML('beforeend','<div class="sec" id="secC"></div>');
+    if(document.getElementById('secC') && !document.getElementById('vCF')) build();
+  }
+  function build(){
+    var s=document.getElementById('secC'); if(!s) return;
+    s.innerHTML=
+    '<div class="tt">🗂️ Category + Service Price List — यहाँ से Admin सब rates/photos update करता है (Customer app पर तुरंत LIVE)</div>'+
+    '<div class="cd">'+
+      '<div class="rw"><b style="font-size:12.5px;">🏷️ Categories</b><button class="bn gy" onclick="vCAddCat()">+ नई Category</button></div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;" id="vCatChips"></div>'+
+      '<div style="display:flex;gap:8px;align-items:center;margin-top:10px;border-top:1px dashed var(--bd);padding-top:10px;">'+
+        '<span style="font-size:11px;font-weight:800;color:#aab6cf;">Visit fee (₹):</span><input id="vCVisit" type="number" min="0" style="width:80px;text-align:center;font-weight:900;">'+
+        '<button class="bn o" style="margin-top:0;" onclick="vCSaveCatFee()">💾 Save fee</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="cd"><div class="rw"><b style="font-size:12.5px;">🛠️ Services / Items (photo + rate)</b><span class="mut" id="vCSelName">—</span></div>'+
+      '<div class="tt" style="margin:8px 0 6px;">➕ नया item / service</div>'+
+      '<input id="vCN" placeholder="Item नाम — जैसे: Split AC Deep Clean">'+
+      '<input id="vCP" type="number" min="0" placeholder="आधार rate ₹ — जैसे 499">'+
+      '<input id="vCI" placeholder="Photo URL (image link) — खाली रखो तो default photo">'+
+      '<textarea id="vCO" rows="2" placeholder="विकल्प (हर line पर एक) — जैसे:\nFoam Jet Technology (+₹150)\nAnti-Bacterial Coil (+₹100)" style="resize:none;"></textarea>'+
+      '<div class="rw" style="margin-top:10px;"><button class="bn r" style="background:#222b40;color:#ff8a80;border:1px solid #3a3045;" onclick="vCClear()">🧹 Clear</button>'+
+      '<button class="bn o" style="flex:2;margin-top:0;" onclick="vCSaveSrv()">💾 Save Item (add/update)</button></div>'+
+    '</div>'+
+    '<div class="tt">📃 इस category के items (edit/delete — tap ✏️)</div><div id="vCList"><div class="em">Category चुनो</div></div>';
+    renderChips();
+  }
+  function renderChips(){
+    var c=document.getElementById('vCatChips'); if(!c) return;
+    c.innerHTML=vCats.map(function(x){
+      return '<span style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:20px;font-size:11px;font-weight:800;cursor:pointer;border:1px solid '+(x.key===vCCat?'var(--pr)':'var(--bd)')+';background:'+(x.key===vCCat?'rgba(255,107,0,.15)':'#0f1626')+';color:'+(x.key===vCCat?'var(--pr)':'#c6cbdb')+';" onclick="vCCat(\''+x.key+'\')">'+(x.icon?x.icon+' ':'')+esc3(x.name)+(x.fee?' <span style="color:#ffd60a;">₹'+x.fee+'</span>':'')+'</span>';
+    }).join('')||'<span class="mut">कोई category नहीं — + नई Category दबाओ</span>';
+  }
+  function pickCat(key){ vCCat=key; var x=vCats.find(function(c){return c.key===key;}); var e=document.getElementById('vCSelName'); if(e) e.innerText=x?('● '+x.name):key; var vf=document.getElementById('vCVisit'); if(vf&&x) vf.value=x.fee||''; renderChips(); listSrv(); }
+  window.vCCat=pickCat;
+  window.vCAddCat=function(){
+    var nm=prompt('नई Category का नाम (जैसे: RO Service):'); if(!nm) return;
+    var ic=prompt('Icon emoji (जैसे: 💧) ya खाली:'); 
+    var key=slug(nm);
+    vCats.push({key:key,name:nm.trim(),icon:(ic||'').trim(),fee:0}); if(!vSrv[key]) vSrv[key]=[];
+    vCCat=key; renderChips(); listSrv(); saveAll('✅ Category जुड़ गई — अब items डालो');
+  };
+  window.vCSaveCatFee=function(){
+    if(!vCCat) return toast('❌ पहले category चुनो');
+    var f=Math.max(0,parseInt((document.getElementById('vCVisit').value)||'0',10)||0);
+    vCats.forEach(function(c){ if(c.key===vCCat) c.fee=f; });
+    renderChips(); saveAll('✅ Visit fee ₹'+f+' save — '+vCCat);
+  };
+  window.vCClear=function(){ ['vCN','vCP','vCI','vCO'].forEach(function(i){ var e=document.getElementById(i); if(e) e.value=''; }); };
+  function fill(o){
+    document.getElementById('vCN').value=o.n||'';
+    document.getElementById('vCP').value=o.p||'';
+    document.getElementById('vCI').value=o.i||'';
+    document.getElementById('vCO').value=(o.subOptions||[]).join('\n');
+  }
+  window.vCEdit=function(idx){
+    var o=(vSrv[vCCat]||[])[idx]; if(!o) return;
+    fill(o); window.__vSrvIdx=idx;
+    toast('✏️ Edit mode — नीचे बदलो, Save Item दबाओ');
+    try{ document.getElementById('secC').scrollIntoView({behavior:'smooth'}); }catch(e){}
+  };
+  window.vCSaveSrv=function(){
+    if(!vCCat) return toast('❌ पहले category चुनो');
+    var n=(document.getElementById('vCN').value||'').trim();
+    var p=parseInt((document.getElementById('vCP').value||'0'),10);
+    var i=(document.getElementById('vCI').value||'').trim();
+    var oLines=(document.getElementById('vCO').value||'').split('\n').map(function(x){return x.trim();}).filter(Boolean);
+    if(!n) return toast('❌ Item नाम लिखो');
+    if(!(p>=0)) p=0;
+    var obj={n:n,p:p,i:(i||'https://cdn-icons-png.flaticon.com/512/1046/1046784.png'),subOptions:oLines};
+    if(!vSrv[vCCat]) vSrv[vCCat]=[];
+    if(typeof window.__vSrvIdx==='number' && (vSrv[vCCat])[window.__vSrvIdx]) (vSrv[vCCat])[window.__vSrvIdx]=obj;
+    else (vSrv[vCCat]).push(obj);
+    window.__vSrvIdx=null;
+    listSrv(); saveAll('✅ "'+n+'" save — customer app पर live!');
+  };
+  window.vCDel=function(idx){
+    if(!confirm('यह item हमेशा delete होगा?')) return;
+    (vSrv[vCCat]||[]).splice(idx,1);
+    listSrv(); saveAll('🗑️ Item delete — live update');
+  };
+  function listSrv(){
+    var l=document.getElementById('vCList'); if(!l) return;
+    var arr=vSrv[vCCat]||[];
+    if(!arr.length){ l.innerHTML='<div class="em">इस category में अभी कोई item नहीं — ऊपर भरकर Save Item दबाओ</div>'; return; }
+    l.innerHTML=arr.map(function(o,ix){
+      return '<div class="cd" style="display:flex;gap:10px;align-items:center;"><img src="'+esc3(o.i||'')+'" onerror="this.src=\'https://cdn-icons-png.flaticon.com/512/1046/1046784.png\'" style="width:52px;height:52px;border-radius:12px;object-fit:cover;background:#0f1626;">'+
+      '<div style="flex:1;min-width:0;"><b style="font-size:12px;">'+esc3(o.n)+'</b><div style="font-size:11px;font-weight:800;color:#ffd60a;margin-top:2px;">₹'+(o.p||0)+(o.subOptions&&o.subOptions.length?(' • '+o.subOptions.length+' विकल्प'):'')+'</div></div>'+
+      '<div style="display:flex;gap:5px;"><button class="bn b" style="padding:7px 11px;margin:0;" onclick="vCEdit('+ix+')">✏️</button><button class="bn r" style="padding:7px 11px;margin:0;" onclick="vCDel('+ix+')">🗑️</button></div></div>';
+    }).join('');
+  }
+  function saveAll(tip){
+    ldr();
+    FS.collection('app_config').doc('main').set({
+      categoriesData: JSON.stringify(vCats),
+      mainData: JSON.stringify(vSrv),
+      updatedAt: Date.now(), by: ADMIN_EMAIL||''
+    },{merge:true}).then(function(){
+      ldrX(); if(tip) toast(tip);
+    }).catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  }
+  function loadCloud(){
+    ldr();
+    FS.collection('app_config').doc('main').get().then(function(d){
+      if(d.exists){
+        var x=d.data();
+        try{ vCats=JSON.parse(x.categoriesData||'[]'); }catch(e){ vCats=[]; }
+        try{ vSrv=JSON.parse(x.mainData||'{}'); }catch(e){ vSrv={}; }
+      }
+      if(!vCats.length){ vCats=[{key:'mobile',name:'Mobile',icon:'📱',fee:0}]; vSrv.mobile=vSrv.mobile||[]; }
+      if(!vCCat && vCats.length) vCCat=vCats[0].key;
+      ldrX(); renderChips(); listSrv();
+      var vf=document.getElementById('vCVisit'); var x0=vCats.find(function(c){return c.key===vCCat;}); if(vf&&x0) vf.value=x0.fee||'';
+      var e=document.getElementById('vCSelName'); if(e&&x0) e.innerText='● '+x0.name;
+    }).catch(function(e){ ldrX(); toast('⚠️ '+e.message); });
+  }
+  function live(){
+    FS.collection('app_config').doc('main').onSnapshot(function(d){
+      if(!d.exists) return;
+      var x=d.data();
+      try{ var c2=JSON.parse(x.categoriesData||'null'); if(c2) vCats=c2; }catch(e){}
+      try{ var s2=JSON.parse(x.mainData||'null'); if(s2) vSrv=s2; }catch(e){}
+      if(!vCCat&&vCats.length) vCCat=vCats[0].key;
+      renderChips(); listSrv();
+    },function(){});
+  }
+  /* expose + tab hook */
+  window.vCFLoad=loadCloud;
+  var _t33=tab;
+  tab=function(t,btn){ _t33(t,btn); if(t==='C'){ if(!vCats.length) loadCloud(); else { renderChips(); listSrv(); } } };
+  window.tab=tab;
+  function bootA(){
+    try{
+      if(!firebase.auth().currentUser) return;
+      if((firebase.auth().currentUser.email||'').toLowerCase()!==ADMIN_EMAIL) return;
+      inj(); live(); loadCloud();
+    }catch(e){}
+  }
+  if(!window.__a33b){ window.__a33b=1; var ti=setInterval(function(){ try{ bootA(); if(firebase.auth().currentUser) clearInterval(ti); }catch(e){} },700); }
+  console.log('%c 🗂️ ADMIN v3.3 — PRICE LIST / CATALOGUE ✅ ','background:#1976d2;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+</body>
 </html>
