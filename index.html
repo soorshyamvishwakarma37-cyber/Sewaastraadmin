@@ -367,8 +367,8 @@ function drawKyc(){
     '<button class="bn g" style="flex:1;" onclick="pKyc(\''+p._id+'\',\'Approved\')">✅ APPROVE</button>'+
     '<button class="bn r" onclick="pKyc(\''+p._id+'\',\'Rejected\')">❌</button></div></div>';
   }).join('')||'<div class="em">✅ कोई KYC pending नहीं — सब clear!</div>')+
-  '<div class="tt">✔ Approved Partners</div>'+
-  (PTR.filter(function(p){return p.kycStatus==='Approved';}).map(function(p){
+  '<div class="tt">✔ Approved Partners (हाल के / online)</div>'+
+  (PTR.filter(function(p){return p.kycStatus==='Approved';}).slice(0,80).map(function(p){
     return '<div class="cd" style="padding:9px 13px;" onclick="pView(\''+p._id+'\')"><div class="rw"><b style="font-size:11.5px;">✅ '+esc(p.name||'')+'</b><span class="mut">'+esc(p._id)+'</span></div></div>';
   }).join('')||'<div class="em">—</div>');
 }
@@ -1017,9 +1017,10 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
   }
   function aSubRates(){
     try{
-      FS.collection('service_ratings').onSnapshot(function(s){
+      /* SCALE: पूरी service_ratings (अनबाउंड) की जगह ab per-service aggregate svc_stats */
+      FS.collection('svc_stats').onSnapshot(function(s){
         var m={};
-        s.docs.forEach(function(d){ var x=d.data(); var k=String(x.cat||'')+'|'+String(x.sn||''); if(!m[k]) m[k]={s:0,c:0}; m[k].s+=Number(x.stars)||0; m[k].c++; });
+        s.docs.forEach(function(d){ var x=d.data(); var k=String(x.cat||'')+'|'+String(x.sn||''); if(!m[k]) m[k]={s:0,c:0}; m[k].s+=Number(x.sum)||0; m[k].c+=Number(x.count)||0; });
         rMap=m; rGot=true; aEnhance();
       },function(){});
     }catch(e){}
@@ -1274,6 +1275,224 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
     }catch(e){ setTimeout(tryA34,1000); }
   })();
   console.log('%c 🗂️🖼️ ADMIN v3.4 — ONE-TAB + GALLERY + BANNERS + RATINGS + PAYOUTS ✅ ','background:#b07800;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+
+
+<script>
+/* ═══════════════ ADMIN v3.5 — SCALE ENGINE (लाखों orders/partners पर भी smooth admin) ═══════════════ */
+(function(){
+  if(window.__a35) return; window.__a35=1;
+  function e35(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  var ACT=['Order Placed','Accepted','On the Way','Working'];
+
+  function mapD(s){ var m={}; s.docs.forEach(function(d){ var o=d.data(); o._id=d.id; m[d.id]=o; }); return m; }
+
+  /* ═══ 1) BOUNDED boot — LIVE active + हाल के (पूरी collection कभी नहीं) ═══ */
+  window.boot=function(){
+    if(window.__a35B) return; window.__a35B=1;
+    function ordErr(e){ toast('❌ orders: '+e.message); }
+    function drawAll(){ try{ drawDash(); }catch(e){} try{ drawOrders(); }catch(e){} try{ badges(); }catch(e){} }
+    /* Orders: LIVE + recent 250 */
+    var LIV={}, REC={};
+    function ordMerge(){
+      ORD=[]; for(var k in LIV) ORD.push(LIV[k]);
+      for(var k2 in REC){ if(!LIV[k2]) ORD.push(REC[k2]); }
+      ORD.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+      drawAll();
+    }
+    try{ FS.collection('orders').where('status','in',ACT).onSnapshot(function(s){ LIV=mapD(s); ordMerge(); },ordErr); }catch(e){}
+    try{ FS.collection('orders').orderBy('createdAt','desc').limit(250).onSnapshot(function(s){ REC=mapD(s); ordMerge(); },ordErr); }catch(e){}
+
+    /* Partners: online LIVE + KYC-submitted queue + recent 250 — union bounded */
+    var PON={}, PSUB={}, PREC={};
+    function ptrMerge(){
+      PTR=[]; var seen={};
+      [PON,PSUB,PREC].forEach(function(mp){ for(var k in mp){ if(!seen[k]){ seen[k]=1; PTR.push(mp[k]); } } });
+      PTR.sort(function(a,b){ return (b.lastSeen||b.lastLogin||b.ts||0)-(a.lastSeen||a.lastLogin||a.ts||0); });
+      try{ drawDash(); }catch(e){} try{ drawPartners(); }catch(e){} try{ drawKyc(); }catch(e){} try{ badges(); }catch(e){}
+    }
+    try{ FS.collection('partners').where('online','==',true).onSnapshot(function(s){ PON=mapD(s); ptrMerge(); },function(){}); }catch(e){}
+    try{ FS.collection('partners').where('kycStatus','==','Submitted').onSnapshot(function(s){ PSUB=mapD(s); ptrMerge(); },function(){}); }catch(e){}
+    try{ FS.collection('partners').orderBy('lastSeen','desc').limit(250).onSnapshot(function(s){ PREC=mapD(s); ptrMerge(); },function(){}); }catch(e){}
+
+    /* Tickets: LIVE active + recent 120 */
+    var TOP={}, TREC={};
+    function tikMerge(){
+      TIK=[]; var seen={};
+      [TOP,TREC].forEach(function(mp){ for(var k in mp){ if(!seen[k]){ seen[k]=1; TIK.push(mp[k]); } } });
+      TIK.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      try{ drawTix(); }catch(e){} try{ badges(); }catch(e){}
+    }
+    try{ FS.collection('tickets').where('status','in',['Open','In Progress']).onSnapshot(function(s){ TOP=mapD(s); tikMerge(); },function(){}); }catch(e){}
+    try{ FS.collection('tickets').orderBy('ts','desc').limit(120).onSnapshot(function(s){ TREC=mapD(s); tikMerge(); },function(){}); }catch(e){}
+
+    /* USR — bulk users अब load नहीं (search से) */
+    USR={};
+
+    /* Money — bounded loader (open + recent) */
+    a35Money();
+
+    /* scale info bar (एक बार) */
+    try{
+      if(!document.getElementById('a35Bar')){
+        var bar=document.createElement('div'); bar.id='a35Bar';
+        bar.style.cssText='margin:8px 12px;padding:8px 12px;border-radius:11px;background:rgba(15,163,87,.12);border:1px solid rgba(43,201,110,.35);color:#2bc96e;font-size:10.5px;font-weight:800;line-height:1.6;display:flex;justify-content:space-between;align-items:center;gap:8px;';
+        bar.innerHTML='⚡ <b>Scale mode ON</b> — app LIVE + हाल के data से चल रहा है (पूरी collection डाउनलोड नहीं), इसलिए लाखों users/partners/orders पर भी smooth।'+
+          '<span style="cursor:pointer;color:#8a94ab;" onclick="this.parentElement.remove()">✕</span>';
+        var host=document.querySelector('.wrap .nv')||document.querySelector('.nv');
+        if(host&&host.parentNode) host.parentNode.insertBefore(bar, host.nextSibling);
+      }
+    }catch(e){}
+    try{ toast('👑 Admin (Scale) तैयार — LIVE + हाल के data'); }catch(e){}
+  };
+
+  /* ═══ 2) BOUNDED money loader (base का loadGroups बदलो) ═══ */
+  function a35Fetch(col,statusIn,limitRec,arrName){
+    /* open items + recent, merge dedupe */
+    var out={};
+    function addS(sn){ sn.docs.forEach(function(d){ var x=d.data(); x._id=d.id; x._ref=d.ref; x._ph=d.ref.parent.parent.id; out[x._ref.path]=x; }); }
+    var jobs=[];
+    if(statusIn) jobs.push(FS.collectionGroup(col).where('status','in',statusIn).get());
+    if(limitRec) jobs.push(FS.collectionGroup(col).orderBy('ts','desc').limit(limitRec).get());
+    return Promise.all(jobs).then(function(rs){
+      rs.forEach(addS);
+      var arr=[]; for(var k in out) arr.push(out[k]);
+      arr.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+      window[arrName]=arr;
+      return arr;
+    }).catch(function(e){ toast('⚠️ '+col+': '+e.message); return []; });
+  }
+  window.a35Money=function(){
+    return Promise.all([
+      a35Fetch('withdrawals',['Requested'],90,'WDS'),
+      a35Fetch('deposits',['Pending'],60,'DEPS'),
+      a35Fetch('incentives',null,90,'INCS'),
+      a35Fetch('gifts',['Requested','Booked'],60,'GIFTS')
+    ]).then(function(){
+      try{ drawMoney(); }catch(e){}
+      try{ drawTix(); }catch(e){}
+      try{ badges(); }catch(e){}
+    });
+  };
+  window.loadGroups=function(){ return window.a35Money(); };
+
+  /* gSet(PAID/APPROVE) के बाद loadGroups bound ही है — कोई और change नहीं */
+  console.log('%c ⚡ ADMIN v3.5 — SCALE ENGINE (bounded live admin) ✅ ','background:#0a6d3f;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+
+
+<script>
+/* ═══════════════ ADMIN v3.6 — 🆘 SOS RED-ALERT POPUP + SOUND (user info सहित) ═══════════════ */
+(function(){
+  if(window.__a36) return; window.__a36=1;
+  function e36(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  var _q=[], _cur=null, _alarm=null;
+
+  /* overlay */
+  function ovr(){
+    var o=document.getElementById('a36Ov');
+    if(!o){
+      o=document.createElement('div'); o.id='a36Ov';
+      o.style.cssText='position:fixed;inset:0;z-index:9999995;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(40,2,2,.78);backdrop-filter:blur(5px);';
+      document.body.appendChild(o);
+      var st=document.createElement('style');
+      st.textContent=
+        '#a36Ov *{box-sizing:border-box}'+
+        '.a36card{width:100%;max-width:430px;border-radius:24px;overflow:hidden;box-shadow:0 0 0 4px rgba(255,60,60,.4),0 34px 110px rgba(0,0,0,.7);animation:a36in .25s}'+
+        '@keyframes a36in{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}'+
+        '.a36head{background:linear-gradient(135deg,#7f0000,#ff1744);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center;animation:a36flash 1s infinite}'+
+        '@keyframes a36flash{50%{filter:brightness(1.35)}}'+
+        '.a36body{background:#160b0b;color:#ffe;padding:14px 16px}'+
+        '.a36info{background:#2a0d0d;border:1px solid #7f2020;border-radius:12px;padding:10px 12px;font-size:12px;line-height:1.9;font-weight:700}'+
+        '.a36btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}'+
+        '.a36btns a,.a36btns button{border:none;border-radius:12px;padding:11px;font-weight:900;font-size:11.5px;cursor:pointer;text-decoration:none;text-align:center}'+
+        '.a36ok{flex:2;background:linear-gradient(135deg,#0f7a37,#2bc96e);color:#fff}'+
+        '.a36call{flex:1;background:linear-gradient(135deg,#0d47a1,#1e88e5);color:#fff}'+
+        '.a36wa{flex:1;background:#25d366;color:#063'+
+        ''+
+        ''+
+        ''+
+        '';
+      document.head.appendChild(st);
+    }
+    return o;
+  }
+  function show(){
+    var o=ovr();
+    if(!_cur){ o.style.display='none'; return; }
+    var s=_cur;
+    var loc=s.loc&&s.loc.lat;
+    var mapL=loc?('https://www.google.com/maps?q='+s.loc.lat+','+s.loc.lon):'';
+    o.innerHTML='<div class="a36card">'+
+      '<div class="a36head"><div><div style="font-size:26px;">🚨 EMERGENCY SOS</div><div style="font-size:10.5px;font-weight:700;opacity:.92;">'+e36(s.at||new Date(s.ts||Date.now()).toLocaleString('en-IN'))+' • '+(_q.length>1?('+ '+( _q.length-1)+' और active'):'')+'</div></div><span style="font-size:24px;cursor:pointer;" onclick="a36X()">✕</span></div>'+
+      '<div class="a36body">'+
+        '<div class="a36info">👤 <b>'+e36(s.name||'Customer')+'</b>'+
+        '<br>📱 <b>+91 '+e36(s.phone||'—')+'</b>'+(s.uid?'<br>🔑 '+e36(s.uid):'')+
+        (s.orderId?'<br>🧾 Last order: <b>'+e36(s.orderId)+'</b>':'')+
+        (loc?'<br>📍 <a href="'+mapL+'" target="_blank" style="color:#7fb3ff;">lat '+s.loc.lat.toFixed(5)+', lon '+s.loc.lon.toFixed(5)+' — MAP खोलें</a>':'<br>📍 GPS off (location नहीं)')+
+        '</div>'+
+        '<div style="margin-top:10px;background:#3a1414;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7;font-weight:800;color:#ffd9d9;">🗣️ "'+e36(s.msg||'—')+'"</div>'+
+        '<div class="a36btns">'+
+          '<a class="a36call" href="tel:+91'+e36(s.phone||'')+'">📞 Call</a>'+
+          '<a class="a36wa" href="https://wa.me/91'+e36(s.phone||'')+'" target="_blank">💬 WhatsApp</a>'+
+          (loc?'<a class="a36wa" style="background:#6a1b9a;color:#fff;flex:1;" href="'+mapL+'" target="_blank">🗺️ Map</a>':'')+
+          '<button class="a36ok" onclick="a36Done()">✅ समझ गया — Handle किया</button>'+
+        '</div>'+
+      '</div></div>';
+    o.style.display='flex';
+    siren();
+  }
+  window.a36X=function(){
+    try{ sirenStop(); }catch(e){}
+    ovr().style.display='none';
+  };
+  window.a36Done=function(){
+    var s=_cur; if(!s){ a36X(); return; }
+    try{
+      FS.collection('sos_alerts').doc(s._id).update({status:'handled',handledAt:Date.now(),handledBy:ADMIN_EMAIL||''}).then(function(){ toast('✅ SOS handled'); }).catch(function(e){ toast('❌ '+e.message); });
+    }catch(e){}
+    _q=_q.filter(function(x){ return x._id!==(s._id); });
+    _cur=_q.length?_q[0]:null;
+    show();
+    if(!_cur) a36X();
+  };
+
+  /* 🔊 SIREN */
+  function siren(){
+    try{ if(_alarm) return; _alarm=setInterval(function(){
+      try{
+        if(!document.getElementById('a36Ov')||document.getElementById('a36Ov').style.display!=='flex'){ sirenStop(); return; }
+        var C=new (window.AudioContext||window.webkitAudioContext)();
+        var now=C.currentTime;
+        function tone(f,d){ var o=C.createOscillator(),g=C.createGain(); o.connect(g); g.connect(C.destination); o.type='square'; o.frequency.value=f; g.gain.setValueAtTime(0.01,now); g.gain.exponentialRampToValueAtTime(0.35,now+0.04); g.gain.exponentialRampToValueAtTime(0.01,now+d); o.start(now); o.stop(now+d+0.05); }
+        tone(880,0.28); setTimeout(function(){ try{ tone(560,0.28); }catch(e){} },320);
+      }catch(e){}
+    },1000); }catch(e){}
+  }
+  function sirenStop(){ try{ if(_alarm){ clearInterval(_alarm); _alarm=null; } }catch(e){} }
+  /* autoplay unlock: पहली click पर audio context resume */
+  document.addEventListener('click',function(){ try{ if(window.AudioContext||window.webkitAudioContext){ var C=new (window.AudioContext||window.webkitAudioContext)(); if(C.state==='suspended') C.resume().catch(function(){}); } }catch(e){} },{once:true});
+
+  /* listener */
+  try{
+    FS.collection('sos_alerts').where('status','==','active').onSnapshot(function(snap){
+      snap.docChanges().forEach(function(ch){
+        if(ch.type!=='added') return;
+        var d=ch.doc, x=d.data(); x._id=d.id;
+        _q.push(x);
+        if(!_cur) _cur=x;
+        else _q.sort(function(a,b){ return (b.ts||0)-(a.ts||0); }); _cur=_q[0];
+        show();
+        try{ toast('🚨 EMERGENCY SOS — '+x.phone); }catch(e){}
+      });
+    },function(){});
+  }catch(e){}
+  console.log('%c 🚨 ADMIN v3.6 — SOS RED ALERT + SOUND ✅ ','background:#d50000;color:#fff;font-weight:bold;padding:3px;');
 })();
 
 </script>
