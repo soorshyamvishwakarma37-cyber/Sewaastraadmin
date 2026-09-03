@@ -1670,5 +1670,71 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
 
 </script>
 
+
+<script>
+/* ═══════════════ ADMIN v3.9 — 🎬 TRAINING VIDEO: LINK भी update करें + preview ═══════════════ */
+(function(){
+  if(window.__a39) return; window.__a39=1;
+  function esc39(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function ui(){
+    try{
+      var card=document.getElementById('a38TrX'); if(!card||document.getElementById('a39LinkRow')) return;
+      var sep=document.createElement('div'); sep.id='a39LinkRow'; sep.style.cssText='border-top:1px dashed var(--bd,#26324d);margin-top:10px;padding-top:10px;';
+      sep.innerHTML=
+        '<div style="font-size:10.5px;color:#aab6cf;font-weight:800;">🔗 या फिर video का <b>direct link (URL)</b> डालें — बड़ी video बिना upload के चलाएँ (YouTube/GDrive/site).</div>'+
+        '<input id="a39L" placeholder="https://.../video.mp4 (direct .mp4/.webm/.ogv link)" style="width:100%;box-sizing:border-box;margin-top:8px;font-weight:700;" value="">'+
+        '<div style="display:flex;gap:8px;margin-top:8px;">'+
+          '<button class="bn o" style="flex:1.4;padding:11px;" onclick="a39SaveLink()">💾 Save Link</button>'+
+          '<button class="bn b" style="flex:1;padding:11px;" onclick="a39Test()">▶️ Test करें</button>'+
+          '<button class="bn r" style="flex:1;padding:11px;" onclick="a39DelLink()">🗑️ Link हटाएँ</button></div>'+
+        '<div id="a39Msg" style="font-size:10px;color:#8a94ab;font-weight:800;margin-top:6px;">जब दोनों हों (upload + link) — Partner app में link प्राथमिकता से चलेगा।</div>';
+      card.appendChild(sep);
+      /* load existing */
+      FS.collection('config').doc('partnerTraining').get().then(function(d){
+        if(!d.exists) return;
+        var url=String(d.data().url||'').trim();
+        var i=document.getElementById('a39L'); if(i&&url) i.value=url;
+        if(url){ var m=document.getElementById('a39Msg'); if(m) m.innerHTML='✅ Current link set है — Partner इसी से चलेगा'; }
+      }).catch(function(){});
+    }catch(e){}
+  }
+  window.a39SaveLink=function(){
+    var i=document.getElementById('a39L'); if(!i) return;
+    var url=String(i.value||'').trim();
+    if(!url) return toast('❌ पहले video का link डालें');
+    var cap=((document.getElementById('a38C')||{}).value||'');
+    ldr();
+    FS.collection('config').doc('partnerTraining').set({url:url,caption:cap,urlAt:Date.now(),by:ADMIN_EMAIL||''},{merge:true})
+      .then(function(){ ldrX(); var m=document.getElementById('a39Msg'); if(m) m.innerHTML='✅ Link save — Partner ▶️ Training में चलेगा'; toast('✅ Training link save'); })
+      .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  };
+  window.a39Test=function(){
+    var i=document.getElementById('a39L'); var url=i?String(i.value||'').trim():'';
+    if(!url) return toast('पहले link डालें');
+    try{ window.open(url,'_blank'); }catch(e){ toast('❌ Link नहीं खुला'); }
+  };
+  window.a39DelLink=function(){
+    ldr();
+    FS.collection('config').doc('partnerTraining').set({url:''},{merge:true}).then(function(){
+      ldrX(); var i=document.getElementById('a39L'); if(i) i.value='';
+      var m=document.getElementById('a39Msg'); if(m) m.innerHTML='🗑️ Link हटा दिया (upload video हो तो वही चलेगी)';
+      toast('🗑️ Training link हटा दिया');
+    }).catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  };
+  var _dd=drawDash;
+  drawDash=function(){ try{ _dd(); }catch(e){} setTimeout(function(){ try{ ui(); }catch(e){} },50); };
+  function boot(){
+    try{
+      if(!firebase.auth().currentUser) return setTimeout(boot,700);
+      if((firebase.auth().currentUser.email||'').toLowerCase()!==ADMIN_EMAIL) return;
+      setTimeout(ui,300);
+    }catch(e){ setTimeout(boot,1000); }
+  }
+  setTimeout(boot,900);
+  console.log('%c 🔗 ADMIN v3.9 — TRAINING LINK EDITOR ✅ ','background:#0d6efd;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+
 </body>
 </html>
