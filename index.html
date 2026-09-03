@@ -68,7 +68,7 @@ input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd)
     <button class="bn" style="width:100%;padding:13px;background:#fff;color:#222;font-size:13px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:9px;" onclick="gLogin()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G"> Google से Login
     </button>
-    <div class="mut" style="margin-top:14px;line-height:1.7;">🔒 सिर्फ authorized admin:<br><b style="color:var(--gold);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7a091515080912031b170c1309120d1b111b08171b494d3a1d171b131654191517">[email&#160;protected]</a></b></div>
+    <div class="mut" style="margin-top:14px;line-height:1.7;">🔒 सिर्फ authorized admin:<br><b style="color:var(--gold);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="55263a3a27263d2c3438233c263d22343e342738346662153238343c397b363a38">[email&#160;protected]</a></b></div>
     <div id="lgE" style="color:#ff8a80;font-size:11px;font-weight:800;margin-top:10px;"></div>
   </div>
 </div>
@@ -544,5 +544,158 @@ drawTix=function(){
 };
 console.log('%c 👑 ADMIN v2.0 — TRACKING + BLOCK + ALERTS ✅ ','background:#e53935;color:#fff;font-weight:bold;padding:3px;');
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3502d735e7147bf',t:'MTc4ODM5MDUxNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<style>
+input[name="abG"]{display:none}
+.vg{width:30px;height:30px;border-radius:50%;display:inline-block;margin:8px 5px 0;border:3px solid transparent;cursor:pointer;vertical-align:middle}
+input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-shadow:0 0 10px rgba(255,215,0,.4)}
+.prev{position:relative;border-radius:16px;color:#fff;padding:18px 16px;overflow:hidden;margin-top:10px}
+.pvx{position:absolute;top:-40px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.15)}
+</style>
+<script>
+/* ═══════════════ ADMIN v3.0 — 📢 BROADCAST / OFFER / INCENTIVE / NOTICE MANAGER ═══════════════ */
+(function(){
+  if(window.__vA30) return; window.__vA30=1;
+  var VG=['linear-gradient(135deg,#ff6b00,#ffa53d)','linear-gradient(135deg,#7b1fa2,#e91e63)','linear-gradient(135deg,#0d47a1,#00bcd4)','linear-gradient(135deg,#0f9d45,#2bc96e)','linear-gradient(135deg,#1a1030,#4a2408)','linear-gradient(135deg,#e53935,#ff9800)'];
+  var VEM={'banner':'📢','offer':'🏷️','incentive':'🎁','notice':'📣','update':'🆕'};
+  var VTX={'banner':'🪧 Banner','offer':'🛍️ Offer','incentive':'💰 Incentive','notice':'📣 Notice','update':'🆕 Update'};
+  var vAB=[], vABL=false, vAEditId=null;
+  function esc2(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function gd(i){ return VG[Math.abs(i||0)%VG.length]; }
+  function em(b){ return (b&&b.emoji)?b.emoji:(VEM[b.type]||'📢'); }
+  /* ─── nav + section ─── */
+  function inj(){
+    var nav=document.querySelector('.nv');
+    if(nav&&!document.getElementById('bA')) nav.insertAdjacentHTML('beforeend','<button onclick="tab(\'A\',this)"><i>📢</i>Announce<span class="bdg" id="bA"></span></button>');
+    var wrap=document.querySelector('.wrap');
+    if(wrap&&!document.getElementById('secA')) wrap.insertAdjacentHTML('beforeend','<div class="sec" id="secA"></div>');
+    if(document.getElementById('secA')&&!document.getElementById('vAF')) vABuild();
+  }
+  function vABuild(){
+    var s=document.getElementById('secA'); if(!s) return;
+    s.innerHTML=
+      '<div class="tt">📢 नया Announcement / Offer / Incentive भेजें</div>'+
+      '<div class="cd"><div style="font-size:11.5px;font-weight:800;color:#ffd60a;" id="vASt">🆕 नया message — app (Customer/Partner) पर तुरंत LIVE जाएगा</div>'+
+      '<input id="abT" placeholder="Title — जैसे: मॉनसून ऑफर! 🎉">'+
+      '<textarea id="abM" rows="3" placeholder="पूरा message लिखें..." style="resize:none;"></textarea>'+
+      '<div style="display:flex;gap:8px;">'+
+      '<select id="abTy" style="flex:1;">'+['banner','offer','incentive','notice','update'].map(function(t){return '<option value="'+t+'">'+(VTX[t]||t)+'</option>';}).join('')+'</select>'+
+      '<select id="abTo" style="flex:1;"><option value="all">👥 सबके लिए</option><option value="customer">🛒 Customer app</option><option value="partner">🧑‍🔧 Partner app</option></select></div>'+
+      '<input id="abEm" placeholder="Emoji (optional) — जैसे 🎉" maxlength="4">'+
+      '<div><span style="font-size:10px;color:#8a94ab;font-weight:800;">🎨 रंग चुनें:</span>'+
+      '<div>'+(VG.map(function(g,i){return '<input type="radio" name="abG" id="abG'+i+'" value="'+i+'" '+(i===0?'checked':'')+'><label class="vg" for="abG'+i+'" style="background:'+g+'"></label>';}).join(''))+'</div></div>'+
+      '<div class="rw" style="margin-top:8px;"><span style="font-size:11px;font-weight:800;color:#aab6cf;">🟢 Active (app पर दिखे)</span><input type="checkbox" id="abOn" checked style="width:auto;margin:0;transform:scale(1.4)"></div>'+
+      '<div style="font-size:10px;color:#8a94ab;font-weight:800;margin-top:8px;">लाइव Preview:</div><div class="prev" id="abPrev" style="background:'+VG[0]+';"><div class="pvx"></div><div style="font-size:24px;">📢</div><div style="font-weight:900;font-size:14px;" id="abPvT">Offer title</div><div style="font-size:11px;opacity:.9;font-weight:700;" id="abPvM">Message preview...</div></div>'+
+      '<div class="rw" style="margin-top:12px;"><button class="bn gy" onclick="vAReset()">🧹 नया / Reset</button><button class="bn o" style="flex:2;" onclick="vASav()">📤 Publish / Update करें</button></div></div>'+
+      '<div class="tt">📚 Messages रखे हुए (LIVE / बंद)</div><div id="vAL"><div class="em">लोड हो रहा है...</div></div>';
+    var abT=document.getElementById('abT'), abM=document.getElementById('abM');
+    function lv(){
+      var g=document.querySelector('input[name="abG"]:checked'); var gi=g?parseInt(g.value,10):0;
+      var ty=document.getElementById('abTy').value, ej=document.getElementById('abEm').value.trim()||(VEM[ty]||'📢');
+      document.getElementById('abPrev').style.background=gd(gi);
+      document.getElementById('abPrev').innerHTML='<div class="pvx"></div><div style="font-size:24px;">'+esc2(ej)+'</div><div style="font-weight:900;font-size:14px;" id="abPvT">'+esc2(abT.value||'Title')+'</div><div style="font-size:11px;opacity:.9;font-weight:700;" id="abPvM">'+esc2(abM.value||'Message preview...')+'</div>';
+    }
+    ['abT','abM','abTy','abEm'].forEach(function(id){ var el=document.getElementById(id); el.addEventListener('input',lv); el.addEventListener('change',lv); });
+  }
+  function vASav(){
+    var t=(document.getElementById('abT').value||'').trim();
+    var m=(document.getElementById('abM').value||'').trim();
+    if(t.length<3) return toast('❌ Title लिखें');
+    if(m.length<5) return toast('❌ Message लिखें');
+    var g=document.querySelector('input[name="abG"]:checked');
+    var gi=g?parseInt(g.value,10):0;
+    var doc={ title:t, msg:m, type:document.getElementById('abTy').value, to:document.getElementById('abTo').value,
+      grad:gi, emoji:(document.getElementById('abEm').value||'').trim()||(VEM[document.getElementById('abTy').value]||'📢'),
+      active:document.getElementById('abOn').checked };
+    var st=document.getElementById('vASt');
+    ldr();
+    if(vAEditId){ FS.collection('broadcasts').doc(vAEditId).update(doc).then(function(){ ldrX(); vAEditId=null; toast('✅ Message update + LIVE हो गया!'); vAReset(); }).catch(function(e){ ldrX(); toast('❌ '+e.message); }); }
+    else{
+      doc.ts=Date.now(); doc.at=new Date().toLocaleString('en-IN'); doc.by=(ADMIN_EMAIL||'');
+      FS.collection('broadcasts').add(doc).then(function(){ ldrX(); toast('📤 भेज दिया — apps पर LIVE! 🎉'); vAReset(); }).catch(function(e){ ldrX(); toast('❌ '+e.message); });
+    }
+  }
+  function vAReset(){
+    vAEditId=null;
+    var s=document.getElementById('secA'); if(!s) return;
+    vABuild();
+    try{ var l=document.getElementById('vAL'); if(l) vAList(); }catch(e){}
+  }
+  function vAEdit(id){
+    var b=null; vAB.forEach(function(x){ if(x._id===id) b=x; });
+    if(!b) return;
+    vAEditId=id;
+    document.getElementById('vASt').innerHTML='✏️ EDIT: <b>'+esc2(b.title)+'</b> — नीचे बदलकर Update दबाएँ <span style="color:#8a94ab;">(ID: '+id+')</span>';
+    document.getElementById('abT').value=b.title||'';
+    document.getElementById('abM').value=b.msg||'';
+    document.getElementById('abTy').value=b.type||'banner';
+    document.getElementById('abTo').value=b.to||'all';
+    document.getElementById('abEm').value=b.emoji||'';
+    document.getElementById('abOn').checked=!!b.active;
+    var radios=document.querySelectorAll('input[name="abG"]');
+    for(var i=0;i<radios.length;i++) radios[i].checked=(i===(Number(b.grad)||0)%VG.length);
+    try{ document.querySelector('#secA .wrap2, #secA').scrollIntoView({behavior:'smooth'}); }catch(e){}
+    toast('✏️ Edit mode — Save के बजाय Update होगा');
+  }
+  function vATog(id){
+    var b=null; vAB.forEach(function(x){ if(x._id===id) b=x; });
+    if(!b) return;
+    FS.collection('broadcasts').doc(id).update({active:!b.active}).then(function(){ toast(!b.active?'🟢 LIVE कर दिया':'⚫ बंद कर दिया'); }).catch(function(e){ toast('❌ '+e.message); });
+  }
+  function vADel(id){
+    if(!confirm('यह message हमेशा के लिए delete होगा? Apps से तुरंत हट जाएगा।')) return;
+    FS.collection('broadcasts').doc(id).delete().then(function(){ toast('🗑️ Delete हो गया'); }).catch(function(e){ toast('❌ '+e.message); });
+  }
+  function vAList(){
+    var l=document.getElementById('vAL'); if(!l) return;
+    if(!vAB.length){ l.innerHTML='<div class="em">अभी कोई message नहीं — ऊपर से भेजें 📤</div>'; return; }
+    l.innerHTML=vAB.map(function(b){
+      return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+em(b)+' '+esc2(b.title||'')+'</b><span class="ch" style="background:'+gd(b.grad)+';color:#fff;">'+esc2(VTX[b.type]||b.type)+'</span></div>'+
+      '<div class="mut" style="margin:5px 0 8px;">'+esc2(String(b.msg||'').slice(0,120))+'</div>'+
+      '<div class="rw"><div class="mut">👥 '+esc2(b.to==='all'?'सब':b.to==='customer'?'Customer':b.to==='partner'?'Partner':'')+' • '+ago(b.ts||b.t_edit)+'</div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;">'+
+      '<button class="bn '+(b.active?'g':'gy')+'" onclick="vATog(\''+b._id+'\')">'+(b.active?'🟢 LIVE':'⚫ बंद')+'</button>'+
+      '<button class="bn o" onclick="vAEdit(\''+b._id+'\')">✏️ Edit</button>'+
+      '<button class="bn r" onclick="vADel(\''+b._id+'\')">🗑️</button></div></div></div>';
+    }).join('');
+  }
+  function listen(){
+    if(vABL) return; vABL=true;
+    try{
+      FS.collection('broadcasts').onSnapshot(function(s){
+        vAB=s.docs.map(function(d){ var b=d.data(); b._id=d.id; return b; }).sort(function(a,b2){ return (b2.ts||0)-(a.ts||0); });
+        var st=document.getElementById('vASt'); if(st&&!vAEditId) st.innerHTML='🆕 नया message — app (Customer/Partner) पर तुरंत LIVE जाएगा';
+        vAList();
+        var e=document.getElementById('bA');
+        if(e){ var n=vAB.filter(function(b){return b.active;}).length; e.style.display=n?'flex':'none'; e.innerText=n; }
+        if(document.getElementById('secA')&&document.getElementById('secA').classList.contains('act')) vAList();
+      },function(){});
+    }catch(e){}
+  }
+  /* ─── re-wire tab ─── */
+  function tab(t,btn){
+    ['D','O','P','K','M','T','A'].forEach(function(x){ var e=document.getElementById('sec'+x); if(e) e.classList.remove('act'); });
+    var se=document.getElementById('sec'+t); if(se) se.classList.add('act');
+    document.querySelectorAll('.nv button').forEach(function(b){ b.classList.remove('act'); });
+    if(btn) btn.classList.add('act');
+    if(t==='M') drawMoney();
+    if(t==='T') drawTix();
+    if(t==='A'){ vAList(); }
+  }
+  /* expose */
+  window.vASav=vASav; window.vAReset=vAReset; window.vAEdit=vAEdit; window.vATog=vATog; window.vADel=vADel; window.vAList=vAList;
+  window.tab=tab;
+  /* start */
+  function tryBoot(){
+    try{
+      if(!firebase.auth().currentUser) return false;
+      if((firebase.auth().currentUser.email||'').toLowerCase()!==ADMIN_EMAIL) return false;
+      inj(); listen();
+      return true;
+    }catch(e){ return false; }
+  }
+  if(!tryBoot()){ var ti=setInterval(function(){ if(tryBoot()) clearInterval(ti); },800); }
+  console.log('%c 📢 ADMIN v3.0 — BROADCAST MANAGER ✅ ','background:#ff6b00;color:#fff;font-weight:bold;padding:3px;');
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3509f300c86aed9',t:'MTc4ODM5NTE3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
