@@ -1551,5 +1551,124 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
 
 </script>
 
+
+<script>
+/* ═══════════════ ADMIN v3.8 — 🧾 ONBOARDING FEE + OFFER  •  🎬 PARTNER TRAINING VIDEO (Gallery) ═══════════════ */
+(function(){
+  if(window.__a38) return; window.__a38=1;
+  var O={fee:199,offType:'none',offVal:0,note:''};
+  var T={vdo:'',cap:''};
+  function fillO(){
+    var e;
+    e=document.getElementById('a38F'); if(e&&document.activeElement!==e) e.value=O.fee;
+    e=document.getElementById('a38T'); if(e&&document.activeElement!==e) e.value=O.offType;
+    e=document.getElementById('a38V'); if(e&&document.activeElement!==e) e.value=O.offVal;
+    e=document.getElementById('a38N'); if(e&&document.activeElement!==e) e.value=O.note;
+    var s=document.getElementById('a38Sum'); if(s){
+      var amt=O.fee, txt='₹'+O.fee;
+      if(O.offType==='free'){ amt=0; txt='₹'+O.fee+' → FREE 🎉'; }
+      else if(O.offType==='flat'){ amt=Math.max(0,O.fee-O.offVal); txt='₹'+O.fee+' → ₹'+amt; }
+      else if(O.offType==='percent'){ amt=Math.max(0,O.fee-Math.round(O.fee*O.offVal/100)); txt='₹'+O.fee+' → ₹'+amt; }
+      s.innerHTML='Partner को दिखेगा: <b style="color:#ffd60a;">'+txt+'</b>'+(O.note?' — '+esc38(O.note):'');
+    }
+  }
+  function esc38(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  window.a38Save=function(){
+    var fee=Math.max(0,parseInt((document.getElementById('a38F')||{}).value||'0',10)||0);
+    var off=(document.getElementById('a38T')||{}).value||'none';
+    var val=Math.max(0,parseInt((document.getElementById('a38V')||{}).value||'0',10)||0);
+    var note=(document.getElementById('a38N')||{}).value||'';
+    ldr();
+    FS.collection('config').doc('global').set({obFee:fee,obOffType:off,obOffVal:val,obNote:note,obAt:Date.now(),obBy:ADMIN_EMAIL||''},{merge:true})
+      .then(function(){ ldrX(); O.fee=fee;O.offType=off;O.offVal=val;O.note=note; fillO(); toast('✅ Onboarding fee + offer save — Partner profile पर live'); })
+      .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  };
+  window.a38Pv=function(inp){
+    var f=inp.files&&inp.files[0]; if(!f) return;
+    if(!/video\//.test(f.type)) return toast('❌ Video file चुनें');
+    if(f.size>700*1024) return toast('⚠️ Video 700KB से छोटी होनी चाहिए (gallery से छोटा clip / 10-15 sec)। Firestore limit ~1MB।');
+    var rd=new FileReader();
+    rd.onload=function(ev){
+      T.vdo=String(ev.target.result||''); T.cap=(document.getElementById('a38C')||{}).value||'';
+      var pv=document.getElementById('a38P'); if(pv) pv.innerHTML='<video controls style="width:100%;max-height:150px;border-radius:10px;background:#000;" src="'+T.vdo+'"></video>';
+      var sz=document.getElementById('a38S'); if(sz) sz.innerText='✅ Loaded: '+Math.round(f.size/1024)+' KB — Save दबाएँ';
+    };
+    rd.readAsDataURL(f);
+  };
+  window.a38SaveTr=function(){
+    if(!T.vdo) return toast('❌ पहले gallery से video choose करें');
+    T.cap=(document.getElementById('a38C')||{}).value||'';
+    ldr('Training video save...');
+    FS.collection('config').doc('partnerTraining').set({vdo:T.vdo,caption:T.cap,at:Date.now(),by:ADMIN_EMAIL||''},{merge:true})
+      .then(function(){ ldrX(); toast('✅ Training video save — Partner app में ▶️ दिखेगी'); })
+      .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  };
+  window.a38DelTr=function(){
+    ldr();
+    FS.collection('config').doc('partnerTraining').set({vdo:''},{merge:true}).then(function(){
+      ldrX(); T.vdo=''; var pv=document.getElementById('a38P'); if(pv) pv.innerHTML='<div style="color:#8a94ab;font-size:11px;font-weight:700;">कोई video upload नहीं</div>';
+      var sz=document.getElementById('a38S'); if(sz) sz.innerText='';
+      toast('🗑️ Training video हटाई');
+    }).catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  };
+  function cards(){
+    var host=document.getElementById('secD'); if(!host) return;
+    if(!document.getElementById('a38ObX')){
+      host.insertAdjacentHTML('beforeend',
+        '<div class="cd" id="a38ObX" style="border-color:#7a5a00;margin-top:8px;">'+
+          '<div class="rw"><b style="font-size:12.5px;">🧾 Partner Onboarding / Activation Fee</b><span class="gold">PARTNER SETTING</span></div>'+
+          '<div style="font-size:10.5px;color:#aab6cf;font-weight:700;margin-top:4px;">नए partner को काम शुरू करने से पहले यह fee दिखेगी। आप offer/छूट या FREE भी लगा सकते हैं।</div>'+
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:9px;">'+
+            '<input id="a38F" type="number" min="0" style="width:96px;text-align:center;font-weight:900;" placeholder="₹ Fee">'+
+            '<select id="a38T" style="flex:1;min-width:120px;font-weight:800;"><option value="none">कोई offer नहीं</option><option value="free">FREE (पूरी माफ़)</option><option value="flat">₹ flat छूट</option><option value="percent">% छूट</option></select>'+
+            '<input id="a38V" type="number" min="0" style="width:80px;text-align:center;font-weight:800;" placeholder="Value">'+
+          '</div>'+
+          '<input id="a38N" placeholder="Offer note / caption (optional) — जैसे: इस महीने 50% off" style="width:100%;box-sizing:border-box;margin-top:7px;font-weight:700;" maxlength="90">'+
+          '<div id="a38Sum" style="margin:7px 0 4px;font-size:12px;font-weight:900;color:#ffd60a;"></div>'+
+          '<button class="bn o" style="width:100%;padding:11px;" onclick="a38Save()">💾 Save Onboarding Fee & Offer</button>'+
+        '</div>');
+    }
+    if(!document.getElementById('a38TrX')){
+      host.insertAdjacentHTML('beforeend',
+        '<div class="cd" id="a38TrX" style="border-color:#1d3a5f;margin-top:8px;">'+
+          '<div class="rw"><b style="font-size:12.5px;">🎬 Partner Training Video</b><span class="gold">PARTNER SETTING</span></div>'+
+          '<div style="font-size:10.5px;color:#aab6cf;font-weight:700;margin-top:4px;">अपनी gallery/device से सीधे video upload करें → Partner app के Profile में ▶️ Training दिखेगी। छोटी clip रखें (≤700KB, ~10-15 sec)।</div>'+
+          '<input type="file" id="a38Fv" accept="video/*" style="margin-top:9px;" onchange="a38Pv(this)">'+
+          '<div id="a38P" style="margin-top:8px;"><div style="color:#8a94ab;font-size:11px;font-weight:700;">कोई video upload नहीं</div></div>'+
+          '<div id="a38S" style="font-size:10px;color:#2bc96e;font-weight:800;margin-top:4px;"></div>'+
+          '<input id="a38C" placeholder="Video caption (optional)" style="width:100%;box-sizing:border-box;margin-top:8px;font-weight:700;" maxlength="90">'+
+          '<div style="display:flex;gap:8px;margin-top:8px;"><button class="bn o" style="flex:1.4;padding:11px;" onclick="a38SaveTr()">💾 Save Video</button><button class="bn r" style="flex:1;padding:11px;" onclick="a38DelTr()">🗑️ हटाएँ</button></div>'+
+        '</div>');
+    }
+    fillO();
+    /* fill existing video (pehli baar) */
+    if(!window.__a38VdFilled){
+      try{ FS.collection('config').doc('partnerTraining').get().then(function(d){
+        window.__a38VdFilled=1;
+        if(!d.exists) return;
+        var v=String(d.data().vdo||'');
+        var pv=document.getElementById('a38P'); if(!pv) return;
+        if(v){ T.vdo=v; pv.innerHTML='<video controls style="width:100%;max-height:150px;border-radius:10px;background:#000;" src="'+v+'"></video>'; var c=document.getElementById('a38C'); if(c&&!c.value) c.value=String(d.data().caption||''); }
+        else pv.innerHTML='<div style="color:#8a94ab;font-size:11px;font-weight:700;">कोई video upload नहीं</div>';
+      }).catch(function(){}); }catch(e){}
+    }
+    var _dd=drawDash; /* no-op guard */
+  }
+  try{ FS.collection('config').doc('global').onSnapshot(function(d){ if(d.exists){ var x=d.data(); O.fee=Number(x.obFee)||0; O.offType=x.obOffType||'none'; O.offVal=Number(x.obOffVal)||0; O.note=String(x.obNote||''); } fillO(); },function(){}); }catch(e){}
+  var _d9=drawDash;
+  drawDash=function(){ try{ _d9(); }catch(e){} setTimeout(function(){ try{ cards(); }catch(e){} },10); };
+  function boot9(){
+    try{
+      if(!firebase.auth().currentUser) return setTimeout(boot9,700);
+      if((firebase.auth().currentUser.email||'').toLowerCase()!==ADMIN_EMAIL) return;
+      cards();
+    }catch(e){ setTimeout(boot9,1000); }
+  }
+  setTimeout(boot9,700);
+  console.log('%c 🧾🎬 ADMIN v3.8 — ONBOARDING FEE/OFFER + TRAINING VIDEO ✅ ','background:#0f5c2e;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+
 </body>
 </html>
