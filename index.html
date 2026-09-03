@@ -1497,5 +1497,59 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
 
 </script>
 
+
+<script>
+/* ═══════════════ ADMIN v3.7 — 💰 PLATFORM COMMISSION (Admin edit → Partner KYC पर live) ═══════════════ */
+(function(){
+  if(window.__a37) return; window.__a37=1;
+  var cVal=10;
+
+  function card(){
+    var host=document.getElementById('secD'); if(!host) return;
+    if(document.getElementById('aCmX')){ fill(); return; }
+    host.insertAdjacentHTML('beforeend',
+      '<div class="cd" id="aCmX" style="border-color:#1d3a5f;margin-top:8px;">'+
+        '<div class="rw"><b style="font-size:12.5px;">💰 SewaAstra Commission (Platform) %</b><span class="gold">PARTNER SETTING</span></div>'+
+        '<div style="font-size:10.5px;color:#aab6cf;font-weight:700;margin-top:4px;">Partner KYC में यही % commission दिखता है (checkbox accept) — यहाँ बदलो, Save दबाओ, सबको live लागू।</div>'+
+        '<div style="display:flex;gap:8px;align-items:center;margin-top:8px;">'+
+          '<input id="aCmIn" type="number" min="0" max="60" style="width:110px;text-align:center;font-weight:900;" placeholder="Commission %">'+
+          '<button class="bn o" onclick="aCmSave()">💾 Save</button>'+
+          '<span id="aCmNow" style="font-size:10px;color:#8a94ab;font-weight:800;"></span>'+
+        '</div>'+
+        '<div style="margin-top:7px;">'+[0,5,10,15,20,25].map(function(v){
+          return '<span style="display:inline-block;margin:2px;font-size:10px;font-weight:800;border-radius:16px;padding:4px 11px;background:#0f1626;border:1px solid var(--bd);color:#c6cbdb;cursor:pointer;" onclick="aCmSet('+v+')">'+v+'%</span>';
+        }).join('')+'</div>'+
+      '</div>');
+    try{ drawDash(); }catch(e){}
+  }
+  function fill(){
+    var e=document.getElementById('aCmIn'); if(e&&document.activeElement!==e) e.value=cVal;
+    var n=document.getElementById('aCmNow'); if(n) n.innerText='अभी: '+cVal+'%';
+  }
+  window.aCmSet=function(v){ cVal=Number(v)||0; fill(); };
+  window.aCmSave=function(){
+    var e=document.getElementById('aCmIn'); if(!e) return;
+    var v=Math.max(0,Math.min(60,parseInt(e.value||'0',10)||0));
+    ldr();
+    FS.collection('config').doc('global').set({commission:v,commissionAt:Date.now(),commissionBy:ADMIN_EMAIL||''},{merge:true})
+      .then(function(){ ldrX(); cVal=v; toast('✅ Commission '+v+'% save — Partner KYC पर live दिखेगा'); })
+      .catch(function(e2){ ldrX(); toast('❌ '+e2.message); });
+  };
+  try{ FS.collection('config').doc('global').onSnapshot(function(d){ cVal=(d.exists)?(Number(d.data().commission)||0):10; fill(); },function(){}); }catch(e){}
+  var _dd7=drawDash;
+  drawDash=function(){ _dd7(); card(); };
+  function boot7(){
+    try{
+      if(!firebase.auth().currentUser) return setTimeout(boot7,800);
+      if((firebase.auth().currentUser.email||'').toLowerCase()!==ADMIN_EMAIL) return;
+      card();
+    }catch(e){ setTimeout(boot7,1000); }
+  }
+  setTimeout(boot7,600);
+  console.log('%c 💰 ADMIN v3.7 — COMMISSION EDITOR ✅ ','background:#b07800;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+
 </body>
 </html>
