@@ -330,7 +330,7 @@ function pView(ph){
   '👤 '+esc(p.name||'—')+' • 👨 पिता: '+esc(ki.father||'—')+'<br>🎂 '+esc(ki.dob||'—')+' • 🛠️ '+esc(ki.mainSkill||(p.skills||[]).join(', ')||'—')+
   '<br>🏠 '+esc(ki.address||'—')+', '+esc(ki.city||'')+' - '+esc(ki.pin||'')+
   '<br>🪪 आधार: '+esc(ki.aadhaar||'—')+' • PAN: '+esc(ki.pan||'—')+
-  '<br>🏦 '+esc(b.holder||'—')+' • '+esc(b.acc||'—')+' • '+esc(b.ifsc||'')+'<br>💜 UPI: '+esc(b.upi||'—')+
+  '<br>🏦 '+esc(b.holder||'—')+' • '+esc(b.acc||'—')+' • '+esc(b.ifsc||'')+(b.name?' • '+esc(b.name):'')+
   '<br>📍 Area: '+esc(p.wkCity||'—')+' ('+esc(p.wkPin||'')+') • Radius '+(p.radiusKm||8)+'km • 🚗 '+esc(p.vehicle||'—')+'</div></div>'+
   '<div class="cd"><b style="font-size:11.5px;">📸 KYC Documents</b><div id="pDocs" class="mut" style="margin-top:5px;">Loading photos...</div></div>'+
   '<div class="cd"><b style="font-size:11.5px;">⚙️ Actions</b>'+
@@ -374,14 +374,16 @@ function drawKyc(){
 }
 
 /* ═══ MONEY: withdrawals + deposits + incentives ═══ */
+function cpBk(ac,ifsc){ var t='A/C: '+ac+'\nIFSC: '+ifsc; var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove(); toast('📋 A/C + IFSC copy — bank app में paste करें'); }
 function drawMoney(){
   $('mX').innerHTML=
   '<div class="tt">💸 Withdraw Requests</div>'+
   (WDS.map(function(w){
     var cl=w.status==='Paid'?'#2bc96e':'#ffb74d';
-    return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+inr(w.amt)+' → '+esc(w.upi||'')+'</b><span class="ch" style="background:'+cl+'22;color:'+cl+';">'+esc(w.status||'')+'</span></div>'+
-    '<div class="mut" style="margin-top:4px;">🧑‍🔧 '+esc(w.name||'')+' ('+esc(w._ph)+') • '+esc(w.at||'')+'</div>'+
-    (w.status!=='Paid'?'<div style="display:flex;gap:8px;margin-top:8px;"><a class="bn b" style="flex:1;text-align:center;text-decoration:none;" href="upi://pay?pa='+encodeURIComponent(w.upi||'')+'&pn=Partner&am='+(w.amt||0)+'&cu=INR">📲 UPI से भेजें</a>'+
+    return '<div class="cd"><div class="rw"><b style="font-size:12px;">'+inr(w.amt)+' → '+(w.acc?('A/C '+esc(w.acc)+' • IFSC '+esc(w.ifsc||'')):esc(w.upi||''))+'</b><span class="ch" style="background:'+cl+'22;color:'+cl+';">'+esc(w.status||'')+'</span></div>'+
+    '<div class="mut" style="margin-top:4px;">🧑‍🔧 '+esc(w.holder||w.name||'')+' ('+esc(w._ph)+') • '+esc(w.at||'')+(w.holder&&w.name?(' • '+esc(w.name)):'')+'</div>'+
+    (w.status!=='Paid'?'<div style="display:flex;gap:8px;margin-top:8px;">'+
+      (w.acc?'<button class="bn b" style="flex:1;" onclick="cpBk(\''+esc(w.acc)+'\',\''+esc(w.ifsc||'')+'\')">📋 A/C+IFSC Copy</button>':'<a class="bn b" style="flex:1;text-align:center;text-decoration:none;" href="upi://pay?pa='+encodeURIComponent(w.upi||'')+'&pn=Partner&am='+(w.amt||0)+'&cu=INR">📲 UPI से भेजें</a>')+
     '<button class="bn g" style="flex:1;" onclick="gSet(this,\'withdrawals\',\''+w._ph+'\',\''+w._id+'\',\'Paid\')">✅ PAID mark</button></div>':'')+'</div>';
   }).join('')||'<div class="em">कोई withdraw request नहीं</div>')+
   '<div class="tt">💵 Cash Deposits (floating limit ₹2000)</div>'+
