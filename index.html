@@ -302,9 +302,10 @@ function oSet(id){
   FS.collection('orders').doc(id).update(u).then(function(){ldrX();toast('📌 '+st);shClose();}).catch(function(e){ldrX();toast('❌ '+e.message);});
 }
 function oDel(id){
-  if(!confirm('पक्का DELETE? वापस नहीं आएगा!')) return;
-  ldr();
-  FS.collection('orders').doc(id).delete().then(function(){ldrX();toast('🗑️ Deleted');shClose();}).catch(function(e){ldrX();toast('❌ '+e.message);});
+  swUi.confirm({icon:'🗑️',title:'Order Delete',msg:'पक्का DELETE? वापस नहीं आएगा!',ok:'हाँ, Delete',cancel:'रुकें',danger:true,onOk:function(){
+    ldr();
+    FS.collection('orders').doc(id).delete().then(function(){ldrX();toast('🗑️ Deleted');shClose();}).catch(function(e){ldrX();toast('❌ '+e.message);});
+  }});
 }
 function shClose(){ $('shO').classList.remove('on'); }
 
@@ -432,11 +433,13 @@ function drawTix(){
   }).join('')||'<div class="em">कोई gift booking नहीं</div>');
 }
 function tReply(id){
-  var r=prompt('Partner को जवाब लिखें:');
-  if(!r) return;
-  ldr();
-  FS.collection('tickets').doc(id).update({reply:r,status:'Resolved',repliedAt:Date.now(),repliedBy:ADMIN_EMAIL})
-  .then(function(){ldrX();toast('✅ Reply भेज दिया — Resolved');}).catch(function(e){ldrX();toast('❌ '+e.message);});
+  swUi.prompt({icon:'💬',title:'Reply भेजें',msg:'Partner को जवाब लिखें:',ph:'जवाब…',ok:'✅ Reply भेजें',cancel:'रद्द',onOk:function(v){
+    var r=String(v==null?'':v).trim();
+    if(!r){ toast('❌ खाली reply नहीं भेज सकते'); return; }
+    ldr();
+    FS.collection('tickets').doc(id).update({reply:r,status:'Resolved',repliedAt:Date.now(),repliedBy:ADMIN_EMAIL})
+    .then(function(){ldrX();toast('✅ Reply भेज दिया — Resolved');}).catch(function(e){ldrX();toast('❌ '+e.message);});
+  }});
 }
 function tProg(id){
   FS.collection('tickets').doc(id).update({status:'In Progress'}).then(function(){toast('🔧 In Progress');});
@@ -492,11 +495,14 @@ tab=function(t,btn){ _tab2(t,btn); if(t==='P') setTimeout(function(){ try{ aMap&
 
 /* ⛔ 2) PARTNER BLOCK / UNBLOCK */
 function pBlock(ph,flag){
-  if(flag&&!confirm('पक्का BLOCK करें? Partner app तुरंत लॉक हो जाएगा!')) return;
-  ldr();
-  FS.collection('partners').doc(ph).set({blocked:flag,blockedAt:flag?Date.now():null,blockedBy:ADMIN_EMAIL,online:false},{merge:true})
-  .then(function(){ ldrX(); toast(flag?'⛔ BLOCKED — partner लॉक हो गया':'✅ UNBLOCK — partner फिर चालू'); shClose(); })
-  .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  function doIt(){
+    ldr();
+    FS.collection('partners').doc(ph).set({blocked:flag,blockedAt:flag?Date.now():null,blockedBy:ADMIN_EMAIL,online:false},{merge:true})
+    .then(function(){ ldrX(); toast(flag?'⛔ BLOCKED — partner लॉक हो गया':'✅ UNBLOCK — partner फिर चालू'); shClose(); })
+    .catch(function(e){ ldrX(); toast('❌ '+e.message); });
+  }
+  if(!flag){ doIt(); return; }
+  swUi.confirm({icon:'⛔',title:'Partner BLOCK करें?',msg:'पक्का BLOCK करें? Partner app तुरंत लॉक हो जाएगा!',ok:'हाँ, BLOCK',cancel:'रुकें',danger:true,onOk:doIt});
 }
 var _pV2=pView;
 pView=function(ph){
@@ -644,8 +650,9 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
     FS.collection('broadcasts').doc(id).update({active:!b.active}).then(function(){ toast(!b.active?'🟢 LIVE कर दिया':'⚫ बंद कर दिया'); }).catch(function(e){ toast('❌ '+e.message); });
   }
   function vADel(id){
-    if(!confirm('यह message हमेशा के लिए delete होगा? Apps से तुरंत हट जाएगा।')) return;
-    FS.collection('broadcasts').doc(id).delete().then(function(){ toast('🗑️ Delete हो गया'); }).catch(function(e){ toast('❌ '+e.message); });
+    swUi.confirm({icon:'🗑️',title:'Message Delete',msg:'यह message हमेशा के लिए delete होगा? Apps से तुरंत हट जाएगा।',ok:'हाँ, Delete',cancel:'रुकें',danger:true,onOk:function(){
+      FS.collection('broadcasts').doc(id).delete().then(function(){ toast('🗑️ Delete हो गया'); }).catch(function(e){ toast('❌ '+e.message); });
+    }});
   }
   function vAList(){
     var l=document.getElementById('vAL'); if(!l) return;
@@ -864,11 +871,15 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
   function pickCat(key){ vCCat=key; var x=vCats.find(function(c){return c.key===key;}); var e=document.getElementById('vCSelName'); if(e) e.innerText=x?('● '+x.name):key; var vf=document.getElementById('vCVisit'); if(vf&&x) vf.value=x.fee||''; renderChips(); listSrv(); }
   window.vCCat=pickCat;
   window.vCAddCat=function(){
-    var nm=prompt('नई Category का नाम (जैसे: RO Service):'); if(!nm) return;
-    var ic=prompt('Icon emoji (जैसे: 💧) ya खाली:'); 
-    var key=slug(nm);
-    vCats.push({key:key,name:nm.trim(),icon:(ic||'').trim(),fee:0}); if(!vSrv[key]) vSrv[key]=[];
-    vCCat=key; renderChips(); listSrv(); saveAll('✅ Category जुड़ गई — अब items डालो');
+    swUi.prompt({icon:'🗂️',title:'नई Category',msg:'नई Category का नाम (जैसे: RO Service):',ph:'नाम…',ok:'आगे →',cancel:'रद्द',onOk:function(nmv){
+      var nm=String(nmv==null?'':nmv).trim(); if(!nm){ return; }
+      swUi.prompt({icon:'😀',title:'Category Icon',msg:'Icon emoji (जैसे: 💧) ya खाली:',ph:'emoji',ok:'✅ Category बनाएँ',cancel:'रद्द',onOk:function(icv){
+        var ic=String(icv==null?'':icv);
+        var key=slug(nm);
+        vCats.push({key:key,name:nm,icon:(ic||'').trim(),fee:0}); if(!vSrv[key]) vSrv[key]=[];
+        vCCat=key; renderChips(); listSrv(); saveAll('✅ Category जुड़ गई — अब items डालो');
+      }});
+    }});
   };
   window.vCSaveCatFee=function(){
     if(!vCCat) return toast('❌ पहले category चुनो');
@@ -905,9 +916,10 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
     listSrv(); saveAll('✅ "'+n+'" save — customer app पर live!');
   };
   window.vCDel=function(idx){
-    if(!confirm('यह item हमेशा delete होगा?')) return;
-    (vSrv[vCCat]||[]).splice(idx,1);
-    listSrv(); saveAll('🗑️ Item delete — live update');
+    swUi.confirm({icon:'🗑️',title:'Item Delete',msg:'यह item हमेशा delete होगा?',ok:'हाँ, Delete',cancel:'रुकें',danger:true,onOk:function(){
+      (vSrv[vCCat]||[]).splice(idx,1);
+      listSrv(); saveAll('🗑️ Item delete — live update');
+    }});
   };
   function listSrv(){
     var l=document.getElementById('vCList'); if(!l) return;
@@ -1739,110 +1751,243 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
 </script>
 
 
-<!-- 🚪 EXIT CONFIRMATION GUARD v8.1 -->
+
+
+<!-- 💎 SUNDER POPUP SYSTEM v8.3 -->
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   SEWAASTRA — EXIT GUARD v8.1 (teeno apps)
-   • Back button / tab close / refresh par puchhe bina bahar nahi ja sakte
-   • Custom in-app modal (koi native confirm/prompt nahi)
-   • window.__exitGuard.silent() — internal reload/logout ke liye bypass
+   SEWAASTRA — SUNDER POPUP SYSTEM v8.3
+   Har alert/confirm/prompt = beautiful in-app popup (kabhi native
+   browser/GitHub jaisa popup nahi). window.alert/confirm/prompt sab
+   yahin route hote hain.
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  if(window.__sunderUi) return; window.__sunderUi=1;
+  var Z=2147483000, ov=null, box=null, cur=null;
+
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ s=String(s==null?'':s); return s.replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+  function nl(s){ return esc(s).replace(/\\n/g,'<br>'); }
+
+  function cssOnce(){
+    if(document.getElementById('swSunderCss')) return;
+    var st=document.createElement('style'); st.id='swSunderCss';
+    st.textContent=
+      '#swSOv{position:fixed;inset:0;z-index:'+Z+';display:none;align-items:center;justify-content:center;padding:18px;background:rgba(7,10,28,.62);backdrop-filter:blur(6px);}'+
+      '#swSOv.on{display:flex;}'+
+      '#swSBox{width:min(92vw,356px);max-height:86vh;overflow:hidden;border-radius:26px;background:#fff;color:#1b2540;box-shadow:0 30px 90px rgba(2,5,20,.6);display:flex;flex-direction:column;animation:swSIn .28s cubic-bezier(.2,1.15,.4,1);border:1px solid rgba(255,255,255,.18);}'+
+      '@keyframes swSIn{from{transform:translateY(26px) scale(.95);opacity:0}to{transform:none;opacity:1}}'+
+      '#swSH{background:linear-gradient(135deg,#0b1220,#26364f 55%,#ff6b00);color:#fff;padding:20px 18px 26px;text-align:center;position:relative;}'+
+      '#swSH .swI{width:66px;height:66px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,#ff6b00,#ff2d95 55%,#7a2bff);box-shadow:0 8px 26px rgba(255,45,149,.45);}'+
+      '#swSH .swT{font-size:17px;font-weight:900;}'+
+      '#swSH .swS{font-size:12px;opacity:.85;line-height:1.6;margin-top:6px;word-break:break-word;}'+
+      '#swSB{padding:16px 16px 18px;overflow-y:auto;}'+
+      '#swSB .swRow{display:flex;gap:9px;margin-top:2px;}'+
+      '#swSB .swB{flex:1;border:none;border-radius:14px;padding:13px 8px;font-weight:900;font-size:13px;cursor:pointer;color:#fff;}'+
+      '#swSB .swIn{width:100%;box-sizing:border-box;border:2px solid #e2e8f4;border-radius:13px;padding:12px;font-size:14px;font-weight:800;outline:none;margin-top:8px;background:#f6f9ff;color:#1b2540;}'+
+      '#swSB .swIn:focus{border-color:#ff6b00;background:#fff;}'+
+      'body.dark-mode #swSBox, body.dark #swSBox{background:#131a2e;color:#eef2fb;}'+
+      'body.dark-mode #swSB .swIn, body.dark #swSB .swIn{background:#0e1526;border-color:#2a3857;color:#eef2fb;}';
+    document.head.appendChild(st);
+  }
+  function ensure(){
+    cssOnce();
+    if(ov) return;
+    ov=document.createElement('div'); ov.id='swSOv';
+    ov.innerHTML='<div id="swSBox"><div id="swSH"><div class="swI" id="swSI">💬</div><div class="swT" id="swST"></div><div class="swS" id="swSS"></div></div><div id="swSB"></div></div>';
+    document.body.appendChild(ov);
+    box=el('swSBox');
+    ov.addEventListener('click',function(e){ if(e.target===ov && cur && cur.tap) close(); });
+  }
+  function open(o){
+    ensure();
+    cur=o;
+    ov.classList.add('on');
+    el('swSI').textContent=o.icon||'💬';
+    el('swST').textContent=o.title||'SewaAstra';
+    el('swSS').innerHTML=o.html||nl(o.msg||'');
+    var b=el('swSB');
+    b.innerHTML='';
+    if(o.input){
+      var inp=document.createElement('input');
+      inp.type=(o.inputType)||'text';
+      inp.className='swIn';
+      inp.placeholder=o.ph||'';
+      inp.value=(o.def==null?'':o.def);
+      b.appendChild(inp);
+      setTimeout(function(){ try{ inp.focus(); }catch(e){} },120);
+    }
+    var row=document.createElement('div'); row.className='swRow';
+    function mk(txt,bg,cls,fn){
+      var x=document.createElement('button'); x.className='swB '+cls;
+      x.style.background=bg; x.innerHTML=txt;
+      x.onclick=function(){ close(); if(fn) fn(); };
+      return x;
+    }
+    if(o.input){
+      row.appendChild(mk(o.ok||'✅ ठीक है', o.danger?'linear-gradient(135deg,#e53935,#ff6659)':'linear-gradient(135deg,#15a04a,#1fc25e)','swOk',function(){ var v=inp.value; if(o.onOk) o.onOk(v); }));
+      row.appendChild(mk(o.cancel||'✕ रद्द','linear-gradient(135deg,#6b7686,#546078)','swNo',o.onCancel));
+    } else if(o.buttons==='no'){
+      row.appendChild(mk(o.ok||'✅ ठीक है','linear-gradient(135deg,#0d6efd,#7a5cff)','swOk',o.onOk));
+    } else {
+      row.appendChild(mk(o.cancel||'✕ '+(o.no||'रुकें'),'linear-gradient(135deg,#6b7686,#546078)','swNo',o.onCancel));
+      row.appendChild(mk(o.ok||'✅ '+(o.yes||'हाँ'), o.danger?'linear-gradient(135deg,#e53935,#ff6659)':'linear-gradient(135deg,#0d6efd,#7a5cff)','swOk',o.onOk));
+    }
+    b.appendChild(row);
+    return o;
+  }
+  function close(){ if(ov) ov.classList.remove('on'); }
+  window.swUi={
+    alert:function(o){ open(typeof o==='string'?{msg:o}:o); },
+    confirm:function(o){ o.buttons='yn'; return open(o); },
+    prompt:function(o){ o.input=true; o.tap=false; return open(o); },
+    close:close
+  };
+  console.log('%c 💎 SUNDER POPUPS v8.3 ','background:linear-gradient(90deg,#ff2d95,#7a2bff);color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
+<script>
+/* Native overrides — admin me bhi har alert/confirm/prompt sunder */
+(function(){
+  window.alert=function(m){
+    try{ if(window.toast){ toast(String(m==null?'':m).replace(/\n/g,' ')); return; } }catch(e){}
+    try{ swUi.alert({msg:m}); }catch(e){}
+  };
+  window.confirm=function(){ return false; };
+  window.prompt=function(){ return null; };
+})();
+</script>
+<!-- 🚪 EXIT CONFIRMATION GUARD v8.2 -->
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   SEWAASTRA — EXIT GUARD v8.2 (teeno apps) — सुंदर confirm popup
+   • Back button / tab close / refresh / logout — bina confirm bahar nahi
+   • Custom gradient modal (koi native confirm/prompt nahi)
+   • In-app internal pages (Policy/About/Terms) kholne par confirm NAHI
+   • window.__exitGuard.silent() = internal reload/logout bypass
    ═══════════════════════════════════════════════════════════════ */
 (function(){
   if(window.__exitGuardInstalled) return; window.__exitGuardInstalled=1;
   var armed=true, silentT=0, pendingExit=false, zz=2147483600;
-  var root=null, box=null;
-
+  var root=null, box=null, busy=null;
+  var PAL={
+    bg:'linear-gradient(160deg,#101c3f,#17284f 45%,#0b142e)',
+    card:'linear-gradient(165deg,#ffffff,#f2f5fd)',
+    ring:'linear-gradient(135deg,#ff6b00,#ff2d95,#7a2bff)',
+    good:'linear-gradient(135deg,#15a04a,#1fc25e)',
+    bad:'linear-gradient(135deg,#e53935,#ff6659)',
+    blu:'linear-gradient(135deg,#0d6efd,#7a5cff)'
+  };
   function el(id){ return document.getElementById(id); }
+  function _m(){ return busy||null; }
 
   function ensureUI(){
     if(root) return;
     root=document.createElement('div');
     root.id='swExitRoot';
     root.innerHTML=
-      '<div id="swExitBg" style="position:fixed;inset:0;background:rgba(5,8,20,.7);backdrop-filter:blur(4px);z-index:'+zz+';display:none;align-items:center;justify-content:center;padding:18px;"></div>'+
-      '<div id="swExitBox" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.94);z-index:'+(zz+1)+';width:min(90vw,330px);background:linear-gradient(165deg,#ffffff,#f4f6fb);color:#17203a;border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.45);padding:24px 20px 18px;text-align:center;display:none;font-family:system-ui,Arial,sans-serif;"></div>';
+      '<div id="swExitBg" style="position:fixed;inset:0;background:rgba(8,10,26,.62);backdrop-filter:blur(6px);z-index:'+zz+';display:none;align-items:center;justify-content:center;padding:18px;"></div>'+
+      '<div id="swExitBox" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:'+(zz+1)+';width:min(92vw,352px);display:none;text-align:center;font-family:system-ui,Arial,sans-serif;overflow:hidden;border-radius:26px;box-shadow:0 30px 90px rgba(3,6,20,.65);border:1px solid rgba(255,255,255,.25);"></div>';
     document.body.appendChild(root);
-    var bg=el('swExitBg'), bx=el('swExitBox');
-    if(bg) bg.addEventListener('click',function(e){ if(e.target===bg) stay(); });
+    var bg=el('swExitBg');
+    if(bg) bg.addEventListener('click',function(e){ if(e.target===bg){ dismiss(); } });
   }
-  function show(){
+  function render(cfg){
     ensureUI();
-    if(!box){ return; }
-    box.innerHTML=
-      '<div style="font-size:46px;line-height:1;">🚪</div>'+
-      '<div style="font-size:17px;font-weight:900;margin:12px 0 5px;">बाहर जाना है?</div>'+
-      '<div style="font-size:12px;color:#556;line-height:1.7;margin-bottom:16px;">क्या आप सच में SewaAstra से बाहर जाना चाहते हैं?<br><b>रुकें</b> दबाएँ तो आप यहीं बने रहेंगे।</div>'+
-      '<div style="display:flex;gap:8px;">'+
-        '<button id="swExitYes" style="flex:1;border:none;border-radius:13px;padding:13px;font-weight:800;font-size:13px;cursor:pointer;background:#e53935;color:#fff;">हाँ, बाहर जाएँ</button>'+
-        '<button id="swExitNo" style="flex:1;border:none;border-radius:13px;padding:13px;font-weight:800;font-size:13px;cursor:pointer;background:#0d6efd;color:#fff;">रुकें</button>'+
+    var icon=(cfg&&cfg.icon)||'🚪';
+    var title=(cfg&&cfg.title)||'बाहर जाना है?';
+    var sub=(cfg&&cfg.sub)||'क्या आप सच में SewaAstra से बाहर जाना चाहते हैं?<br><b>रुकें</b> दबाएँ तो आप यहीं बने रहेंगे।';
+    var yes=(cfg&&cfg.yes)||'हाँ, बाहर जाएँ';
+    var no=(cfg&&cfg.no)||'रुकें';
+    var yesBg=(cfg&&cfg.yesBg)||PAL.bad;
+    var sub2=(cfg&&cfg.sub2)||'';
+    var html=
+      '<div style="background:'+PAL.bg+';color:#fff;padding:26px 18px 34px;position:relative;">'+
+        '<div style="width:84px;height:84px;border-radius:50%;margin:0 auto 14px;background:'+PAL.ring+';display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 10px 34px rgba(255,45,149,.5);">'+icon+'</div>'+
+        '<div style="font-size:18.5px;font-weight:900;letter-spacing:.2px;">'+title+'</div>'+
+        '<div style="font-size:12px;opacity:.82;line-height:1.65;margin-top:7px;">'+sub+'</div>'+
+      '</div>'+
+      '<div style="background:'+PAL.card+';color:#1c2542;padding:16px 16px 18px;">'+
+        (sub2?'<div style="font-size:10.5px;color:#8a93ad;line-height:1.6;margin-bottom:10px;">'+sub2+'</div>':'')+
+        '<div style="display:flex;gap:9px;">'+
+          '<button id="swExitYes" style="flex:1.15;border:none;border-radius:14px;padding:13px 6px;font-weight:900;font-size:13px;cursor:pointer;color:#fff;background:'+yesBg+';box-shadow:0 8px 22px rgba(0,0,0,.18);">'+yes+'</button>'+
+          '<button id="swExitNo" style="flex:1;border:none;border-radius:14px;padding:13px 6px;font-weight:900;font-size:13px;cursor:pointer;background:'+PAL.blu+';color:#fff;box-shadow:0 8px 22px rgba(13,110,253,.25);">'+no+'</button>'+
+        '</div>'+
       '</div>';
-    var b1=el('swExitYes'), b2=el('swExitNo');
-    if(b1) b1.onclick=function(){ goOut(); };
-    if(b2) b2.onclick=function(){ stay(); };
+    box=el('swExitBox');
+    box.innerHTML=html;
+    box.style.background=PAL.card;
     var bg=el('swExitBg'); if(bg) bg.style.display='flex';
     box.style.display='block';
+    var y=el('swExitYes'), n=el('swExitNo');
+    if(y) y.onclick=function(){ try{ (cfg&&cfg.cb)(); }catch(e){ console.log(e); } hide(); };
+    if(n) n.onclick=function(){ dismiss(); };
+    return cfg;
   }
   function hide(){
     var bg=el('swExitBg'); if(bg) bg.style.display='none';
-    if(box) box.style.display='none';
+    var b=el('swExitBox'); if(b) b.style.display='none';
   }
-  function stay(){ pendingExit=false; hide(); trap(); }
+  function dismiss(){ hide(); pendingExit=false; busy=null; }
   function trap(){
     try{
-      if(history.state && history.state.__swg) return;
-      history.replaceState({__swg:1}, '');
-      history.pushState({__swg:1}, '');
+      if(history.state&&history.state.__swg) return;
+      history.replaceState({__swg:1},'');
+      history.pushState({__swg:1},'');
     }catch(e){}
   }
   function goOut(){
-    pendingExit=true; armed=false;
-    try{ silentT=Date.now(); }catch(e){}
+    pendingExit=true; armed=false; busy=null;
     hide();
-    var done=false;
     setTimeout(function(){
-      try{ if(history.length>1){ history.back(); done=true; } }catch(e){}
+      try{ if(history.length>1) history.back(); }catch(e){}
       setTimeout(function(){
         try{ window.close(); }catch(e){}
         setTimeout(function(){
-          if(!done){
-            // browser ne tab band nahi kiya — ek aakhri naram notice
+          if(!document.hidden){
             ensureUI();
-            if(box) box.innerHTML='<div style="font-size:38px;">👋</div><div style="font-size:14px;font-weight:800;margin-top:10px;">फिर मिलेंगे!</div><div style="font-size:11px;color:#667;margin-top:6px;">इस browser में अब tab बंद कर सकते हैं।</div>';
+            var b=el('swExitBox');
+            if(b) b.innerHTML='<div style="background:'+PAL.bg+';color:#fff;padding:26px 16px;"><div style="font-size:40px;">👋</div><div style="font-size:15px;font-weight:900;margin-top:10px;">फिर मिलेंगे!</div><div style="font-size:11px;opacity:.8;margin-top:6px;">अब आप इस tab को बंद कर सकते हैं।</div></div>';
           }
-        },700);
-      },300);
-    },60);
+        },800);
+      },350);
+    },80);
   }
 
-  /* back button (Android/browser) */
+  /* 🔙 Android/browser back — pehle app ke kholे हुए internal page (Policy/About/Terms/modal) band */
   window.addEventListener('popstate',function(){
-    if(!armed) return;
-    if(pendingExit) return;             // exit already confirmed — allow
-    show();
+    if(!armed||pendingExit) return;
+    try{
+      var cbs=window.__exitGuardCloseables||[];
+      for(var i=0;i<cbs.length;i++){ try{ if(cbs[i]()) return; }catch(e){} }
+    }catch(e){}
+    render({icon:'🚪',title:'बाहर जाना है?',sub:'क्या आप सच में SewaAstra से बाहर जाना चाहते हैं?<br><b>रुकें</b> दबाएँ तो आप यहीं बने रहेंगे।',yes:'हाँ, बाहर जाएँ',no:'रुकें',cb:function(){ goOut(); }});
+    busy='back';
   });
-  /* tab close / refresh / external link — browser native leave prompt */
+  /* 🧾 tab close / refresh / external page */
   window.addEventListener('beforeunload',function(e){
     if(!armed) return;
-    if(Date.now()-silentT<1200) return; // internal silent reload
+    if(Date.now()-silentT<1500) return;
     e.preventDefault();
     e.returnValue='';
   });
 
-  /* keyboard shortcut bhi confirm kar de (alt+left etc.) */
-  window.addEventListener('pagehide',function(){ /* kuch nahi — pagehide flow block nahi hota */ });
-
-  /* API */
   window.__exitGuard={
     armed:function(){ return armed; },
     disarm:function(){ armed=false; },
     rearm:function(){ armed=true; trap(); },
     silent:function(){ silentT=Date.now(); armed=false; },
     trap:trap,
-    askExit:show
+    askExit:function(){ render({cb:function(){ goOut(); }}); busy='back'; },
+    /* ✋ कस्टम सुंदर confirm — cb() चलेगा sirf 'हाँ' par */
+    confirmExit:function(cfg){ busy='custom'; render(cfg); return cfg; },
+    registerCloser:function(fn){ try{ window.__exitGuardCloseables=window.__exitGuardCloseables||[]; window.__exitGuardCloseables.push(fn); }catch(e){} },
+    dismiss:dismiss,
+    _modal:function(){ return _m(); }
   };
-
   try{ trap(); }catch(e){}
-  console.log('%c 🚪 EXIT GUARD v8.1 — bina confirm bahar nahi ja sakte ','background:#e53935;color:#fff;font-weight:bold;padding:3px;');
+  console.log('%c 🚪 EXIT GUARD v8.2 — kahi se bhi exit confirm popup ✅ ','background:linear-gradient(90deg,#e53935,#7a2bff);color:#fff;font-weight:bold;padding:3px;');
 })();
 
 </script>
