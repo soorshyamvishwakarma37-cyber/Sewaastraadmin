@@ -147,7 +147,7 @@ function gLogin(){
   });
 }
 firebase.auth().getRedirectResult().catch(function(){});
-function lgOut(){ firebase.auth().signOut(); location.reload(); }
+function lgOut(){ firebase.auth().signOut(); try{if(window.__exitGuard)window.__exitGuard.silent();}catch(_e){}location.reload(); }
 var AUTHED=false;
 firebase.auth().onAuthStateChanged(function(u){
   if(!u){ $('lgOv').style.display='flex'; return; }
@@ -1738,5 +1738,113 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
 
 </script>
 
+
+<!-- 🚪 EXIT CONFIRMATION GUARD v8.1 -->
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   SEWAASTRA — EXIT GUARD v8.1 (teeno apps)
+   • Back button / tab close / refresh par puchhe bina bahar nahi ja sakte
+   • Custom in-app modal (koi native confirm/prompt nahi)
+   • window.__exitGuard.silent() — internal reload/logout ke liye bypass
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  if(window.__exitGuardInstalled) return; window.__exitGuardInstalled=1;
+  var armed=true, silentT=0, pendingExit=false, zz=2147483600;
+  var root=null, box=null;
+
+  function el(id){ return document.getElementById(id); }
+
+  function ensureUI(){
+    if(root) return;
+    root=document.createElement('div');
+    root.id='swExitRoot';
+    root.innerHTML=
+      '<div id="swExitBg" style="position:fixed;inset:0;background:rgba(5,8,20,.7);backdrop-filter:blur(4px);z-index:'+zz+';display:none;align-items:center;justify-content:center;padding:18px;"></div>'+
+      '<div id="swExitBox" style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.94);z-index:'+(zz+1)+';width:min(90vw,330px);background:linear-gradient(165deg,#ffffff,#f4f6fb);color:#17203a;border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.45);padding:24px 20px 18px;text-align:center;display:none;font-family:system-ui,Arial,sans-serif;"></div>';
+    document.body.appendChild(root);
+    var bg=el('swExitBg'), bx=el('swExitBox');
+    if(bg) bg.addEventListener('click',function(e){ if(e.target===bg) stay(); });
+  }
+  function show(){
+    ensureUI();
+    if(!box){ return; }
+    box.innerHTML=
+      '<div style="font-size:46px;line-height:1;">🚪</div>'+
+      '<div style="font-size:17px;font-weight:900;margin:12px 0 5px;">बाहर जाना है?</div>'+
+      '<div style="font-size:12px;color:#556;line-height:1.7;margin-bottom:16px;">क्या आप सच में SewaAstra से बाहर जाना चाहते हैं?<br><b>रुकें</b> दबाएँ तो आप यहीं बने रहेंगे।</div>'+
+      '<div style="display:flex;gap:8px;">'+
+        '<button id="swExitYes" style="flex:1;border:none;border-radius:13px;padding:13px;font-weight:800;font-size:13px;cursor:pointer;background:#e53935;color:#fff;">हाँ, बाहर जाएँ</button>'+
+        '<button id="swExitNo" style="flex:1;border:none;border-radius:13px;padding:13px;font-weight:800;font-size:13px;cursor:pointer;background:#0d6efd;color:#fff;">रुकें</button>'+
+      '</div>';
+    var b1=el('swExitYes'), b2=el('swExitNo');
+    if(b1) b1.onclick=function(){ goOut(); };
+    if(b2) b2.onclick=function(){ stay(); };
+    var bg=el('swExitBg'); if(bg) bg.style.display='flex';
+    box.style.display='block';
+  }
+  function hide(){
+    var bg=el('swExitBg'); if(bg) bg.style.display='none';
+    if(box) box.style.display='none';
+  }
+  function stay(){ pendingExit=false; hide(); trap(); }
+  function trap(){
+    try{
+      if(history.state && history.state.__swg) return;
+      history.replaceState({__swg:1}, '');
+      history.pushState({__swg:1}, '');
+    }catch(e){}
+  }
+  function goOut(){
+    pendingExit=true; armed=false;
+    try{ silentT=Date.now(); }catch(e){}
+    hide();
+    var done=false;
+    setTimeout(function(){
+      try{ if(history.length>1){ history.back(); done=true; } }catch(e){}
+      setTimeout(function(){
+        try{ window.close(); }catch(e){}
+        setTimeout(function(){
+          if(!done){
+            // browser ne tab band nahi kiya — ek aakhri naram notice
+            ensureUI();
+            if(box) box.innerHTML='<div style="font-size:38px;">👋</div><div style="font-size:14px;font-weight:800;margin-top:10px;">फिर मिलेंगे!</div><div style="font-size:11px;color:#667;margin-top:6px;">इस browser में अब tab बंद कर सकते हैं।</div>';
+          }
+        },700);
+      },300);
+    },60);
+  }
+
+  /* back button (Android/browser) */
+  window.addEventListener('popstate',function(){
+    if(!armed) return;
+    if(pendingExit) return;             // exit already confirmed — allow
+    show();
+  });
+  /* tab close / refresh / external link — browser native leave prompt */
+  window.addEventListener('beforeunload',function(e){
+    if(!armed) return;
+    if(Date.now()-silentT<1200) return; // internal silent reload
+    e.preventDefault();
+    e.returnValue='';
+  });
+
+  /* keyboard shortcut bhi confirm kar de (alt+left etc.) */
+  window.addEventListener('pagehide',function(){ /* kuch nahi — pagehide flow block nahi hota */ });
+
+  /* API */
+  window.__exitGuard={
+    armed:function(){ return armed; },
+    disarm:function(){ armed=false; },
+    rearm:function(){ armed=true; trap(); },
+    silent:function(){ silentT=Date.now(); armed=false; },
+    trap:trap,
+    askExit:show
+  };
+
+  try{ trap(); }catch(e){}
+  console.log('%c 🚪 EXIT GUARD v8.1 — bina confirm bahar nahi ja sakte ','background:#e53935;color:#fff;font-weight:bold;padding:3px;');
+})();
+
+</script>
 </body>
 </html>
