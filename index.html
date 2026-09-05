@@ -68,7 +68,7 @@ input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd)
     <button class="bn" style="width:100%;padding:13px;background:#fff;color:#222;font-size:13px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:9px;" onclick="gLogin()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G"> Google से Login
     </button>
-    <div class="mut" style="margin-top:14px;line-height:1.7;">🔒 सिर्फ authorized admin:<br><b style="color:var(--gold);">soorshyamvishwakarma37@gmail.com</b></div>
+    <div class="mut" style="margin-top:14px;line-height:1.7;">🔒 सिर्फ authorized admin:<br><b style="color:var(--gold);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="84f7ebebf6f7ecfde5e9f2edf7ecf3e5efe5f6e9e5b7b3c4e3e9e5ede8aae7ebe9">[email&#160;protected]</a></b></div>
     <div id="lgE" style="color:#ff8a80;font-size:11px;font-weight:800;margin-top:10px;"></div>
   </div>
 </div>
@@ -114,7 +114,7 @@ input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd)
 <div id="tst"></div>
 <div class="ldr" id="ldr"><div class="spin"></div></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ═══ ADMIN FIREBASE CONFIG ═══ */
 var firebaseConfig = {
   apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
@@ -138,8 +138,7 @@ function ago(ts){if(!ts)return '';var m=Math.floor((Date.now()-ts)/60000);return
 function inr(n){return '₹'+(n||0).toLocaleString('en-IN');}
 
 /* ═══ LOGIN — सिर्फ ADMIN GMAIL ═══ */
-function gLogin(){
-  var p=new firebase.auth.GoogleAuthProvider();
+function gLogin(){   try{ firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){}); }catch(e){} var p=new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(p).catch(function(e){
     if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].indexOf(e.code)>-1){
       firebase.auth().signInWithRedirect(p).catch(function(e2){$('lgE').innerText='❌ '+e2.message;});
@@ -1991,5 +1990,5 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
 })();
 
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a362bb68cc0bdfad',t:'MTc4ODU4NTA3NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
