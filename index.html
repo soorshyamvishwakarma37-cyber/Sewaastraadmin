@@ -1,17 +1,4 @@
 <!DOCTYPE html>
-<!-- ═══════════════════════════════════════════════════════════
-     SewaAstra — Admin Panel (secure build v3)
-     बना: 5 सितम्बर 2026
-
-     इस file में तीन सुरक्षा परतें पहले से लगी हैं:
-       1. SWXSS  — innerHTML पर XSS का आख़िरी जाल (<head> में सबसे पहले)
-       2. SWID   — doc का पता फोन नंबर नहीं, Firebase Auth uid
-       3. escape-at-source — जहाँ user data HTML में जाता है
-
-     ⚠️ ये तीनों client-side हैं. असली रोक firestore.rules +
-        Cloud Functions में है — वो deploy किए बिना यह file अकेली
-        सुरक्षित नहीं. पूरा क्रम: docs/DEPLOY-GUIDE.md
-     ═══════════════════════════════════════════════════════════ -->
 <html lang="hi">
 <head>
 <script>
@@ -155,7 +142,7 @@
 })(window);
 </script>
 
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com https://cdnjs.cloudflare.com https://apis.google.com https://www.google.com https://www.gstatic.com/firebasejs/; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://nominatim.openstreetmap.org https://www.google-analytics.com; frame-src https://*.firebaseapp.com https://www.youtube.com https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://www.google.com https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://*.firebaseapp.com https://*.google-analytics.com https://*.analytics.google.com https://nominatim.openstreetmap.org; frame-src 'self' https://*.firebaseapp.com https://www.google.com https://accounts.google.com https://www.youtube.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta charset="UTF-8">
@@ -320,7 +307,9 @@ window.__SWID_ROLE = 'admin';
     /** सीधे query बना दो — null अगर पहचान नहीं */
     orderQuery: function (FS, role) {
       var k = this.orderKey(role);
-      return k ? FS.collection('orders').where(k[0], '==', k[1]) : null;
+      // 🔒 rules में orders.list पर capped(100) है — बिना .limit() के
+      //    पूरी query reject हो जाती थी और अपने ही orders नहीं दिखते थे.
+      return k ? FS.collection('orders').where(k[0], '==', k[1]).limit(100) : null;
     },
 
     uid: function () { return _uid || ''; },
@@ -471,7 +460,17 @@ input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd)
   /* ── 5. Auth state पर claims हमेशा ताज़ा रखो ── */
   function hook(){
     if(!window.firebase || !firebase.auth) return setTimeout(hook, 120);
+    var _synced = false;
     firebase.auth().onAuthStateChanged(function(u){
+      /* 🔑 claim server पर बनता है, login पर अपने आप नहीं आता.
+         पहली बार user दिखते ही एक बार sync कराओ — वरना असली admin/partner
+         भी बाहर ही खड़ा रह जाता है. (यह call पहले कहीं से होती ही नहीं थी.) */
+      if (u && !_synced) {
+        _synced = true;
+        try { SW.syncClaims(); } catch (e) {}
+      }
+      if (!u) _synced = false;
+
       SW.refreshClaims(true).then(function(c){
         document.documentElement.setAttribute('data-role',
           c.admin ? 'admin' : (c.partner ? 'partner' : (u ? 'user' : 'guest')));
@@ -574,7 +573,6 @@ input,select,textarea{width:100%;background:#0f1626;border:1.5px solid var(--bd)
 var firebaseConfig = {
   apiKey: "AIzaSyAL9dsBvNrp-ijxAk7ZYZcbN0BPaZ5gYtw",
   authDomain: "sewaastra.firebaseapp.com",
-  databaseURL: "https://sewaastra-default-rtdb.firebaseio.com",
   projectId: "sewaastra",
   storageBucket: "sewaastra.firebasestorage.app",
   messagingSenderId: "211091351218",
@@ -607,15 +605,52 @@ var AUTHED=false;
 firebase.auth().onAuthStateChanged(function(u){
   if(!u){ $('lgOv').style.display='flex'; AUTHED=false; return; }
   /* 🔒 C-2: custom claim ही असली गेट है. email string compare सिर्फ UX hint. */
+  /* 🔑 पहली बार login पर claim अभी सेट नहीं होता — इसलिए पहले
+     syncMyClaims चलाओ, तब जाकर फ़ैसला करो. पहले यह छूट गया था, जिससे
+     असली admin भी पहली बार अंदर नहीं आ पाता था. */
+  $('lgE').innerHTML='<span style="font-size:11px;color:#8a94ab;">⏳ अधिकार जाँचे जा रहे हैं…</span>';
+
+  function decide(t){
+    if(!(t && t.claims && t.claims.admin === true)) return false;
+    AUTHED=true; $('lgOv').style.display='none'; $('lgE').innerHTML='';
+    $('hSub').innerText='👑 '+u.email;
+    /* ⚠️ boot() में कोई query फेल हो तो login नहीं गिरना चाहिए —
+       वरना एक data error पूरे admin को बाहर कर देता है. */
+    try{ boot(); }catch(e){ try{ toast('⚠️ कुछ data नहीं आया: '+e.message); }catch(_){} }
+    return true;
+  }
+
   u.getIdTokenResult(true).then(function(t){
-    if(t.claims.admin !== true){
-      $('lgOv').style.display='flex';
-      $('lgE').innerHTML='⛔ <b>'+esc(u.email||'?')+'</b> के पास admin अधिकार नहीं है।<br><span style="font-size:11px;">Server पर claim सेट नहीं है — syncMyClaims चलाएँ।</span>';
-      AUTHED=false; firebase.auth().signOut(); return;
-    }
-    AUTHED=true; $('lgOv').style.display='none';
-    $('hSub').innerText='👑 '+u.email; boot();
-  }).catch(function(){ AUTHED=false; $('lgOv').style.display='flex'; });
+    if(decide(t)) return;
+
+    /* claim नहीं मिला → server से sync कराओ, फिर एक बार और देखो.
+       यहाँ सीधे callable बुलाते हैं, SWSec.syncClaims() नहीं — वो error
+       चुपचाप निगल जाता है, जिससे "admin नहीं हो" और "जाँच नहीं हो पाई"
+       एक जैसे दिखने लगते हैं. दोनों का फ़र्क़ रखना ज़रूरी है. */
+    var sync = (window.SWSec && SWSec.call)
+             ? SWSec.call('syncMyClaims', {})
+             : Promise.reject(new Error('security core लोड नहीं हुआ'));
+
+    return sync
+      .then(function(){ return u.getIdTokenResult(true); })
+      .then(function(t2){
+        if(decide(t2)) return;
+        $('lgOv').style.display='flex';
+        $('lgE').innerHTML='⛔ <b>'+esc(u.email||'?')+'</b> के पास admin अधिकार नहीं है।'
+          +'<br><span style="font-size:11px;">यह email server की ADMIN_EMAILS सूची में नहीं है,'
+          +' या Gmail verified नहीं है।</span>';
+        AUTHED=false; firebase.auth().signOut();
+      })
+      .catch(function(e){
+        $('lgOv').style.display='flex';
+        $('lgE').innerHTML='⚠️ अधिकार जाँच नहीं हो पाई — <b>'+esc(e&&e.message?e.message:'network')+'</b>'
+          +'<br><span style="font-size:11px;">Functions deploy हैं? दोबारा कोशिश करें।</span>';
+        AUTHED=false;   /* signOut नहीं — वरना user लूप में फँस जाता है */
+      });
+  }).catch(function(e){
+    AUTHED=false; $('lgOv').style.display='flex';
+    $('lgE').innerHTML='⚠️ token नहीं मिला — '+esc(e&&e.message?e.message:'?');
+  });
   return;
   /* पुराना client-side check (अब dead code, reference के लिए): */
   if((u.email||'').toLowerCase()!==ADMIN_EMAIL){
@@ -639,11 +674,11 @@ function boot(){
     ORD=s.docs.map(function(d){var o=d.data();o._id=d.id;return o;});
     drawDash(); drawOrders(); badges();
   },function(e){ toast('❌ orders: '+e.message); });
-  FS.collection('partners').onSnapshot(function(s){
+  FS.collection('partners').limit(500).onSnapshot(function(s){
     PTR=s.docs.map(function(d){var p=d.data();p._id=d.id;return p;});
     drawDash(); drawPartners(); drawKyc(); badges();
   },function(e){ toast('❌ partners: '+e.message); });
-  FS.collection('tickets').onSnapshot(function(s){
+  FS.collection('tickets').limit(300).onSnapshot(function(s){
     TIK=s.docs.map(function(d){var t=d.data();t._id=d.id;return t;}).sort(function(a,b){return (b.ts||0)-(a.ts||0);});
     drawTix(); badges();
   },function(e){});
@@ -810,7 +845,7 @@ function pView(ph){
   (p.kycStatus==='Submitted'?'<button class="bn r" style="flex:1;" onclick="pKyc(\''+ph+'\',\'Rejected\')">❌ REJECT</button>':'')+
   (p.kycStatus==='Approved'?'<button class="bn r" style="flex:1;" onclick="pKyc(\''+ph+'\',\'Pending\')">🔄 KYC Reset</button>':'')+
   '<a class="bn b" style="flex:1;text-align:center;text-decoration:none;" href="tel:+91'+esc(ph)+'">📞 Call</a>'+
-  '<a class="bn g" style="flex:1;text-align:center;text-decoration:none;" href="https://wa.me/91'+esc(ph)+'" target="_blank">💬 WA</a></div></div>';
+  '<a class="bn g" style="flex:1;text-align:center;text-decoration:none;" href="https://wa.me/91'+esc(ph)+'" target="_blank" rel="noopener noreferrer">💬 WA</a></div></div>';
   $('shO').classList.add('on');
   FS.collection('partners').doc(ph).collection('kyc').get().then(function(s){
     var h='';
@@ -1142,7 +1177,7 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
   function listen(){
     if(vABL) return; vABL=true;
     try{
-      FS.collection('broadcasts').onSnapshot(function(s){
+      FS.collection('broadcasts').limit(30).onSnapshot(function(s){
         vAB=s.docs.map(function(d){ var b=d.data(); b._id=d.id; return b; }).sort(function(a,b2){ return (b2.ts||0)-(a.ts||0); });
         var st=document.getElementById('vASt'); if(st&&!vAEditId) st.innerHTML='🆕 नया message — app (Customer/Partner) पर तुरंत LIVE जाएगा';
         vAList();
@@ -1504,7 +1539,7 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
   function aSubRates(){
     try{
       /* SCALE: पूरी service_ratings (अनबाउंड) की जगह ab per-service aggregate svc_stats */
-      FS.collection('svc_stats').onSnapshot(function(s){
+      FS.collection('svc_stats').limit(200).onSnapshot(function(s){
         var m={};
         s.docs.forEach(function(d){ var x=d.data(); var k=String(x.cat||'')+'|'+String(x.sn||''); if(!m[k]) m[k]={s:0,c:0}; m[k].s+=Number(x.sum)||0; m[k].c+=Number(x.count)||0; });
         rMap=m; rGot=true; aEnhance();
@@ -1801,8 +1836,8 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
       PTR.sort(function(a,b){ return (b.lastSeen||b.lastLogin||b.ts||0)-(a.lastSeen||a.lastLogin||a.ts||0); });
       try{ drawDash(); }catch(e){} try{ drawPartners(); }catch(e){} try{ drawKyc(); }catch(e){} try{ badges(); }catch(e){}
     }
-    try{ FS.collection('partners').where('online','==',true).onSnapshot(function(s){ PON=mapD(s); ptrMerge(); },function(){}); }catch(e){}
-    try{ FS.collection('partners').where('kycStatus','==','Submitted').onSnapshot(function(s){ PSUB=mapD(s); ptrMerge(); },function(){}); }catch(e){}
+    try{ FS.collection('partners').where('online','==',true).limit(500).onSnapshot(function(s){ PON=mapD(s); ptrMerge(); },function(){}); }catch(e){}
+    try{ FS.collection('partners').where('kycStatus','==','Submitted').limit(500).onSnapshot(function(s){ PSUB=mapD(s); ptrMerge(); },function(){}); }catch(e){}
     try{ FS.collection('partners').orderBy('lastSeen','desc').limit(250).onSnapshot(function(s){ PREC=mapD(s); ptrMerge(); },function(){}); }catch(e){}
 
     /* Tickets: LIVE active + recent 120 */
@@ -1813,7 +1848,7 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
       TIK.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
       try{ drawTix(); }catch(e){} try{ badges(); }catch(e){}
     }
-    try{ FS.collection('tickets').where('status','in',['Open','In Progress']).onSnapshot(function(s){ TOP=mapD(s); tikMerge(); },function(){}); }catch(e){}
+    try{ FS.collection('tickets').where('status','in',['Open','In Progress']).limit(300).onSnapshot(function(s){ TOP=mapD(s); tikMerge(); },function(){}); }catch(e){}
     try{ FS.collection('tickets').orderBy('ts','desc').limit(120).onSnapshot(function(s){ TREC=mapD(s); tikMerge(); },function(){}); }catch(e){}
 
     /* USR — bulk users अब load नहीं (search से) */
@@ -1922,13 +1957,13 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
         '<div class="a36info">👤 <b>'+e36(s.name||'Customer')+'</b>'+
         '<br>📱 <b>+91 '+e36(s.phone||'—')+'</b>'+(s.uid?'<br>🔑 '+e36(s.uid):'')+
         (s.orderId?'<br>🧾 Last order: <b>'+e36(s.orderId)+'</b>':'')+
-        (loc?'<br>📍 <a href="'+mapL+'" target="_blank" style="color:#7fb3ff;">lat '+s.loc.lat.toFixed(5)+', lon '+s.loc.lon.toFixed(5)+' — MAP खोलें</a>':'<br>📍 GPS off (location नहीं)')+
+        (loc?'<br>📍 <a href="'+mapL+'" target="_blank" style="color:#7fb3ff;" rel="noopener noreferrer">lat '+s.loc.lat.toFixed(5)+', lon '+s.loc.lon.toFixed(5)+' — MAP खोलें</a>':'<br>📍 GPS off (location नहीं)')+
         '</div>'+
         '<div style="margin-top:10px;background:#3a1414;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7;font-weight:800;color:#ffd9d9;">🗣️ "'+e36(s.msg||'—')+'"</div>'+
         '<div class="a36btns">'+
           '<a class="a36call" href="tel:+91'+e36(s.phone||'')+'">📞 Call</a>'+
-          '<a class="a36wa" href="https://wa.me/91'+e36(s.phone||'')+'" target="_blank">💬 WhatsApp</a>'+
-          (loc?'<a class="a36wa" style="background:#6a1b9a;color:#fff;flex:1;" href="'+mapL+'" target="_blank">🗺️ Map</a>':'')+
+          '<a class="a36wa" href="https://wa.me/91'+e36(s.phone||'')+'" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>'+
+          (loc?'<a class="a36wa" style="background:#6a1b9a;color:#fff;flex:1;" href="'+mapL+'" target="_blank" rel="noopener noreferrer">🗺️ Map</a>':'')+
           '<button class="a36ok" onclick="a36Done()">✅ समझ गया — Handle किया</button>'+
         '</div>'+
       '</div></div>';
@@ -2199,7 +2234,7 @@ input[name="abG"]:checked + .vg{border-color:#ffd700;transform:scale(1.18);box-s
   window.a39Test=function(){
     var i=document.getElementById('a39L'); var url=i?String(i.value||'').trim():'';
     if(!url) return toast('पहले link डालें');
-    try{ window.open(url,'_blank'); }catch(e){ toast('❌ Link नहीं खुला'); }
+    try{ window.open(url, '_blank', 'noopener,noreferrer'); }catch(e){ toast('❌ Link नहीं खुला'); }
   };
   window.a39DelLink=function(){
     ldr();
